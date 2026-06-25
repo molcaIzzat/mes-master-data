@@ -16,12 +16,11 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { createContainer } from "../container/container.js";
 import { loadConfig } from "../../shared/config/config.js";
 import { createHealthHandler } from "../../module/health/health-handler.js";
-import { createCommentHandler } from "../../module/comment/comment-handler.js";
-import { createPostHandler } from "../../module/post/post-handler.js";
-import { mapDomainError } from "@molca/helper";
 import { observability, baseLogger, getRequestContext } from "@molca/observability";
 import { serializeError } from "@molca/utils";
 import { WebResponse } from "@molca/network";
+import { mapDomainError } from "../../module/error-mapper/error-mapper.js";
+import { createAreaHandler } from "../../module/area/area-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -45,21 +44,13 @@ app.route(
   }),
 );
 
-const api = new Hono().basePath("/api/v1");
+const api = new Hono().basePath("/v1");
 
 api.route(
-  "/posts",
-  createPostHandler({
+  "/areas",
+  createAreaHandler({
     authMw: container.resolve("authMw"),
-    postService: container.resolve("postService"),
-  }),
-);
-
-api.route(
-  "/comments",
-  createCommentHandler({
-    authMw: container.resolve("authMw"),
-    commentService: container.resolve("commentService"),
+    areaService: container.resolve("areaService"),
   }),
 );
 

@@ -1,39 +1,29 @@
-import {
-  type AwilixContainer,
-  createContainer as newContainer,
-  InjectionMode,
-  asValue,
-  asFunction,
-} from "awilix";
+import { baseLogger } from "@molca/observability";
+import { createContainer as newContainer, InjectionMode, asValue, asFunction } from "awilix";
+
+import type { CommentClientContract } from "@molca/contract-client";
+import type { AuthMiddleware } from "@molca/security";
+import type { AwilixContainer } from "awilix";
+
+import { registerArea } from "../../module/area/area-module.js";
+import { registerHealth } from "../../module/health/health-module.js";
+import { registerInfra } from "../../shared/infra-module.js";
 
 import type { Probe } from "../../module/health/health-service.js";
+import type { AreaReader, AreaWriter } from "../../module/area/area-repository.js";
+import type { TAreaService } from "../../module/area/area-service.js";
 import type { AppConfig } from "../../shared/config/config.js";
 import type { PostgresDB } from "../../shared/database/postgres.js";
-
-import { baseLogger } from "@molca/observability";
-import { registerInfra } from "../../shared/infra-module.js";
-import { registerHealth } from "../../module/health/health-module.js";
-import { registerComment } from "../../module/comment/comment-module.js";
-import { registerPost } from "../../module/post/post-module.js";
-import type { CommentReader, CommentWriter } from "../../module/comment/comment-repository.js";
-import type { TCommentService } from "../../module/comment/comment-service.js";
-import type { CommentClientContract } from "@molca/contract-client";
-import type { PostReader, PostWriter } from "../../module/post/post-repository.js";
-import type { TPostService } from "../../module/post/post-service.js";
-import type { AuthMiddleware } from "@molca/security";
 
 type Cradle = {
   db: PostgresDB;
   authMw: AuthMiddleware;
   keycloakProbe: Probe;
   postgresProbe: Probe;
-  commentReaderRepository: CommentReader;
-  commentWriterRepository: CommentWriter;
-  commentService: TCommentService;
   commentClient: CommentClientContract;
-  postReaderRepository: PostReader;
-  postWriterRepository: PostWriter;
-  postService: TPostService;
+  areaReaderRepository: AreaReader;
+  areaWriterRepository: AreaWriter;
+  areaService: TAreaService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -48,8 +38,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   });
   registerInfra(container, config);
   registerHealth(container, config);
-  registerComment(container);
-  registerPost(container);
+  registerArea(container);
 
   return container;
 }
