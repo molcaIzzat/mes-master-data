@@ -70,6 +70,8 @@ class AreaService implements TAreaService {
   }
 
   async update(id: number, input: UpdateArea): Promise<{ id: number }> {
+    const found = await this.areaReaderRepository.findById(id);
+    if (!found) throw new HTTPException(404, { message: "area not found" });
     const save = await withLog(
       this.logger,
       "area_update",
@@ -84,6 +86,8 @@ class AreaService implements TAreaService {
   }
 
   async delete(id: number): Promise<string> {
+    const found = await this.areaReaderRepository.findById(id);
+    if (!found) throw new HTTPException(404, { message: "area not found" });
     await withLog(
       this.logger,
       "area_delete",

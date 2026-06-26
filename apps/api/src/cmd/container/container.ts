@@ -8,10 +8,16 @@ import type { AwilixContainer } from "awilix";
 import { registerArea } from "../../module/area/area-module.js";
 import { registerHealth } from "../../module/health/health-module.js";
 import { registerInfra } from "../../shared/infra-module.js";
+import { registerLine } from "../../module/line/line-module.js";
+import { registerMachine } from "../../module/machine/machine-module.js";
 
-import type { Probe } from "../../module/health/health-service.js";
 import type { AreaReader, AreaWriter } from "../../module/area/area-repository.js";
+import type { Probe } from "../../module/health/health-service.js";
+import type { LineReader, LineWriter } from "../../module/line/line-repository.js";
+import type { MachineReader, MachineWriter } from "../../module/machine/machine-repository.js";
+import type { TMachineService } from "../../module/machine/machine-service.js";
 import type { TAreaService } from "../../module/area/area-service.js";
+import type { TLineService } from "../../module/line/line-service.js";
 import type { AppConfig } from "../../shared/config/config.js";
 import type { PostgresDB } from "../../shared/database/postgres.js";
 
@@ -24,6 +30,12 @@ type Cradle = {
   areaReaderRepository: AreaReader;
   areaWriterRepository: AreaWriter;
   areaService: TAreaService;
+  lineReaderRepository: LineReader;
+  lineWriterRepository: LineWriter;
+  lineService: TLineService;
+  machineReaderRepository: MachineReader;
+  machineWriterRepository: MachineWriter;
+  machineService: TMachineService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -39,6 +51,8 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerInfra(container, config);
   registerHealth(container, config);
   registerArea(container);
+  registerLine(container);
+  registerMachine(container);
 
   return container;
 }

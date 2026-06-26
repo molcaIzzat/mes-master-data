@@ -2,11 +2,42 @@ import { DrizzleQueryError } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 import { DuplicateAreaError } from "../area/area-errors.js";
+import { DuplicateLineError, InvalidLineAreaIdReferenceError } from "../line/line-errors.js";
+import {
+  DuplicateMachineError,
+  DuplicateSubMachineError,
+  InvalidMachineLineIdReferenceError,
+  InvalidSubMachineMachineIdReferenceError,
+} from "../machine/machine-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
 
   if (err instanceof DuplicateAreaError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateLineError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidLineAreaIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateMachineError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidMachineLineIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateSubMachineError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidSubMachineMachineIdReferenceError) {
     return new HTTPException(409, { message: err.message });
   }
 
