@@ -4,7 +4,7 @@ import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 
 const listMachineInputSchema = paginationSchema.extend({
   q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
-  lineId: z.optional(z.number()),
+  lineId: z.optional(z.coerce.number()),
   isMain: z.optional(z.boolean()),
 });
 

@@ -4,7 +4,7 @@ import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 
 const listAreaInputSchema = paginationSchema.extend({
   q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
-  factoryId: z.optional(z.number()),
+  factoryId: z.optional(z.coerce.number()),
 });
 
 const createAreaSchema = z.object({

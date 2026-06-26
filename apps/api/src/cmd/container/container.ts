@@ -20,6 +20,9 @@ import type { TAreaService } from "../../module/area/area-service.js";
 import type { TLineService } from "../../module/line/line-service.js";
 import type { AppConfig } from "../../shared/config/config.js";
 import type { PostgresDB } from "../../shared/database/postgres.js";
+import type { HierarcyReader } from "../../module/hierarcy/hierarcy-repository.js";
+import type { THierarcyService } from "../../module/hierarcy/hierarcy-service.js";
+import { registerHierarcy } from "../../module/hierarcy/hierarcy-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -36,6 +39,8 @@ type Cradle = {
   machineReaderRepository: MachineReader;
   machineWriterRepository: MachineWriter;
   machineService: TMachineService;
+  hierarcyReaderRepository: HierarcyReader;
+  hierarcyService: THierarcyService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -53,6 +58,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerArea(container);
   registerLine(container);
   registerMachine(container);
+  registerHierarcy(container);
 
   return container;
 }
