@@ -40,6 +40,7 @@ function createPostgresDb({
 }
 
 type PostgresDB = ReturnType<typeof createPostgresDb>;
+type Transaction = Parameters<Parameters<PostgresDB["transaction"]>[0]>[number];
 
 export { createPostgresDb };
-export type { PostgresDB };
+export type { PostgresDB, Transaction };

@@ -23,6 +23,9 @@ import type { PostgresDB } from "../../shared/database/postgres.js";
 import type { HierarcyReader } from "../../module/hierarcy/hierarcy-repository.js";
 import type { THierarcyService } from "../../module/hierarcy/hierarcy-service.js";
 import { registerHierarcy } from "../../module/hierarcy/hierarcy-module.js";
+import type { ProductReader } from "../../module/product/product-repository.js";
+import type { TProductService } from "../../module/product/product-service.js";
+import { registerProduct } from "../../module/product/product-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -41,6 +44,8 @@ type Cradle = {
   machineService: TMachineService;
   hierarcyReaderRepository: HierarcyReader;
   hierarcyService: THierarcyService;
+  productReaderRepository: ProductReader;
+  productService: TProductService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -59,6 +64,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerLine(container);
   registerMachine(container);
   registerHierarcy(container);
+  registerProduct(container);
 
   return container;
 }

@@ -24,6 +24,7 @@ import { createLineHandler } from "../../module/line/line-handler.js";
 import { createMachineHandler } from "../../module/machine/machine-handler.js";
 import { loadConfig } from "../../shared/config/config.js";
 import { createHierarcyHandler } from "../../module/hierarcy/hierarcy-handler.js";
+import { createProductHandler } from "../../module/product/product-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -78,6 +79,14 @@ api.route(
   createHierarcyHandler({
     authMw: container.resolve("authMw"),
     hierarcyService: container.resolve("hierarcyService"),
+  }),
+);
+
+api.route(
+  "/products",
+  createProductHandler({
+    authMw: container.resolve("authMw"),
+    productService: container.resolve("productService"),
   }),
 );
 
