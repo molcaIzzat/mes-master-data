@@ -1,9 +1,12 @@
-import type { AuthEnv, AuthMiddleware } from "@molca/security";
-import type { TProductService } from "./product-service.js";
 import { Hono } from "hono";
-import { productValidator } from "./product-dto.js";
 import { WebResponse } from "@molca/network";
+
+import type { AuthEnv, AuthMiddleware } from "@molca/security";
+
+import { productValidator } from "./product-dto.js";
+
 import type { Product, ProductList } from "./product.js";
+import type { TProductService } from "./product-service.js";
 
 type ProductHandlerDeps = {
   productService: TProductService;

@@ -25,6 +25,8 @@ import { createMachineHandler } from "../../module/machine/machine-handler.js";
 import { loadConfig } from "../../shared/config/config.js";
 import { createHierarcyHandler } from "../../module/hierarcy/hierarcy-handler.js";
 import { createProductHandler } from "../../module/product/product-handler.js";
+import { createProductPackageHandler } from "../../module/product-package/product-package-handler.js";
+import { createProductConvertionHandler } from "../../module/product-convertion/product-convertion-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -87,6 +89,22 @@ api.route(
   createProductHandler({
     authMw: container.resolve("authMw"),
     productService: container.resolve("productService"),
+  }),
+);
+
+api.route(
+  "/product-packages",
+  createProductPackageHandler({
+    authMw: container.resolve("authMw"),
+    productPackageService: container.resolve("productPackageService"),
+  }),
+);
+
+api.route(
+  "/product-convertions",
+  createProductConvertionHandler({
+    authMw: container.resolve("authMw"),
+    productConvertionService: container.resolve("productConvertionService"),
   }),
 );
 

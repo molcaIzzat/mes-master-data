@@ -1,5 +1,17 @@
 import { and, count, eq, ilike, inArray, or } from "drizzle-orm";
-import type { PostgresDB, Transaction } from "../../shared/database/postgres.js";
+
+import {
+  DuplicateProductError,
+  InvalidProductAreaIdReferenceError,
+  InvalidProductLineIdReferenceError,
+} from "./product-errors.js";
+import {
+  productConvertionTable,
+  productPackagingTable,
+  productTable,
+  pvProductLineTable,
+} from "../../shared/database/schema/schema.js";
+
 import type {
   CreateProduct,
   ListProductInput,
@@ -10,18 +22,8 @@ import type {
   ProductPackage,
   UpdateProduct,
 } from "./product.js";
-import {
-  productConvertionTable,
-  productPackagingTable,
-  productTable,
-  pvProductLineTable,
-} from "../../shared/database/schema/schema.js";
+import type { PostgresDB, Transaction } from "../../shared/database/postgres.js";
 import { isForeignKeyViolation, isUniqueViolation } from "../../shared/database/helper/catcher.js";
-import {
-  DuplicateProductError,
-  InvalidProductAreaIdReferenceError,
-  InvalidProductLineIdReferenceError,
-} from "./product-errors.js";
 
 type OneProduct = Omit<Product, "lines"> & {
   lines: {

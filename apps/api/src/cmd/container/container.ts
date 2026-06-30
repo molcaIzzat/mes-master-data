@@ -26,6 +26,18 @@ import { registerHierarcy } from "../../module/hierarcy/hierarcy-module.js";
 import type { ProductReader } from "../../module/product/product-repository.js";
 import type { TProductService } from "../../module/product/product-service.js";
 import { registerProduct } from "../../module/product/product-module.js";
+import type {
+  ProductPackageReader,
+  ProductPackageWriter,
+} from "../../module/product-package/product-package-repository.js";
+import { registerProductPackage } from "../../module/product-package/product-package-module.js";
+import type { TProductPackageService } from "../../module/product-package/product-package-service.js";
+import type {
+  ProductConvertionReader,
+  ProductConvertionWriter,
+} from "../../module/product-convertion/product-convertion-repository.js";
+import type { TProductConvertionService } from "../../module/product-convertion/product-convertion-service.js";
+import { registerProductConvertion } from "../../module/product-convertion/product-convertion-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -46,6 +58,12 @@ type Cradle = {
   hierarcyService: THierarcyService;
   productReaderRepository: ProductReader;
   productService: TProductService;
+  productPackageReaderRepository: ProductPackageReader;
+  productPackageWriterRepository: ProductPackageWriter;
+  productPackageService: TProductPackageService;
+  productConvertionReaderRepository: ProductConvertionReader;
+  productConvertionWriterRepository: ProductConvertionWriter;
+  productConvertionService: TProductConvertionService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -65,6 +83,8 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerMachine(container);
   registerHierarcy(container);
   registerProduct(container);
+  registerProductPackage(container);
+  registerProductConvertion(container);
 
   return container;
 }

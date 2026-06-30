@@ -1,4 +1,8 @@
+import { HTTPException } from "hono/http-exception";
 import { buildPageMeta, type PagedResult } from "@molca/network";
+import { withLog, type Logger } from "@molca/utils";
+import { baseLogger, getRequestContext } from "@molca/observability";
+
 import type {
   CreateProduct,
   Product,
@@ -7,9 +11,6 @@ import type {
   UpdateProduct,
 } from "./product.js";
 import type { ProductReader, ProductWriter } from "./product-repository.js";
-import { withLog, type Logger } from "@molca/utils";
-import { baseLogger, getRequestContext } from "@molca/observability";
-import { HTTPException } from "hono/http-exception";
 
 type PagedProductResult = PagedResult<ProductList>;
 
