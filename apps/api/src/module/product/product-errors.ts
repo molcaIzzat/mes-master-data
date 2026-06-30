@@ -24,4 +24,20 @@ class InvalidProductAreaIdReferenceError extends Error {
   }
 }
 
-export { DuplicateProductError, InvalidProductAreaIdReferenceError };
+class InvalidProductLineIdReferenceError extends Error {
+  public readonly lineId?: number;
+
+  constructor(lineId?: number) {
+    super(lineId ? `line "${lineId}" does not exist` : "line does not exist");
+    this.name = "InvalidProductLineIdReferenceError";
+    this.lineId = lineId;
+    if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);
+    Object.setPrototypeOf(this, InvalidProductLineIdReferenceError.prototype);
+  }
+}
+
+export {
+  DuplicateProductError,
+  InvalidProductAreaIdReferenceError,
+  InvalidProductLineIdReferenceError,
+};

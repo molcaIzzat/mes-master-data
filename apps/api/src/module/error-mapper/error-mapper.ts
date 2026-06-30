@@ -9,9 +9,26 @@ import {
   InvalidMachineLineIdReferenceError,
   InvalidSubMachineMachineIdReferenceError,
 } from "../machine/machine-errors.js";
+import {
+  DuplicateProductError,
+  InvalidProductAreaIdReferenceError,
+  InvalidProductLineIdReferenceError,
+} from "../product/product-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof DuplicateProductError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidProductAreaIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidProductLineIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof DuplicateAreaError) {
     return new HTTPException(409, { message: err.message });

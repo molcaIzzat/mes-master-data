@@ -37,6 +37,18 @@ function createProductHandler({ productService, authMw }: ProductHandlerDeps) {
     return c.json(WebResponse.builder<Product>().data(resp).build(), 200);
   });
 
+  app.put("/:id", productValidator.update, async (c) => {
+    const id = c.req.param("id");
+    const patch = c.req.valid("json");
+    const resp = await productService.update(parseInt(id), patch);
+    return c.json(WebResponse.builder<{ id: number }>().data(resp).build(), 200);
+  });
+
+  app.delete("/:id", async (c) => {
+    const id = c.req.param("id");
+    const resp = await productService.delete(parseInt(id));
+    return c.json(WebResponse.builder<string>().data(resp).build(), 200);
+  });
   return app;
 }
 

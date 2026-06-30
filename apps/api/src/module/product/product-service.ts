@@ -1,5 +1,11 @@
 import { buildPageMeta, type PagedResult } from "@molca/network";
-import type { CreateProduct, Product, ProductFilter, ProductList } from "./product.js";
+import type {
+  CreateProduct,
+  Product,
+  ProductFilter,
+  ProductList,
+  UpdateProduct,
+} from "./product.js";
 import type { ProductReader, ProductWriter } from "./product-repository.js";
 import { withLog, type Logger } from "@molca/utils";
 import { baseLogger, getRequestContext } from "@molca/observability";
@@ -17,6 +23,8 @@ type TProductService = {
   findAll: (page: number, size: number, filter: ProductFilter) => Promise<PagedProductResult>;
   findById: (id: number) => Promise<Product>;
   create: (input: CreateProduct) => Promise<{ id: number }>;
+  update: (id: number, patch: UpdateProduct) => Promise<{ id: number }>;
+  delete: (id: number) => Promise<string>;
 };
 
 class ProductService implements TProductService {
@@ -65,7 +73,7 @@ class ProductService implements TProductService {
       packages: product.packages,
       convertions: product.convertions,
       lines: product.lines.map((l) => ({
-        id: l.id,
+        id: l.line?.id ?? 0,
         lineName: l.line?.name ?? "",
       })),
     };
@@ -75,6 +83,23 @@ class ProductService implements TProductService {
     return await withLog(this.logger, "product_create", { input }, () =>
       this.productWriterRepository.create(input),
     );
+  }
+
+  async update(id: number, patch: UpdateProduct): Promise<{ id: number }> {
+    const found = await this.productReaderRepository.findById(id);
+    if (!found) throw new HTTPException(404, { message: "product not found" });
+    return await withLog(this.logger, "product_update", { patch }, () =>
+      this.productWriterRepository.update(id, patch),
+    );
+  }
+
+  async delete(id: number): Promise<string> {
+    const found = await this.productReaderRepository.findById(id);
+    if (!found) throw new HTTPException(404, { message: "product not found" });
+    await withLog(this.logger, "product_delete", { id }, () =>
+      this.productWriterRepository.delete(id),
+    );
+    return "ok";
   }
 }
 

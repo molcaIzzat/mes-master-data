@@ -61,35 +61,46 @@ type ListProductInput = {
 
 type PagedProduct = Paged<ProductList>;
 
-type CreateProduct = {
+type ProductPackage = {
+  main: boolean;
+  sortOrder: number;
+  package: ProductPackagingType;
+  stdWeight: number;
+  minWeight: number;
+  maxWeight: number;
+  length: number;
+  width: number;
+  height: number;
+  vol: number;
+};
+
+type ProductConvertion = {
+  value: number;
+  unit: string;
+  sortOrder: number;
+};
+
+type OwnerCreateProduct = {
   code: string;
   name: string;
   areaId: number;
-  lineIds: number[];
   cycleTime: number;
   cycleTimeUnit: ProductCycleTimeUnit;
   price: number;
   cost: number;
-  packages: {
-    main: boolean;
-    sortOrder: number;
-    package: ProductPackagingType;
-    stdWeight: number;
-    minWeight: number;
-    maxWeight: number;
-    length: number;
-    width: number;
-    height: number;
-    vol: number;
-  }[];
-  convertions: {
-    value: number;
-    unit: string;
-    sortOrder: number;
-  }[];
 };
 
-type UpdateProduct = Partial<CreateProduct>;
+type CreateProduct = OwnerCreateProduct & {
+  lineIds: number[];
+  packages: ProductPackage[];
+  convertions: ProductConvertion[];
+};
+
+type UpdateProduct = Partial<OwnerCreateProduct> & {
+  lineIds?: number[];
+  packages?: (ProductPackage & { id: number })[];
+  convertions?: (ProductConvertion & { id: number })[];
+};
 
 export { PRODUCT_CYCLE_TIME_UNIT, PRODUCT_PACKAGING_TYPE };
 export type {
@@ -100,6 +111,8 @@ export type {
   ProductFilter,
   ListProductInput,
   PagedProduct,
+  ProductPackage,
+  ProductConvertion,
   CreateProduct,
   UpdateProduct,
 };
