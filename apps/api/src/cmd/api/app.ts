@@ -28,6 +28,7 @@ import { createProductHandler } from "../../module/product/product-handler.js";
 import { createProductPackageHandler } from "../../module/product-package/product-package-handler.js";
 import { createProductConvertionHandler } from "../../module/product-convertion/product-convertion-handler.js";
 import { createDowntimeReasonHandler } from "../../module/downtime-reason/downtime-reason-handler.js";
+import { createRejectReasonHandler } from "../../module/reject-reason/reject-reason-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -114,6 +115,14 @@ api.route(
   createDowntimeReasonHandler({
     authMw: container.resolve("authMw"),
     downtimeReasonService: container.resolve("downtimeReasonService"),
+  }),
+);
+
+api.route(
+  "/reject-reasons",
+  createRejectReasonHandler({
+    authMw: container.resolve("authMw"),
+    rejectReasonService: container.resolve("rejectReasonService"),
   }),
 );
 
