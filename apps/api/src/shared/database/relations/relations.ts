@@ -67,6 +67,52 @@ const relations = defineRelations(schema, (r) => ({
       to: r.lineTable.id,
     }),
   },
+  downtimeReasonTable: {
+    areas: r.many.downtimeReasonAreaTable(),
+    lines: r.many.downtimeReasonLineTable(),
+    machines: r.many.downtimeReasonMachineTable(),
+  },
+  downtimeReasonAreaTable: {
+    reason: r.one.downtimeReasonTable({
+      from: r.downtimeReasonAreaTable.reasonId,
+      to: r.downtimeReasonTable.id,
+    }),
+  },
+  downtimeReasonLineTable: {
+    reason: r.one.downtimeReasonTable({
+      from: r.downtimeReasonLineTable.reasonId,
+      to: r.downtimeReasonTable.id,
+    }),
+  },
+  downtimeReasonMachineTable: {
+    reason: r.one.downtimeReasonTable({
+      from: r.downtimeReasonMachineTable.reasonId,
+      to: r.downtimeReasonTable.id,
+    }),
+  },
+  rejectReasonTable: {
+    areas: r.many.rejectReasonAreaTable(),
+    lines: r.many.rejectReasonLineTable(),
+    machines: r.many.rejectReasonMachineTable(),
+  },
+  rejectReasonAreaTable: {
+    reason: r.one.rejectReasonTable({
+      from: r.rejectReasonAreaTable.reasonId,
+      to: r.rejectReasonTable.id,
+    }),
+  },
+  rejectReasonLineTable: {
+    reason: r.one.rejectReasonTable({
+      from: r.rejectReasonLineTable.reasonId,
+      to: r.rejectReasonTable.id,
+    }),
+  },
+  rejectReasonMachineTable: {
+    reason: r.one.rejectReasonTable({
+      from: r.rejectReasonMachineTable.reasonId,
+      to: r.rejectReasonTable.id,
+    }),
+  },
 }));
 
 export { relations };

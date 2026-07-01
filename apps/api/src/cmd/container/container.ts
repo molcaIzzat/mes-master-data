@@ -1,7 +1,11 @@
 import { baseLogger } from "@molca/observability";
 import { createContainer as newContainer, InjectionMode, asValue, asFunction } from "awilix";
 
-import type { CommentClientContract } from "@molca/contract-client";
+import type {
+  AreaClientContract,
+  LineClientContract,
+  MachineClientContract,
+} from "@molca/contract-client";
 import type { AuthMiddleware } from "@molca/security";
 import type { AwilixContainer } from "awilix";
 
@@ -44,7 +48,9 @@ type Cradle = {
   authMw: AuthMiddleware;
   keycloakProbe: Probe;
   postgresProbe: Probe;
-  commentClient: CommentClientContract;
+  areaClient: AreaClientContract;
+  lineClient: LineClientContract;
+  machineClient: MachineClientContract;
   areaReaderRepository: AreaReader;
   areaWriterRepository: AreaWriter;
   areaService: TAreaService;

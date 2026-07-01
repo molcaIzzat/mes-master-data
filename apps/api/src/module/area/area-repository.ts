@@ -20,6 +20,8 @@ type AreaWriterDeps = {
 type AreaReader = {
   findAll: (input: ListAreaInput) => Promise<PagedArea>;
   findById: (id: number) => Promise<Area | undefined>;
+  existById: (id: number) => Promise<boolean>;
+  findSummariesByIds: (ids: number[]) => Promise<Area[]>;
 };
 
 type AreaWriter = {
@@ -77,6 +79,25 @@ class AreaReaderRepository implements AreaReader {
   async findById(id: number): Promise<Area | undefined> {
     return await this.db.query.areaTable.findFirst({
       where: { id, region: this.region },
+    });
+  }
+
+  async existById(id: number): Promise<boolean> {
+    const row = this.db.query.areaTable.findFirst({
+      where: { id, region: this.region },
+    });
+
+    return !!row;
+  }
+
+  async findSummariesByIds(ids: number[]): Promise<Area[]> {
+    return this.db.query.areaTable.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+        region: this.region,
+      },
     });
   }
 }

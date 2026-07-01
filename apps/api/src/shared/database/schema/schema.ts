@@ -34,6 +34,8 @@ const defaultIndexesWithCode = (
 ];
 
 export const msCore = p.pgSchema("ms_core");
+export const msDowntime = p.pgSchema("ms_downtime");
+export const msReject = p.pgSchema("ms_reject");
 
 export const LineCategoryEnum = msCore.enum("line_cat", ["PACKAGE", "BULK"]);
 
@@ -216,5 +218,154 @@ export const pvProductLineTable = msCore.table(
     p.index("products_lines_region_updated_idx").on(t.region, t.updatedAt),
     p.index("products_lines_product_id_idx").on(t.productId),
     p.index("products_lines_line_id_idx").on(t.lineId),
+  ],
+);
+
+export const DowntimeCategoryEnum = msDowntime.enum("downtime_cat", [
+  "PLANNED",
+  "UNPLANNED",
+  "SMALL_STOP",
+]);
+
+export const downtimeReasonTable = msDowntime.table(
+  "downtime_reasons",
+  {
+    ...defaultColumnsWithCode(),
+    category: DowntimeCategoryEnum("category").notNull(),
+  },
+  (t) => [...defaultIndexesWithCode(t, "downtime_reasons")],
+);
+
+export const downtimeReasonAreaTable = msDowntime.table(
+  "downtime_reasons_areas",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    areaId: p.integer("area_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("downtime_reasons_areas_key").on(t.reasonId, t.areaId),
+    p.index("downtime_reasons_areas_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("downtime_reasons_areas_area_id_idx").on(t.areaId),
+    p.index("downtime_reasons_areas_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const downtimeReasonLineTable = msDowntime.table(
+  "downtime_reasons_lines",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    lineId: p.integer("line_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("downtime_reasons_lines_key").on(t.reasonId, t.lineId),
+    p.index("downtime_reasons_lines_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("downtime_reasons_lines_line_id_idx").on(t.lineId),
+    p.index("downtime_reasons_lines_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const downtimeReasonMachineTable = msDowntime.table(
+  "downtime_reasons_machines",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    machineId: p.integer("machine_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("downtime_reasons_machines_key").on(t.reasonId, t.machineId),
+    p.index("downtime_reasons_machines_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("downtime_reasons_machines_machine_id_idx").on(t.machineId),
+    p.index("downtime_reasons_machines_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const rejectReasonTable = msReject.table(
+  "reject_reasons",
+  {
+    ...defaultColumnsWithCode(),
+  },
+  (t) => [...defaultIndexesWithCode(t, "reject_reasons")],
+);
+
+export const rejectReasonAreaTable = msReject.table(
+  "reject_reasons_areas",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => rejectReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    areaId: p.integer("area_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("reject_reasons_areas_key").on(t.reasonId, t.areaId),
+    p.index("reject_reasons_areas_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("reject_reasons_areas_area_id_idx").on(t.areaId),
+    p.index("reject_reasons_areas_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const rejectReasonLineTable = msReject.table(
+  "reject_reasons_lines",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => rejectReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    lineId: p.integer("line_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("reject_reasons_lines_key").on(t.reasonId, t.lineId),
+    p.index("reject_reasons_lines_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("reject_reasons_lines_line_id_idx").on(t.lineId),
+    p.index("reject_reasons_lines_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const rejectReasonMachineTable = msReject.table(
+  "reject_reasons_machines",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => rejectReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    machineId: p.integer("machine_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("reject_reasons_machines_key").on(t.reasonId, t.machineId),
+    p.index("reject_reasons_machines_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("reject_reasons_machines_machine_id_idx").on(t.machineId),
+    p.index("reject_reasons_machines_reason_id_idx").on(t.reasonId),
   ],
 );
