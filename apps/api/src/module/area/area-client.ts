@@ -1,9 +1,10 @@
+import { baseLogger, getRequestContext } from "@molca/observability";
+import { chunk } from "@molca/helper";
+
 import type { AreaClientContract, AreaPartialFetch, AreaSummary } from "@molca/contract-client";
 import type { Logger } from "@molca/utils";
 
 import type { AreaReader } from "./area-repository.js";
-import { baseLogger, getRequestContext } from "@molca/observability";
-import { chunk } from "@molca/helper";
 
 type AreaClientDeps = {
   areaReaderRepository: AreaReader;
@@ -27,6 +28,10 @@ class AreaClient implements AreaClientContract {
     return this.areaReaderRepository.existById(id);
   }
 
+  async findById(id: number): Promise<AreaSummary | undefined> {
+    return this.areaReaderRepository.findById(id);
+  }
+
   async getMany(ids: number[]): Promise<AreaPartialFetch<AreaSummary>> {
     const unique = [...new Set(ids)];
     const found: AreaSummary[] = [];
@@ -42,3 +47,6 @@ class AreaClient implements AreaClientContract {
     return { found, missingIds };
   }
 }
+
+export { AreaClient };
+export type { AreaClientDeps };

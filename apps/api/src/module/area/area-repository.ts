@@ -6,6 +6,7 @@ import type { Area, CreateArea, ListAreaInput, PagedArea, UpdateArea } from "./a
 import type { PostgresDB } from "../../shared/database/postgres.js";
 import { isUniqueViolation } from "../../shared/database/helper/catcher.js";
 import { DuplicateAreaError } from "./area-errors.js";
+import type { AreaSummary } from "@molca/contract-client";
 
 type AreaReaderDeps = {
   db: PostgresDB;
@@ -21,7 +22,7 @@ type AreaReader = {
   findAll: (input: ListAreaInput) => Promise<PagedArea>;
   findById: (id: number) => Promise<Area | undefined>;
   existById: (id: number) => Promise<boolean>;
-  findSummariesByIds: (ids: number[]) => Promise<Area[]>;
+  findSummariesByIds: (ids: number[]) => Promise<AreaSummary[]>;
 };
 
 type AreaWriter = {
@@ -90,7 +91,7 @@ class AreaReaderRepository implements AreaReader {
     return !!row;
   }
 
-  async findSummariesByIds(ids: number[]): Promise<Area[]> {
+  async findSummariesByIds(ids: number[]): Promise<AreaSummary[]> {
     return this.db.query.areaTable.findMany({
       where: {
         id: {
@@ -98,6 +99,7 @@ class AreaReaderRepository implements AreaReader {
         },
         region: this.region,
       },
+      columns: { id: true, name: true, displayName: true },
     });
   }
 }

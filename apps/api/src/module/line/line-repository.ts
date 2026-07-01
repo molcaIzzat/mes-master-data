@@ -6,6 +6,7 @@ import { lineTable } from "../../shared/database/schema/schema.js";
 
 import type { CreateLine, Line, ListLineInput, PagedLine, UpdateLine } from "./line.js";
 import type { PostgresDB } from "../../shared/database/postgres.js";
+import type { LineSummary } from "@molca/contract-client";
 
 type LineReaderDeps = {
   db: PostgresDB;
@@ -20,6 +21,8 @@ type LineWriterDeps = {
 type LineReader = {
   findAll: (input: ListLineInput) => Promise<PagedLine>;
   findById: (id: number) => Promise<Line | undefined>;
+  existById: (id: number) => Promise<boolean>;
+  findSummariesByIds: (ids: number[]) => Promise<LineSummary[]>;
 };
 
 type LineWriter = {
@@ -88,6 +91,26 @@ class LineReaderRepository implements LineReader {
           },
         },
       },
+    });
+  }
+
+  async existById(id: number): Promise<boolean> {
+    const row = this.db.query.lineTable.findFirst({
+      where: { id, region: this.region },
+    });
+
+    return !!row;
+  }
+
+  async findSummariesByIds(ids: number[]): Promise<LineSummary[]> {
+    return this.db.query.lineTable.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+        region: this.region,
+      },
+      columns: { id: true, code: true, name: true },
     });
   }
 }

@@ -20,6 +20,7 @@ import {
   InvalidMachineLineIdReferenceError,
   InvalidSubMachineMachineIdReferenceError,
 } from "./machine-errors.js";
+import type { MachineSummary } from "@molca/contract-client";
 
 type MachineReaderDeps = {
   db: PostgresDB;
@@ -36,6 +37,8 @@ type MachineReader = {
   findAllSub: (input: ListSubMachineInput) => Promise<PagedSubMachine>;
   findById: (id: number) => Promise<Machine | undefined>;
   findSubById: (id: number) => Promise<SubMachine | undefined>;
+  existById: (id: number) => Promise<boolean>;
+  findSummariesByIds: (ids: number[]) => Promise<MachineSummary[]>;
 };
 
 type MachineWriter = {
@@ -158,6 +161,26 @@ class MachineReaderRepository implements MachineReader {
           },
         },
       },
+    });
+  }
+
+  async existById(id: number): Promise<boolean> {
+    const row = this.db.query.machineTable.findFirst({
+      where: { id, region: this.region },
+    });
+
+    return !!row;
+  }
+
+  async findSummariesByIds(ids: number[]): Promise<MachineSummary[]> {
+    return this.db.query.machineTable.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+        region: this.region,
+      },
+      columns: { id: true, code: true, name: true },
     });
   }
 }

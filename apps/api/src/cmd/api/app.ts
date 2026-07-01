@@ -27,6 +27,7 @@ import { createHierarcyHandler } from "../../module/hierarcy/hierarcy-handler.js
 import { createProductHandler } from "../../module/product/product-handler.js";
 import { createProductPackageHandler } from "../../module/product-package/product-package-handler.js";
 import { createProductConvertionHandler } from "../../module/product-convertion/product-convertion-handler.js";
+import { createDowntimeReasonHandler } from "../../module/downtime-reason/downtime-reason-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -105,6 +106,14 @@ api.route(
   createProductConvertionHandler({
     authMw: container.resolve("authMw"),
     productConvertionService: container.resolve("productConvertionService"),
+  }),
+);
+
+api.route(
+  "/downtime-reasons",
+  createDowntimeReasonHandler({
+    authMw: container.resolve("authMw"),
+    downtimeReasonService: container.resolve("downtimeReasonService"),
   }),
 );
 
