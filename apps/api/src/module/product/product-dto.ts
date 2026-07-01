@@ -52,7 +52,7 @@ const updateProductSchema = productSchema.partial().extend({
     z
       .array(
         productPackageSchema.extend({
-          id: z.number().check(z.positive()),
+          id: z.number(),
         }),
       )
       .check(z.minLength(1)),
@@ -60,7 +60,7 @@ const updateProductSchema = productSchema.partial().extend({
   convertions: z.optional(
     z.array(
       productConvertionSchema.extend({
-        id: z.number().check(z.positive()),
+        id: z.number(),
       }),
     ),
   ),
