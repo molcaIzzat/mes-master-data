@@ -54,6 +54,12 @@ import type {
 } from "../../module/reject-reason/reject-reason-repository.js";
 import type { TRejectReasonService } from "../../module/reject-reason/reject-reason-service.js";
 import { registerRejectReason } from "../../module/reject-reason/reject-reason-module.js";
+import type {
+  DowntimeActionReader,
+  DowntimeActionWriter,
+} from "../../module/downtime-action/downtime-action-repository.js";
+import type { TDowntimeActionService } from "../../module/downtime-action/downtime-action-service.js";
+import { registerDowntimeAction } from "../../module/downtime-action/downtime-action-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -88,6 +94,9 @@ type Cradle = {
   rejectReasonReaderRepository: RejectReasonReader;
   rejectReasonWriterRepository: RejectReasonWriter;
   rejectReasonService: TRejectReasonService;
+  downtimeActionReaderRepository: DowntimeActionReader;
+  downtimeActionWriterRepository: DowntimeActionWriter;
+  downtimeActionService: TDowntimeActionService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -111,6 +120,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerProductConvertion(container);
   registerDowntimeReason(container);
   registerRejectReason(container);
+  registerDowntimeAction(container);
 
   return container;
 }

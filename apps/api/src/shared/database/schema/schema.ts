@@ -299,6 +299,15 @@ export const downtimeReasonMachineTable = msDowntime.table(
   ],
 );
 
+export const downtimeActionTable = msDowntime.table(
+  "downtime_actions",
+  {
+    ...defaultColumnsWithCode(),
+    color: p.varchar({ length: 10 }).notNull(),
+  },
+  (t) => [...defaultIndexesWithCode(t, "downtime_actions")],
+);
+
 export const rejectReasonTable = msReject.table(
   "reject_reasons",
   {
