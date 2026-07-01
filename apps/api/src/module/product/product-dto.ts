@@ -6,7 +6,7 @@ import { PRODUCT_CYCLE_TIME_UNIT, PRODUCT_PACKAGING_TYPE } from "./product.js";
 
 const listProductInputSchema = paginationSchema.extend({
   q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
-  areaId: z.optional(z.coerce.number()),
+  areaId: z.optional(z.coerce.number().transform((v) => (v === 0 ? undefined : v))),
 });
 
 const productPackageSchema = z.object({
@@ -30,7 +30,7 @@ const productConvertionSchema = z.object({
 
 const productLineSchema = z.number();
 
-const ownerProductSchema = z.object({
+const productSchema = z.object({
   code: z.string().min(5),
   name: z.string().min(5),
   areaId: z.number(),
@@ -40,13 +40,13 @@ const ownerProductSchema = z.object({
   cost: z.number().check(z.positive()),
 });
 
-const createProductSchema = ownerProductSchema.extend({
+const createProductSchema = productSchema.extend({
   lineIds: z.array(productLineSchema).check(z.minLength(1)),
   packages: z.array(productPackageSchema).check(z.minLength(1)),
   convertions: z.array(productConvertionSchema),
 });
 
-const updateProductSchema = ownerProductSchema.partial().extend({
+const updateProductSchema = productSchema.partial().extend({
   lineIds: z.optional(z.array(productLineSchema).check(z.minLength(1))),
   packages: z.optional(
     z

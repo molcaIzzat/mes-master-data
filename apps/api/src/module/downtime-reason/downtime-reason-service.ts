@@ -3,7 +3,7 @@ import { buildPageMeta } from "@molca/network";
 import { baseLogger, getRequestContext } from "@molca/observability";
 
 import type { PagedResult } from "@molca/network";
-import type { Logger } from "@molca/utils";
+import { withLog, type Logger } from "@molca/utils";
 import type {
   AreaClientContract,
   AreaSummary,
@@ -14,9 +14,11 @@ import type {
 } from "@molca/contract-client";
 
 import type {
+  CreateDowntimeReason,
   DowntimeReasonEnriched,
   DowntimeReasonEnrichedList,
   DowntimeReasonFilter,
+  UpdateDowntimeReason,
 } from "./downtime-reason.js";
 import type { DowntimeReasonReader, DowntimeReasonWriter } from "./downtime-reason-repository.js";
 
@@ -38,6 +40,9 @@ type TDowntimeReasonService = {
     filter: DowntimeReasonFilter,
   ) => Promise<PagedDowntimeReasonResult>;
   findById: (id: number) => Promise<DowntimeReasonEnriched>;
+  create: (input: CreateDowntimeReason) => Promise<{ id: number }>;
+  update: (id: number, patch: UpdateDowntimeReason) => Promise<{ id: number }>;
+  delete: (id: number) => Promise<string>;
 };
 
 class DowntimeReasonService implements TDowntimeReasonService {
@@ -138,6 +143,116 @@ class DowntimeReasonService implements TDowntimeReasonService {
         .map((id) => machineById.get(id))
         .filter((a): a is MachineSummary => a !== undefined),
     };
+  }
+
+  private async checkArea(ids: number[]) {
+    const missingIds = await withLog(this.logger, "area_client_get_many", { ids }, async () => {
+      const { missingIds } = await this.areaClient.getMany(ids);
+      return missingIds;
+    });
+
+    if (missingIds.length > 0) {
+      return new HTTPException(404, {
+        message: `area with ids: ${missingIds.join(",")} not found`,
+      });
+    } else {
+      return null;
+    }
+  }
+
+  private async checkLine(ids: number[]) {
+    const missingIds = await withLog(
+      this.logger,
+      "line_client_get_many",
+      { ids: ids },
+      async () => {
+        const { missingIds } = await this.lineClient.getMany(ids);
+        return missingIds;
+      },
+    );
+
+    if (missingIds.length > 0) {
+      return new HTTPException(404, {
+        message: `line with ids: ${missingIds.join(",")} not found`,
+      });
+    } else {
+      return null;
+    }
+  }
+
+  private async checkMachine(ids: number[]) {
+    const missingIds = await withLog(this.logger, "machine_client_get_many", { ids }, async () => {
+      const { missingIds } = await this.machineClient.getMany(ids);
+      return missingIds;
+    });
+
+    if (missingIds.length > 0) {
+      return new HTTPException(404, {
+        message: `machine with ids: ${missingIds.join(",")} not found`,
+      });
+    } else {
+      return null;
+    }
+  }
+
+  async create(input: CreateDowntimeReason): Promise<{ id: number }> {
+    const errArea = await this.checkArea(input.areaIds);
+    if (errArea !== null) {
+      throw errArea;
+    }
+
+    const errLine = await this.checkLine(input.lineIds);
+    if (errLine !== null) {
+      throw errLine;
+    }
+
+    const errMachine = await this.checkMachine(input.machineIds);
+    if (errMachine !== null) {
+      throw errMachine;
+    }
+
+    return await withLog(this.logger, "downtime_reason_create", { input }, () =>
+      this.downtimeReasonWriterRepository.create(input),
+    );
+  }
+
+  async update(id: number, patch: UpdateDowntimeReason): Promise<{ id: number }> {
+    const found = await this.downtimeReasonReaderRepository.findById(id);
+    if (!found) throw new HTTPException(404, { message: "reason not found" });
+    if (patch.areaIds) {
+      const errArea = await this.checkArea(patch.areaIds);
+      if (errArea !== null) {
+        throw errArea;
+      }
+    }
+
+    if (patch.lineIds) {
+      const errLine = await this.checkLine(patch.lineIds);
+      if (errLine !== null) {
+        throw errLine;
+      }
+    }
+
+    if (patch.machineIds) {
+      const errMachine = await this.checkMachine(patch.machineIds);
+      if (errMachine !== null) {
+        throw errMachine;
+      }
+    }
+
+    return await withLog(this.logger, "downtime_reason_update", { id, patch }, () =>
+      this.downtimeReasonWriterRepository.update(id, patch),
+    );
+  }
+
+  async delete(id: number): Promise<string> {
+    const found = await this.downtimeReasonReaderRepository.findById(id);
+    if (!found) throw new HTTPException(404, { message: "reason not found" });
+    await withLog(this.logger, "downtime_reason_delete", { id }, () =>
+      this.downtimeReasonWriterRepository.delete(id),
+    );
+
+    return "ok";
   }
 }
 

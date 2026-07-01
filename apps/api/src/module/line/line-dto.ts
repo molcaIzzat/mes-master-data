@@ -5,7 +5,7 @@ import { LINE_CATEGORY } from "./line.js";
 
 const listLineInputSchema = paginationSchema.extend({
   q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
-  areaId: z.optional(z.coerce.number()),
+  areaId: z.optional(z.coerce.number().transform((v) => (v === 0 ? undefined : v))),
   category: z.optional(z.enum(LINE_CATEGORY)),
 });
 

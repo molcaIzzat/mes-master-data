@@ -48,6 +48,17 @@ type ListDowntimeReasonInput = {
 
 type PagedDowntimeReason = Paged<DowntimeReasonList>;
 
+type CreateDowntimeReason = {
+  areaIds: number[];
+  lineIds: number[];
+  machineIds: number[];
+  category: DowntimeReasonCategory;
+  code: string;
+  name: string;
+};
+
+type UpdateDowntimeReason = Partial<CreateDowntimeReason>;
+
 export { DOWNTIME_REASON_CATEGORY };
 export type {
   DowntimeReason,
@@ -57,4 +68,6 @@ export type {
   PagedDowntimeReason,
   DowntimeReasonEnriched,
   DowntimeReasonEnrichedList,
+  CreateDowntimeReason,
+  UpdateDowntimeReason,
 };

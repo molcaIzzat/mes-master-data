@@ -216,18 +216,19 @@ class ProductWriterRepository implements ProductWriter {
     };
   }
 
-  private async findAllLineId(productId: number): Promise<number[]> {
-    const rows = await this.db.query.pvProductLineTable.findMany({
+  private async findAllLineId(tx: Transaction, productId: number): Promise<number[]> {
+    const rows = await tx.query.pvProductLineTable.findMany({
       where: { region: this.region, productId },
       columns: { lineId: true },
     });
     return rows.map((line) => line.lineId);
   }
 
-  private async fincAllConvertion(
+  private async findAllConvertion(
+    tx: Transaction,
     productId: number,
   ): Promise<(ProductConvertion & { id: number })[]> {
-    const rows = await this.db.query.productConvertionTable.findMany({
+    const rows = await tx.query.productConvertionTable.findMany({
       where: { region: this.region, productId },
       columns: {
         id: true,
@@ -245,7 +246,10 @@ class ProductWriterRepository implements ProductWriter {
     }));
   }
 
-  private async findAllPackage(productId: number): Promise<(ProductPackage & { id: number })[]> {
+  private async findAllPackage(
+    tx: Transaction,
+    productId: number,
+  ): Promise<(ProductPackage & { id: number })[]> {
     const rows = await this.db.query.productPackagingTable.findMany({
       where: { region: this.region, productId },
       columns: {
@@ -427,7 +431,6 @@ class ProductWriterRepository implements ProductWriter {
     existing: (ProductPackage & { id: number })[],
   ): Promise<void> {
     const { toAdd, toRemove } = this.diffByKey(next, existing, (pac) => pac.id);
-    console.log("package", { toAdd, toRemove });
     if (toRemove.length > 0) {
       await tx.delete(productPackagingTable).where(
         and(
@@ -484,7 +487,6 @@ class ProductWriterRepository implements ProductWriter {
     existing: (ProductConvertion & { id: number })[],
   ): Promise<void> {
     const { toAdd, toRemove } = this.diffByKey(next, existing, (conv) => conv.id);
-    console.log("convertions", { toAdd, toRemove });
     if (toRemove.length > 0) {
       await tx.delete(productConvertionTable).where(
         and(
@@ -535,17 +537,17 @@ class ProductWriterRepository implements ProductWriter {
       } = patch;
       const save = await this.updateProduct(tx, id, productShape);
       if (nextLineIds) {
-        const existingLineIds = await this.findAllLineId(save.id);
+        const existingLineIds = await this.findAllLineId(tx, save.id);
         await this.updateProductLines(tx, save.id, nextLineIds, existingLineIds);
       }
 
       if (nextPackages) {
-        const existingPackages = await this.findAllPackage(save.id);
+        const existingPackages = await this.findAllPackage(tx, save.id);
         await this.updateProductPackages(tx, save.id, nextPackages, existingPackages);
       }
 
       if (nextConvertions) {
-        const existingConvertions = await this.fincAllConvertion(save.id);
+        const existingConvertions = await this.findAllConvertion(tx, save.id);
         await this.updateProductConvertion(tx, save.id, nextConvertions, existingConvertions);
       }
 
