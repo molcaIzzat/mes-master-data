@@ -17,9 +17,41 @@ import {
 import { DuplicateDowntimeReasonError } from "../downtime-reason/downtime-reason-errors.js";
 import { DuplicateRejectReasonError } from "../reject-reason/reject-reason-errors.js";
 import { DuplicateDowntimeActionError } from "../downtime-action/downtime-action-errors.js";
+import {
+  DuplicateHierarcyLineError,
+  InvalidHierarcyLineAreaIdReferenceError,
+  DuplicateHierarcyMachineError,
+  InvalidHierarcyMachineLineIdReferenceError,
+  DuplicateHierarcySubMachineError,
+  InvalidHierarcySubMachineMachineIdReferenceError,
+} from "../hierarcy/hierarcy-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof InvalidHierarcySubMachineMachineIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateHierarcySubMachineError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidHierarcyMachineLineIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateHierarcyMachineError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidHierarcyLineAreaIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateHierarcyLineError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof DuplicateDowntimeReasonError) {
     return new HTTPException(409, { message: err.message });
