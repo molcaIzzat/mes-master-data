@@ -1,4 +1,5 @@
 import type { Paged } from "@molca/network";
+import type { LineCategory } from "../line/line.js";
 
 type LineHierarcy = {
   lineId: number;
@@ -34,6 +35,33 @@ type LineHierarcyInput = {
   filter: LineHierarcyFilter;
 };
 
+type CreateMachines = {
+  code: string;
+  name: string;
+  isMain: boolean;
+}[];
+
+type CreateSubMachines = {
+  code: string;
+  name: string;
+}[];
+
+type CreateLineWithMachines = {
+  code: string;
+  name: string;
+  areaId: number;
+  category: LineCategory;
+  machines: CreateMachines;
+};
+
 type PagedLineHierarcy = Paged<LineHierarcy>;
 
-export type { LineHierarcy, LineHierarcyFilter, LineHierarcyInput, PagedLineHierarcy };
+export type {
+  LineHierarcy,
+  LineHierarcyFilter,
+  LineHierarcyInput,
+  PagedLineHierarcy,
+  CreateLineWithMachines,
+  CreateMachines,
+  CreateSubMachines,
+};

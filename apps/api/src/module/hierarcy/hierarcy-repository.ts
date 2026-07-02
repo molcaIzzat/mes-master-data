@@ -1,9 +1,25 @@
 import { and, count, eq, ilike, or } from "drizzle-orm";
 
-import { lineTable } from "../../shared/database/schema/schema.js";
+import {
+  DuplicateHierarcyLineError,
+  DuplicateHierarcyMachineError,
+  DuplicateHierarcySubMachineError,
+  InvalidHierarcyLineAreaIdReferenceError,
+  InvalidHierarcyMachineLineIdReferenceError,
+  InvalidHierarcySubMachineMachineIdReferenceError,
+} from "./hierarcy-errors.js";
+import { lineTable, machineTable, subMachineTable } from "../../shared/database/schema/schema.js";
+import { isForeignKeyViolation, isUniqueViolation } from "../../shared/database/helper/catcher.js";
 
-import type { LineHierarcy, LineHierarcyInput, PagedLineHierarcy } from "./hierarcy.js";
-import type { PostgresDB } from "../../shared/database/postgres.js";
+import type {
+  CreateLineWithMachines,
+  LineHierarcy,
+  LineHierarcyInput,
+  PagedLineHierarcy,
+  CreateMachines,
+  CreateSubMachines,
+} from "./hierarcy.js";
+import type { PostgresDB, Transaction } from "../../shared/database/postgres.js";
 
 type HieracyReaderDeps = {
   db: PostgresDB;
@@ -12,6 +28,12 @@ type HieracyReaderDeps = {
 
 type HierarcyReader = {
   findLineHierarcy: (input: LineHierarcyInput) => Promise<PagedLineHierarcy>;
+};
+
+type HierarcyWriter = {
+  createLine: (input: CreateLineWithMachines) => Promise<void>;
+  createMachines: (lineId: number, machines: CreateMachines) => Promise<void>;
+  createSubMachines: (machineId: number, machines: CreateSubMachines) => Promise<void>;
 };
 
 class HierarcyReaderRepository implements HierarcyReader {
@@ -107,5 +129,117 @@ class HierarcyReaderRepository implements HierarcyReader {
   }
 }
 
-export { HierarcyReaderRepository };
-export type { HierarcyReader, HieracyReaderDeps };
+type LineShapeIn = Omit<CreateLineWithMachines, "machines">;
+
+class HierarcyWriterRepository implements HierarcyWriter {
+  private region: string;
+  private db: PostgresDB;
+
+  constructor({ db, region }: HieracyReaderDeps) {
+    this.db = db;
+    this.region = region;
+  }
+
+  private async insertLine(tx: Transaction, input: LineShapeIn): Promise<{ id: number }> {
+    try {
+      const [row] = await tx
+        .insert(lineTable)
+        .values({
+          code: input.code,
+          name: input.name,
+          areaId: input.areaId,
+          category: input.category,
+          region: this.region,
+        })
+        .returning({
+          id: lineTable.id,
+        });
+
+      return row;
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        throw new DuplicateHierarcyLineError(input.code);
+      }
+      if (isForeignKeyViolation(err)) {
+        throw new InvalidHierarcyLineAreaIdReferenceError(input.areaId);
+      }
+      throw err;
+    }
+  }
+
+  private async insertMachines(
+    tx: Transaction | PostgresDB,
+    lineId: number,
+    machines: CreateMachines,
+  ): Promise<void> {
+    if (machines.length === 0) return;
+    try {
+      await tx.insert(machineTable).values(
+        machines.map((m) => ({
+          code: m.code,
+          name: m.name,
+          lineId,
+          isMain: m.isMain,
+          region: this.region,
+        })),
+      );
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        throw new DuplicateHierarcyMachineError();
+      }
+      if (isForeignKeyViolation(err)) {
+        throw new InvalidHierarcyMachineLineIdReferenceError(lineId);
+      }
+      throw err;
+    }
+  }
+
+  private async insertSubMachines(
+    tx: Transaction | PostgresDB,
+    machineId: number,
+    machines: CreateSubMachines,
+  ): Promise<void> {
+    if (machines.length === 0) return;
+    try {
+      await tx.insert(subMachineTable).values(
+        machines.map((m) => ({
+          code: m.code,
+          name: m.name,
+          machineId,
+          region: this.region,
+        })),
+      );
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        throw new DuplicateHierarcySubMachineError();
+      }
+      if (isForeignKeyViolation(err)) {
+        throw new InvalidHierarcySubMachineMachineIdReferenceError(machineId);
+      }
+      throw err;
+    }
+  }
+
+  async createLine(input: CreateLineWithMachines): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      const { machines, ...lineShape } = input;
+      const save = await this.insertLine(tx, lineShape);
+      await this.insertMachines(tx, save.id, machines);
+    });
+  }
+
+  async createMachines(lineId: number, input: CreateMachines): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      await this.insertMachines(tx, lineId, input);
+    });
+  }
+
+  async createSubMachines(machineId: number, input: CreateSubMachines): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      await this.insertSubMachines(tx, machineId, input);
+    });
+  }
+}
+
+export { HierarcyReaderRepository, HierarcyWriterRepository };
+export type { HierarcyReader, HierarcyWriter, HieracyReaderDeps };
