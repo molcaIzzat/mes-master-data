@@ -14,9 +14,24 @@ import {
   InvalidProductAreaIdReferenceError,
   InvalidProductLineIdReferenceError,
 } from "../product/product-errors.js";
+import { DuplicateDowntimeReasonError } from "../downtime-reason/downtime-reason-errors.js";
+import { DuplicateRejectReasonError } from "../reject-reason/reject-reason-errors.js";
+import { DuplicateDowntimeActionError } from "../downtime-action/downtime-action-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof DuplicateDowntimeReasonError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateRejectReasonError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateDowntimeActionError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof DuplicateProductError) {
     return new HTTPException(409, { message: err.message });
