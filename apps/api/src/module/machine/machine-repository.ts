@@ -165,7 +165,7 @@ class MachineReaderRepository implements MachineReader {
   }
 
   async existById(id: number): Promise<boolean> {
-    const row = this.db.query.machineTable.findFirst({
+    const row = await this.db.query.machineTable.findFirst({
       where: { id, region: this.region },
     });
 
@@ -173,7 +173,7 @@ class MachineReaderRepository implements MachineReader {
   }
 
   async findSummariesByIds(ids: number[]): Promise<MachineSummary[]> {
-    return this.db.query.machineTable.findMany({
+    return await this.db.query.machineTable.findMany({
       where: {
         id: {
           in: ids,

@@ -24,11 +24,11 @@ class LineClient implements LineClientContract {
   }
 
   async existsById(id: number): Promise<boolean> {
-    return this.lineReaderRepository.existById(id);
+    return await this.lineReaderRepository.existById(id);
   }
 
   async findById(id: number): Promise<LineSummary | undefined> {
-    return this.lineReaderRepository.findById(id);
+    return await this.lineReaderRepository.findById(id);
   }
 
   async getMany(ids: number[]): Promise<LinePartialFetch<LineSummary>> {

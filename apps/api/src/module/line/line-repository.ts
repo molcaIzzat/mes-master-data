@@ -95,7 +95,7 @@ class LineReaderRepository implements LineReader {
   }
 
   async existById(id: number): Promise<boolean> {
-    const row = this.db.query.lineTable.findFirst({
+    const row = await this.db.query.lineTable.findFirst({
       where: { id, region: this.region },
     });
 
@@ -103,7 +103,7 @@ class LineReaderRepository implements LineReader {
   }
 
   async findSummariesByIds(ids: number[]): Promise<LineSummary[]> {
-    return this.db.query.lineTable.findMany({
+    return await this.db.query.lineTable.findMany({
       where: {
         id: {
           in: ids,

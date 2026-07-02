@@ -28,11 +28,11 @@ class MachineClient implements MachineClientContract {
   }
 
   async existsById(id: number): Promise<boolean> {
-    return this.machineReaderRepository.existById(id);
+    return await this.machineReaderRepository.existById(id);
   }
 
   async findById(id: number): Promise<MachineSummary | undefined> {
-    return this.machineReaderRepository.findById(id);
+    return await this.machineReaderRepository.findById(id);
   }
 
   async getMany(ids: number[]): Promise<MachinePartialFetch<MachineSummary>> {

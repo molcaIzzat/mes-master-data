@@ -84,7 +84,7 @@ class AreaReaderRepository implements AreaReader {
   }
 
   async existById(id: number): Promise<boolean> {
-    const row = this.db.query.areaTable.findFirst({
+    const row = await this.db.query.areaTable.findFirst({
       where: { id, region: this.region },
     });
 
@@ -92,7 +92,7 @@ class AreaReaderRepository implements AreaReader {
   }
 
   async findSummariesByIds(ids: number[]): Promise<AreaSummary[]> {
-    return this.db.query.areaTable.findMany({
+    return await this.db.query.areaTable.findMany({
       where: {
         id: {
           in: ids,

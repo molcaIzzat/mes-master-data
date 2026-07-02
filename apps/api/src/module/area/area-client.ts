@@ -25,11 +25,11 @@ class AreaClient implements AreaClientContract {
   }
 
   async existsById(id: number): Promise<boolean> {
-    return this.areaReaderRepository.existById(id);
+    return await this.areaReaderRepository.existById(id);
   }
 
   async findById(id: number): Promise<AreaSummary | undefined> {
-    return this.areaReaderRepository.findById(id);
+    return await this.areaReaderRepository.findById(id);
   }
 
   async getMany(ids: number[]): Promise<AreaPartialFetch<AreaSummary>> {
