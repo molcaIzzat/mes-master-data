@@ -42,6 +42,7 @@ export const workUnitType = msCore.enum("work_unit_type", [
 export const oeeMode = msCore.enum("oee_mode", ["continuous", "batch", "discrete", "none"]);
 
 export const countRole = msCore.enum("count_role", ["infeed", "good_output", "reject"]);
+export const countSource = msCore.enum("count_source", ["plc", "manual"]);
 
 export const siteTable = msCore.table(
   "sites",
@@ -64,6 +65,14 @@ export const areaTable = msCore.table(
   (t) => [...defaultIndexes(t, "areas"), p.index("areas_site_id_idx").on(t.siteId)],
 );
 
+export const workCenterClassTable = msCore.table(
+  "work_center_classes",
+  {
+    ...defaultColumns(),
+  },
+  (t) => [...defaultIndexes(t, "wcc")],
+);
+
 export const workCenterTable = msCore.table(
   "work_centers",
   {
@@ -74,6 +83,9 @@ export const workCenterTable = msCore.table(
       .references(() => areaTable.id, { onDelete: "restrict" }),
     type: workCenterType("type").notNull(),
     oeeMode: oeeMode("oee_mode").notNull(),
+    workCenterClassId: p
+      .integer()
+      .references(() => workCenterClassTable.id, { onDelete: "restrict" }),
     idealRateHour: p.numeric("ideal_rate_hour"),
   },
   (t) => [
@@ -91,14 +103,6 @@ export const workCenterTable = msCore.table(
   ],
 );
 
-export const workUnitClassTable = msCore.table(
-  "work_unit_classes",
-  {
-    ...defaultColumns(),
-  },
-  (t) => [...defaultIndexes(t, "wuc")],
-);
-
 export const workUnitTable = msCore.table(
   "work_units",
   {
@@ -106,8 +110,7 @@ export const workUnitTable = msCore.table(
     workCenterId: p
       .integer("work_center_id")
       .notNull()
-      .references(() => workCenterTable.id),
-    workUnitClassId: p.integer().references(() => workUnitClassTable.id, { onDelete: "restrict" }),
+      .references(() => workCenterTable.id, { onDelete: "restrict" }),
     type: workUnitType("type"),
   },
   (t) => [...defaultIndexes(t, "wu"), p.index("wu_wc_id_idx").on(t.workCenterId)],
@@ -128,12 +131,15 @@ export const equipmentTable = msCore.table(
     workUnitId: p
       .integer("work_unit_id")
       .notNull()
-      .references(() => workUnitTable.id, { onDelete: "cascade" }),
+      .references(() => workUnitTable.id, { onDelete: "restrict" }),
     parentEquipmentId: p
       .integer("parent_equipment_id")
-      .references((): p.AnyPgColumn => equipmentTable.id),
-    equipmentClassId: p.integer().references(() => equipmentClassTable.id),
+      .references((): p.AnyPgColumn => equipmentTable.id, { onDelete: "cascade" }),
+    equipmentClassId: p
+      .integer()
+      .references(() => equipmentClassTable.id, { onDelete: "restrict" }),
     isOeeRelevant: p.boolean("is_oee_relevant").notNull().default(true),
+    isAcquirable: p.boolean("is_acuirable").notNull().default(true),
     telemetryTags: p.jsonb("telemetry_tags").$type<Record<string, string>>(),
   },
   (t) => [
@@ -151,9 +157,10 @@ export const oeeCountPointTable = msCore.table(
     equipmentId: p
       .integer("equipment_id")
       .notNull()
-      .references(() => equipmentTable.id),
+      .references(() => equipmentTable.id, { onDelete: "cascade" }),
     role: countRole("role").notNull(),
     uom: p.varchar("uom", { length: 100 }).notNull(), // 'shot' | 'bag' | 'carton' — converted via products.*
+    source: countSource("source").notNull().default("plc"),
     sourceTag: p.varchar("source_tag", { length: 255 }).notNull(), // OPC-UA node id / Telegraf tag
     region: p.varchar({ length: 10 }).notNull(),
     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -161,76 +168,155 @@ export const oeeCountPointTable = msCore.table(
   },
   (t) => [
     p.unique("uq_ocp_eq_role_tag").on(t.equipmentId, t.role, t.sourceTag),
+    p.index("ocp_region_updated_idx").on(t.region, t.updatedAt),
     p.index("ix_ocp_eq").on(t.equipmentId),
+    p.check(
+      "ck_ocp_source_tag",
+      sql`
+    (source = 'plc'    AND source_tag IS NOT NULL) OR
+    (source = 'manual' AND source_tag IS NULL)
+  `,
+    ),
   ],
 );
 
-export const productCycleTimeUnit = msCore.enum("product_cycle_time_unit", [
-  "BAG_PER_MINUTE",
-  "SHOT_PER_MINUTE",
-  "SAK_PER_MINUTE",
-  "PCS_PER_MINUTE",
-]);
+export const equipmentFlowTable = msCore.table(
+  "equipment_flows",
+  {
+    id: p.serial("id").primaryKey(),
+    workCenterId: p
+      .integer("work_center_id")
+      .notNull()
+      .references(() => workCenterTable.id, { onDelete: "restrict" }),
+    fromEquipmentId: p
+      .integer("from_equipment_id")
+      .notNull()
+      .references(() => equipmentTable.id, { onDelete: "cascade" }),
+    toEquipmentId: p
+      .integer("to_equipment_id")
+      .notNull()
+      .references(() => equipmentTable.id, { onDelete: "cascade" }),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("ef_equipment_keys").on(t.fromEquipmentId, t.toEquipmentId),
+    p.index("ef_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("ef_wc_id_idx").on(t.workCenterId),
+    p.index("ef_to_eq_id_idx").on(t.toEquipmentId),
+    p.check("ef_no_self_loop", sql`from_equipment_id <> to_equipment_id`),
+  ],
+);
 
-export const productPackagingType = msCore.enum("product_packaing_type", [
-  "BAG",
-  "SHOT",
-  "CALENDER",
-  "INNER",
-  "CARTON",
-  "SAK",
-]);
+// export const productCycleTimeUnit = msCore.enum("product_cycle_time_unit", [
+//   "BAG_PER_MINUTE",
+//   "SHOT_PER_MINUTE",
+//   "SAK_PER_MINUTE",
+//   "PCS_PER_MINUTE",
+// ]);
 
-// export const productTable = msCore.table(
-//   "products",
-//   {
-//     ...defaultColumnsWithCode(),
-//     cycleTime: p.numeric("cycle_time", { precision: 15, scale: 3, mode: "number" }).notNull(),
-//     cycleTimeUnit: ProductCycleTimeUnitEnum("cycle_time_unit").notNull(),
-//     areaId: p
-//       .integer("area_id")
-//       .references(() => areaTable.id, { onDelete: "restrict" })
-//       .notNull(),
-//     price: p.numeric({ precision: 15, scale: 3, mode: "number" }),
-//     cost: p.numeric({ precision: 15, scale: 3, mode: "number" }),
-//   },
-//   (t) => [...defaultIndexesWithCode(t, "products"), p.index("products_area_id_idx").on(t.areaId)],
-// );
-//
-// export const productConvertionTable = msCore.table(
-//   "product_convertions",
+export const unitTable = msCore.table(
+  "uom",
+  {
+    ...defaultColumns(),
+  },
+  (t) => [...defaultIndexes(t, "uom")],
+);
+
+export const productTable = msCore.table(
+  "products",
+  {
+    ...defaultColumns(),
+    areaId: p
+      .integer("area_id")
+      .references(() => areaTable.id, { onDelete: "restrict" })
+      .notNull(),
+    uomId: p
+      .integer("uom_id")
+      .notNull()
+      .references(() => unitTable.id, { onDelete: "restrict" }),
+    idealRatePerHour: p.numeric("ideal_rate_per_hour", { precision: 15, scale: 3 }).notNull(),
+    price: p.numeric({ precision: 15, scale: 3 }),
+    cost: p.numeric({ precision: 15, scale: 3 }),
+  },
+  (t) => [...defaultIndexes(t, "products"), p.index("products_area_id_idx").on(t.areaId)],
+);
+
+export const productPackagingTable = msCore.table(
+  "product_packages",
+  {
+    id: p.serial("id").primaryKey(),
+    productId: p
+      .integer("product_id")
+      .notNull()
+      .references(() => productTable.id, { onDelete: "cascade" }),
+    sortOrder: p.integer("sort_order").notNull(),
+    uomId: p
+      .integer("uom_id")
+      .notNull()
+      .references(() => unitTable.id, { onDelete: "restrict" }),
+    main: p.boolean("main").notNull(),
+    stdWeight: p.numeric("std_weight", { precision: 10, scale: 3 }).notNull(),
+    maxWeight: p.numeric("max_weight", { precision: 10, scale: 3 }).notNull(),
+    minWeight: p.numeric("min_weight", { precision: 10, scale: 3 }).notNull(),
+    length: p.numeric({ precision: 10, scale: 3 }).notNull(),
+    width: p.numeric({ precision: 10, scale: 3 }).notNull(),
+    height: p.numeric({ precision: 10, scale: 3 }).notNull(),
+    vol: p.numeric({ precision: 10, scale: 3 }).notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("product_packages_product_uom_key").on(t.productId, t.uomId),
+    p.index("products_packages_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("product_packages_product_id_idx").on(t.productId),
+    p.index("product_packages_uom_id_idx").on(t.uomId),
+  ],
+);
+
+export const productConvertionTable = msCore.table(
+  "product_convertions",
+  {
+    id: p.serial("id").primaryKey(),
+    sortOrder: p.integer("sort_order").notNull(),
+    productId: p
+      .integer("product_id")
+      .references(() => productTable.id, { onDelete: "cascade" })
+      .notNull(),
+    uomId: p
+      .integer("uom_id")
+      .notNull()
+      .references(() => unitTable.id, { onDelete: "restrict" }),
+    factorToBase: p.numeric("factor_to_base", { precision: 15, scale: 3 }).notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("pconv_product_uom_key").on(t.productId, t.uomId),
+    p.index("pconv_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("pconv_product_id_idx").on(t.productId),
+    p.index("pconv_uom_id_idx").on(t.uomId),
+    p.check("pconv_pconv_ftb_cx", sql`factor_to_base > 0`),
+  ],
+);
+
+// export const productRateMachineTable = msCore.table(
+//   "product_rate_machines",
 //   {
 //     id: p.serial("id").primaryKey(),
-//     sortOrder: p.integer("sort_order").notNull(),
 //     productId: p
 //       .integer("product_id")
-//       .references(() => productTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     unit: p.varchar({ length: 100 }).notNull(),
-//     value: p.numeric({ precision: 15, scale: 3 }).notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [p.index("product_conversions_region_updated_idx").on(t.region, t.updatedAt)],
-// );
-//
-// export const productCycleTimeMachineTable = msCore.table(
-//   "product_cycle_time_machines",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     productId: p
-//       .integer("product_id")
-//       .references(() => productTable.id, { onDelete: "restrict" })
-//       .notNull(),
-//     machineId: p
-//       .integer("machine_id")
-//       .references(() => machineTable.id, { onDelete: "cascade" })
-//       .notNull(),
+//       .notNull()
+//       .references(() => productTable.id, { onDelete: "cascade" }),
+//     equipmentId: p
+//       .integer("equipment_id")
+//       .notNull()
+//       .references(() => equipmentTable.id, { onDelete: "cascade" }),
 //     productCode: p.varchar("product_code", { length: 100 }).notNull(),
-//     machineCode: p.varchar("machine_code", { length: 100 }).notNull(),
-//     cycleTime: p.numeric("cycle_time", { precision: 15, scale: 3, mode: "number" }).notNull(),
-//     cycleTimeUnit: ProductCycleTimeUnitEnum("cycle_time_unit").notNull(),
+//     idealRateHour: p.numeric("ideal_rate_hour", { precision: 15, scale: 3 }).notNull(),
 //     region: p.varchar({ length: 10 }).notNull(),
 //     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 //     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -242,31 +328,7 @@ export const productPackagingType = msCore.enum("product_packaing_type", [
 //   ],
 // );
 //
-// export const productPackagingTable = msCore.table(
-//   "product_packages",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     productId: p
-//       .integer("product_id")
-//       .references(() => productTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     sortOrder: p.integer("sort_order").notNull(),
-//     package: ProductPackagingTypeEnum("package").notNull(),
-//     main: p.boolean("main").notNull(),
-//     stdWeight: p.numeric("std_weight", { precision: 10, scale: 3 }).notNull(),
-//     maxWeight: p.numeric("max_weight", { precision: 10, scale: 3 }).notNull(),
-//     minWeight: p.numeric("min_weight", { precision: 10, scale: 3 }).notNull(),
-//     length: p.numeric({ precision: 10, scale: 3 }).notNull(),
-//     width: p.numeric({ precision: 10, scale: 3 }).notNull(),
-//     height: p.numeric({ precision: 10, scale: 3 }).notNull(),
-//     vol: p.numeric({ precision: 10, scale: 3 }).notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [p.index("products_packages_region_updated_idx").on(t.region, t.updatedAt)],
-// );
-//
+
 // export const pvProductLineTable = msCore.table(
 //   "products_lines",
 //   {
