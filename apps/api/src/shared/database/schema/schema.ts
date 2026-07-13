@@ -86,7 +86,7 @@ export const workCenterTable = msCore.table(
     workCenterClassId: p
       .integer()
       .references(() => workCenterClassTable.id, { onDelete: "restrict" }),
-    idealRateHour: p.numeric("ideal_rate_hour"),
+    idealRatePerHour: p.numeric("ideal_rate_per_hour"),
   },
   (t) => [
     ...defaultIndexes(t, "wc"),
@@ -232,8 +232,8 @@ export const productTable = msCore.table(
       .integer("area_id")
       .references(() => areaTable.id, { onDelete: "restrict" })
       .notNull(),
-    uomId: p
-      .integer("uom_id")
+    baseUomId: p
+      .integer("base_uom_id")
       .notNull()
       .references(() => unitTable.id, { onDelete: "restrict" }),
     idealRatePerHour: p.numeric("ideal_rate_per_hour", { precision: 15, scale: 3 }).notNull(),
@@ -303,210 +303,234 @@ export const productConvertionTable = msCore.table(
   ],
 );
 
-// export const productRateMachineTable = msCore.table(
-//   "product_rate_machines",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     productId: p
-//       .integer("product_id")
-//       .notNull()
-//       .references(() => productTable.id, { onDelete: "cascade" }),
-//     equipmentId: p
-//       .integer("equipment_id")
-//       .notNull()
-//       .references(() => equipmentTable.id, { onDelete: "cascade" }),
-//     productCode: p.varchar("product_code", { length: 100 }).notNull(),
-//     idealRateHour: p.numeric("ideal_rate_hour", { precision: 15, scale: 3 }).notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("product_cycle_time_machines_key").on(t.productId, t.machineId),
-//     p.index("product_cycle_time_machines_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("products_cycle_time_machines_machine_id_idx").on(t.machineId),
-//   ],
-// );
-//
+export const productCodeAliasTable = msCore.table(
+  "product_code_aliases",
+  {
+    id: p.serial("id").primaryKey(),
+    equipmentId: p
+      .integer("equipment_id")
+      .notNull()
+      .references(() => equipmentTable.id, { onDelete: "cascade" }),
+    productId: p
+      .integer("product_id")
+      .notNull()
+      .references(() => productTable.id, { onDelete: "cascade" }),
+    externalCode: p.text("external_code").notNull(),
+  },
+  (t) => [
+    p.unique("pca_external_key").on(t.equipmentId, t.externalCode),
+    p.index("pca_product_id_idx").on(t.productId),
+    p.index("pca_equipment_id_idx").on(t.equipmentId),
+  ],
+);
 
-// export const pvProductLineTable = msCore.table(
-//   "products_lines",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     productId: p
-//       .integer("product_id")
-//       .references(() => productTable.id, { onDelete: "restrict" })
-//       .notNull(),
-//     lineId: p
-//       .integer("line_id")
-//       .references(() => lineTable.id, { onDelete: "restrict" })
-//       .notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("product_line_key").on(t.productId, t.lineId),
-//     p.index("products_lines_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("products_lines_product_id_idx").on(t.productId),
-//     p.index("products_lines_line_id_idx").on(t.lineId),
-//   ],
-// );
-//
-// export const downtimeCategory = msDowntime.enum("downtime_cat", [
-//   "PLANNED",
-//   "UNPLANNED",
-//   "SMALL_STOP",
-// ]);
-//
-// export const downtimeReasonTable = msDowntime.table(
-//   "downtime_reasons",
-//   {
-//     ...defaultColumns(),
-//     category: downtimeCategory("category").notNull(),
-//   },
-//   (t) => [...defaultIndexes(t, "dr")],
-// );
-//
-// export const downtimeReasonAreaTable = msDowntime.table(
-//   "downtime_reasons_areas",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     reasonId: p
-//       .integer("reason_id")
-//       .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     areaId: p.integer("area_id").notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("dra_key").on(t.reasonId, t.areaId),
-//     p.index("dra_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("dra_area_id_idx").on(t.areaId),
-//     p.index("dra_reason_id_idx").on(t.reasonId),
-//   ],
-// );
-//
-// export const downtimeReasonLineTable = msDowntime.table(
-//   "downtime_reasons_lines",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     reasonId: p
-//       .integer("reason_id")
-//       .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     lineId: p.integer("line_id").notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("downtime_reasons_lines_key").on(t.reasonId, t.lineId),
-//     p.index("downtime_reasons_lines_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("downtime_reasons_lines_line_id_idx").on(t.lineId),
-//     p.index("downtime_reasons_lines_reason_id_idx").on(t.reasonId),
-//   ],
-// );
-//
-// export const downtimeReasonMachineTable = msDowntime.table(
-//   "downtime_reasons_machines",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     reasonId: p
-//       .integer("reason_id")
-//       .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     machineId: p.integer("machine_id").notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("downtime_reasons_machines_key").on(t.reasonId, t.machineId),
-//     p.index("downtime_reasons_machines_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("downtime_reasons_machines_machine_id_idx").on(t.machineId),
-//     p.index("downtime_reasons_machines_reason_id_idx").on(t.reasonId),
-//   ],
-// );
-//
-// export const downtimeActionTable = msDowntime.table(
-//   "downtime_actions",
-//   {
-//     ...defaultColumnsWithCode(),
-//     color: p.varchar({ length: 10 }).notNull(),
-//   },
-//   (t) => [...defaultIndexesWithCode(t, "downtime_actions")],
-// );
-//
-// export const rejectReasonTable = msReject.table(
-//   "reject_reasons",
-//   {
-//     ...defaultColumnsWithCode(),
-//   },
-//   (t) => [...defaultIndexesWithCode(t, "reject_reasons")],
-// );
-//
-// export const rejectReasonAreaTable = msReject.table(
-//   "reject_reasons_areas",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     reasonId: p
-//       .integer("reason_id")
-//       .references(() => rejectReasonTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     areaId: p.integer("area_id").notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("reject_reasons_areas_key").on(t.reasonId, t.areaId),
-//     p.index("reject_reasons_areas_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("reject_reasons_areas_area_id_idx").on(t.areaId),
-//     p.index("reject_reasons_areas_reason_id_idx").on(t.reasonId),
-//   ],
-// );
-//
-// export const rejectReasonLineTable = msReject.table(
-//   "reject_reasons_lines",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     reasonId: p
-//       .integer("reason_id")
-//       .references(() => rejectReasonTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     lineId: p.integer("line_id").notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("reject_reasons_lines_key").on(t.reasonId, t.lineId),
-//     p.index("reject_reasons_lines_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("reject_reasons_lines_line_id_idx").on(t.lineId),
-//     p.index("reject_reasons_lines_reason_id_idx").on(t.reasonId),
-//   ],
-// );
-//
-// export const rejectReasonMachineTable = msReject.table(
-//   "reject_reasons_machines",
-//   {
-//     id: p.serial("id").primaryKey(),
-//     reasonId: p
-//       .integer("reason_id")
-//       .references(() => rejectReasonTable.id, { onDelete: "cascade" })
-//       .notNull(),
-//     machineId: p.integer("machine_id").notNull(),
-//     region: p.varchar({ length: 10 }).notNull(),
-//     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-//     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-//   },
-//   (t) => [
-//     p.unique("reject_reasons_machines_key").on(t.reasonId, t.machineId),
-//     p.index("reject_reasons_machines_region_updated_idx").on(t.region, t.updatedAt),
-//     p.index("reject_reasons_machines_machine_id_idx").on(t.machineId),
-//     p.index("reject_reasons_machines_reason_id_idx").on(t.reasonId),
-//   ],
-// );
+export const productEquipmentSpecTable = msCore.table(
+  "product_equipment_specs",
+  {
+    id: p.serial("id").primaryKey(),
+    productId: p
+      .integer("product_id")
+      .notNull()
+      .references(() => productTable.id, { onDelete: "cascade" }),
+    equipmentId: p
+      .integer("equipment_id")
+      .notNull()
+      .references(() => equipmentTable.id, { onDelete: "cascade" }),
+    uomId: p
+      .integer("uom_id")
+      .notNull()
+      .references(() => unitTable.id, { onDelete: "cascade" }),
+    idealRatePerHour: p.numeric("ideal_rate_per_hour", { precision: 15, scale: 3 }).notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("pes_equipment_key").on(t.productId, t.equipmentId),
+    p.index("pes_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("pes_equipment_id_idx").on(t.equipmentId),
+    p.index("pes_product_id_idx").on(t.productId),
+    p.index("pes_uom_id_idx").on(t.uomId),
+  ],
+);
+
+export const productWorkCenterTable = msCore.table(
+  "products_work_centers",
+  {
+    id: p.serial("id").primaryKey(),
+    productId: p
+      .integer("product_id")
+      .notNull()
+      .references(() => productTable.id, { onDelete: "cascade" }),
+    workCenterId: p
+      .integer("work_center_id")
+      .references(() => workCenterTable.id, { onDelete: "cascade" })
+      .notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("pwc_key").on(t.productId, t.workCenterId),
+    p.index("pwc_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("pwc_product_id_idx").on(t.productId),
+  ],
+);
+
+export const downtimeCategory = msDowntime.enum("downtime_cat", [
+  "PLANNED",
+  "UNPLANNED",
+  "SMALL_STOP",
+]);
+
+export const downtimeReasonTable = msDowntime.table(
+  "downtime_reasons",
+  {
+    ...defaultColumns(),
+    category: downtimeCategory("category").notNull(),
+  },
+  (t) => [...defaultIndexes(t, "dr")],
+);
+
+export const downtimeReasonAreaTable = msDowntime.table(
+  "downtime_reasons_areas",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    areaId: p.integer("area_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("dra_key").on(t.reasonId, t.areaId),
+    p.index("dra_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("dra_area_id_idx").on(t.areaId),
+    p.index("dra_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const downtimeReasonWorkCenterTable = msDowntime.table(
+  "downtime_reasons_work_centers",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    workCenterId: p.integer("work_center_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("drwc_key").on(t.reasonId, t.workCenterId),
+    p.index("drwc_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("drwc_line_id_idx").on(t.workCenterId),
+    p.index("drwc_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const downtimeReasonEquipmentTable = msDowntime.table(
+  "downtime_reasons_equipments",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => downtimeReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    equipmentId: p.integer("equipment_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("dre_key").on(t.reasonId, t.equipmentId),
+    p.index("dre_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("dre_machine_id_idx").on(t.equipmentId),
+    p.index("dre_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const downtimeActionTable = msDowntime.table(
+  "downtime_actions",
+  {
+    ...defaultColumns(),
+    color: p.varchar({ length: 10 }).notNull(),
+  },
+  (t) => [...defaultIndexes(t, "downtime_actions")],
+);
+
+export const rejectReasonTable = msReject.table(
+  "reject_reasons",
+  {
+    ...defaultColumns(),
+  },
+  (t) => [...defaultIndexes(t, "reject_reasons")],
+);
+
+export const rejectReasonAreaTable = msReject.table(
+  "reject_reasons_areas",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => rejectReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    areaId: p.integer("area_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("reject_reasons_areas_key").on(t.reasonId, t.areaId),
+    p.index("reject_reasons_areas_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("reject_reasons_areas_area_id_idx").on(t.areaId),
+    p.index("reject_reasons_areas_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const rejectReasonWorkCenterTable = msReject.table(
+  "reject_reasons_work_centers",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => rejectReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    workCenterId: p.integer("work_center_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("rrwc_key").on(t.reasonId, t.workCenterId),
+    p.index("rrwc_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("rrwc_line_id_idx").on(t.workCenterId),
+    p.index("rrwc_reason_id_idx").on(t.reasonId),
+  ],
+);
+
+export const rejectReasonEquipmentTable = msReject.table(
+  "reject_reasons_equipments",
+  {
+    id: p.serial("id").primaryKey(),
+    reasonId: p
+      .integer("reason_id")
+      .references(() => rejectReasonTable.id, { onDelete: "cascade" })
+      .notNull(),
+    equipmentId: p.integer("equipment_id").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("rre_key").on(t.reasonId, t.equipmentId),
+    p.index("rre_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("rre_machine_id_idx").on(t.equipmentId),
+    p.index("rre_reason_id_idx").on(t.reasonId),
+  ],
+);
