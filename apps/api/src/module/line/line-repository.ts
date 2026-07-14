@@ -1,9 +1,3 @@
-import { and, asc, count, desc, eq, ilike, or } from "drizzle-orm";
-
-import { DuplicateLineError, InvalidLineAreaIdReferenceError } from "./line-errors.js";
-import { isForeignKeyViolation, isUniqueViolation } from "../../shared/database/helper/catcher.js";
-import { lineTable } from "../../shared/database/schema/schema.js";
-
 import type { CreateLine, Line, ListLineInput, PagedLine, UpdateLine } from "./line.js";
 import type { PostgresDB } from "../../shared/database/postgres.js";
 import type { LineSummary } from "@molca/contract-client";
@@ -40,78 +34,20 @@ class LineReaderRepository implements LineReader {
     this.region = region;
   }
 
-  async findAll({ limit, offset, filter }: ListLineInput): Promise<PagedLine> {
-    const baseConds = [eq(lineTable.region, this.region)];
-
-    if (filter.areaId !== undefined) baseConds.push(eq(lineTable.areaId, filter.areaId));
-    if (filter.category !== undefined) baseConds.push(eq(lineTable.category, filter.category));
-
-    if (filter.q !== undefined) {
-      const pattern = `%${filter.q}%`;
-      const qOr = or(ilike(lineTable.name, pattern), ilike(lineTable.code, pattern));
-      if (qOr !== undefined) baseConds.push(qOr);
-    }
-
-    const where = and(...baseConds);
-    const [rows, totals] = await Promise.all([
-      this.db
-        .select({
-          id: lineTable.id,
-          code: lineTable.code,
-          name: lineTable.name,
-          areaId: lineTable.areaId,
-          category: lineTable.category,
-          region: lineTable.region,
-          createdAt: lineTable.createdAt,
-          updatedAt: lineTable.updatedAt,
-        })
-        .from(lineTable)
-        .where(where)
-        .orderBy(desc(lineTable.createdAt), asc(lineTable.id))
-        .limit(limit)
-        .offset(offset),
-      this.db
-        .select({ value: count(lineTable.id) })
-        .from(lineTable)
-        .where(where),
-    ]);
-
-    return { items: rows, totalElements: totals[0]?.value ?? 0 };
+  async findAll(_: ListLineInput): Promise<PagedLine> {
+    return { items: [], totalElements: 0 };
   }
 
-  async findById(id: number): Promise<Line | undefined> {
-    return await this.db.query.lineTable.findFirst({
-      where: { id, region: this.region },
-      with: {
-        area: {
-          columns: {
-            id: true,
-            name: true,
-            displayName: true,
-          },
-        },
-      },
-    });
+  async findById(_: number): Promise<Line | undefined> {
+    return undefined;
   }
 
-  async existById(id: number): Promise<boolean> {
-    const row = await this.db.query.lineTable.findFirst({
-      where: { id, region: this.region },
-    });
-
-    return !!row;
+  async existById(_: number): Promise<boolean> {
+    return false;
   }
 
-  async findSummariesByIds(ids: number[]): Promise<LineSummary[]> {
-    return await this.db.query.lineTable.findMany({
-      where: {
-        id: {
-          in: ids,
-        },
-        region: this.region,
-      },
-      columns: { id: true, code: true, name: true },
-    });
+  async findSummariesByIds(_: number[]): Promise<LineSummary[]> {
+    return [];
   }
 }
 
@@ -124,62 +60,16 @@ class LineWriterRepository implements LineWriter {
     this.region = region;
   }
 
-  async create(line: CreateLine): Promise<{ id: number }> {
-    try {
-      const [row] = await this.db
-        .insert(lineTable)
-        .values({
-          code: line.code,
-          name: line.name,
-          areaId: line.areaId,
-          category: line.category,
-          region: this.region,
-        })
-        .returning({
-          id: lineTable.id,
-        });
-
-      return row;
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        throw new DuplicateLineError(line.code);
-      }
-      if (isForeignKeyViolation(err)) {
-        throw new InvalidLineAreaIdReferenceError(line.areaId);
-      }
-      throw err;
-    }
+  async create(_: CreateLine): Promise<{ id: number }> {
+    throw new Error("THIS FEATURE IS UNAVAILABLE");
   }
 
-  async update(id: number, patch: UpdateLine): Promise<{ id: number }> {
-    try {
-      const [row] = await this.db
-        .update(lineTable)
-        .set({
-          ...patch,
-          updatedAt: new Date(),
-        })
-        .where(and(eq(lineTable.id, id), eq(lineTable.region, this.region)))
-        .returning({
-          id: lineTable.id,
-        });
-
-      return row;
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        throw new DuplicateLineError(patch.code);
-      }
-      if (isForeignKeyViolation(err)) {
-        throw new InvalidLineAreaIdReferenceError(patch.areaId);
-      }
-      throw err;
-    }
+  async update(_: number, _patch: UpdateLine): Promise<{ id: number }> {
+    throw new Error("THIS FEATURE IS UNAVAILABLE");
   }
 
-  async delete(id: number): Promise<void> {
-    await this.db
-      .delete(lineTable)
-      .where(and(eq(lineTable.id, id), eq(lineTable.region, this.region)));
+  async delete(_: number): Promise<void> {
+    throw new Error("THIS FEATURE IS UNAVAILABLE");
   }
 }
 

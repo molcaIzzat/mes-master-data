@@ -5,6 +5,7 @@ import type {
   AreaClientContract,
   LineClientContract,
   MachineClientContract,
+  WorkCenterClientContract,
 } from "@molca/contract-client";
 import type { AuthMiddleware } from "@molca/security";
 import type { AwilixContainer } from "awilix";
@@ -60,6 +61,24 @@ import type {
 } from "../../module/downtime-action/downtime-action-repository.js";
 import type { TDowntimeActionService } from "../../module/downtime-action/downtime-action-service.js";
 import { registerDowntimeAction } from "../../module/downtime-action/downtime-action-module.js";
+import type {
+  WorkCenterClassReader,
+  WorkCenterClassWriter,
+} from "../../module/work-center-class/work-center-class-repository.js";
+import type { TWorkCenterClassService } from "../../module/work-center-class/work-center-class-service.js";
+import { registerWorkCenterClass } from "../../module/work-center-class/work-center-class-module.js";
+import type {
+  EquipmentClassReader,
+  EquipmentClassWriter,
+} from "../../module/equipment-class/equipment-class-repository.js";
+import type { TEquipmentClassService } from "../../module/equipment-class/equipment-class-service.js";
+import { registerEquipmentClass } from "../../module/equipment-class/equipment-class-module.js";
+import type {
+  WorkCenterReader,
+  WorkCenterWriter,
+} from "../../module/work-center/work-center-repository.js";
+import type { TWorkCenterService } from "../../module/work-center/work-center-service.js";
+import { registerWorkCenter } from "../../module/work-center/work-center-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -68,6 +87,7 @@ type Cradle = {
   postgresProbe: Probe;
   areaClient: AreaClientContract;
   lineClient: LineClientContract;
+  workCenterClient: WorkCenterClientContract;
   machineClient: MachineClientContract;
   areaReaderRepository: AreaReader;
   areaWriterRepository: AreaWriter;
@@ -97,6 +117,15 @@ type Cradle = {
   downtimeActionReaderRepository: DowntimeActionReader;
   downtimeActionWriterRepository: DowntimeActionWriter;
   downtimeActionService: TDowntimeActionService;
+  workCenterClassReaderRepository: WorkCenterClassReader;
+  workCenterClassWriterRepository: WorkCenterClassWriter;
+  workCenterClassService: TWorkCenterClassService;
+  equipmentClassReaderRepository: EquipmentClassReader;
+  equipmentClassWriterRepository: EquipmentClassWriter;
+  equipmentClassService: TEquipmentClassService;
+  workCenterReaderRepository: WorkCenterReader;
+  workCenterWriterRepository: WorkCenterWriter;
+  workCenterService: TWorkCenterService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -112,6 +141,9 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerInfra(container, config);
   registerHealth(container, config);
   registerArea(container);
+  registerWorkCenterClass(container);
+  registerWorkCenter(container);
+  registerEquipmentClass(container);
   registerLine(container);
   registerMachine(container);
   registerHierarcy(container);

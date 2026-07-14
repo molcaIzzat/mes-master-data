@@ -25,9 +25,31 @@ import {
   DuplicateHierarcySubMachineError,
   InvalidHierarcySubMachineMachineIdReferenceError,
 } from "../hierarcy/hierarcy-errors.js";
+import { DuplicateWorkCenterClassError } from "../work-center-class/work-center-class-errors.js";
+import { DuplicateEquipmentClassError } from "../equipment-class/equipment-class-errors.js";
+import {
+  InvalidWorkCenterAreaIdReferenceError,
+  DuplicateWorkCenterError,
+} from "../work-center/work-center-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof InvalidWorkCenterAreaIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateWorkCenterError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateEquipmentClassError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateWorkCenterClassError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof InvalidHierarcySubMachineMachineIdReferenceError) {
     return new HTTPException(409, { message: err.message });
