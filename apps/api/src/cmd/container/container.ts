@@ -79,6 +79,12 @@ import type {
 } from "../../module/work-center/work-center-repository.js";
 import type { TWorkCenterService } from "../../module/work-center/work-center-service.js";
 import { registerWorkCenter } from "../../module/work-center/work-center-module.js";
+import type {
+  WorkUnitReader,
+  WorkUnitWriter,
+} from "../../module/work-unit/work-unit-repository.js";
+import type { TWorkUnitService } from "../../module/work-unit/work-unit-service.js";
+import { registerWorkUnit } from "../../module/work-unit/work-unit-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -126,6 +132,9 @@ type Cradle = {
   workCenterReaderRepository: WorkCenterReader;
   workCenterWriterRepository: WorkCenterWriter;
   workCenterService: TWorkCenterService;
+  workUnitReaderRepository: WorkUnitReader;
+  workUnitWriterRepository: WorkUnitWriter;
+  workUnitService: TWorkUnitService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -143,6 +152,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerArea(container);
   registerWorkCenterClass(container);
   registerWorkCenter(container);
+  registerWorkUnit(container);
   registerEquipmentClass(container);
   registerLine(container);
   registerMachine(container);

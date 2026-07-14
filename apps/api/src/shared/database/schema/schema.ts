@@ -111,7 +111,7 @@ export const workUnitTable = msCore.table(
       .integer("work_center_id")
       .notNull()
       .references(() => workCenterTable.id, { onDelete: "restrict" }),
-    type: workUnitType("type"),
+    type: workUnitType("type").notNull(),
   },
   (t) => [...defaultIndexes(t, "wu"), p.index("wu_wc_id_idx").on(t.workCenterId)],
 );

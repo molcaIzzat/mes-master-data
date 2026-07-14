@@ -31,9 +31,21 @@ import {
   InvalidWorkCenterAreaIdReferenceError,
   DuplicateWorkCenterError,
 } from "../work-center/work-center-errors.js";
+import {
+  InvalidWorkUnitWorkCenterIdReferenceError,
+  DuplicateWorkUnitError,
+} from "../work-unit/work-unit-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof InvalidWorkUnitWorkCenterIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateWorkUnitError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof InvalidWorkCenterAreaIdReferenceError) {
     return new HTTPException(409, { message: err.message });
