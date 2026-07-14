@@ -4,13 +4,13 @@ import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 
 const listAreaInputSchema = paginationSchema.extend({
   q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
-  factoryId: z.optional(z.coerce.number().transform((v) => (v === 0 ? undefined : v))),
+  siteId: z.optional(z.coerce.number().transform((v) => (v === 0 ? undefined : v))),
 });
 
 const createAreaSchema = z.object({
   name: z.string().min(5),
-  displayName: z.string().min(5),
-  factoryId: z.number().nullable(),
+  code: z.string().min(5),
+  siteId: z.number(),
 });
 
 const updateAreaSchema = createAreaSchema.partial();

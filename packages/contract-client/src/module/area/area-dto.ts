@@ -1,7 +1,7 @@
 type AreaSummary = {
   id: number;
   name: string;
-  displayName: string | null;
+  code: string;
 };
 
 type AreaPartialFetch<T> = {

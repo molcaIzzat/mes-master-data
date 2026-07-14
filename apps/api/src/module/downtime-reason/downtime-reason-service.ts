@@ -7,10 +7,10 @@ import { withLog, type Logger } from "@molca/utils";
 import type {
   AreaClientContract,
   AreaSummary,
-  LineClientContract,
-  LineSummary,
-  MachineClientContract,
-  MachineSummary,
+  WorkCenterClientContract,
+  WorkCenterSummary,
+  EquipmentClientContract,
+  EquipmentSummary,
 } from "@molca/contract-client";
 
 import type {
@@ -28,8 +28,8 @@ type DowntimeReasonServiceDeps = {
   downtimeReasonReaderRepository: DowntimeReasonReader;
   downtimeReasonWriterRepository: DowntimeReasonWriter;
   areaClient: AreaClientContract;
-  lineClient: LineClientContract;
-  machineClient: MachineClientContract;
+  workCenterClient: WorkCenterClientContract;
+  equipmentClient: EquipmentClientContract;
   logger?: Logger;
 };
 
@@ -49,23 +49,23 @@ class DowntimeReasonService implements TDowntimeReasonService {
   private downtimeReasonReaderRepository: DowntimeReasonReader;
   private downtimeReasonWriterRepository: DowntimeReasonWriter;
   private areaClient: AreaClientContract;
-  private lineClient: LineClientContract;
-  private machineClient: MachineClientContract;
+  private workCenterClient: WorkCenterClientContract;
+  private equipmentClient: EquipmentClientContract;
   private fallbackLogger: Logger;
 
   constructor({
     downtimeReasonReaderRepository,
     downtimeReasonWriterRepository,
     areaClient,
-    lineClient,
-    machineClient,
+    workCenterClient,
+    equipmentClient,
     logger,
   }: DowntimeReasonServiceDeps) {
     this.downtimeReasonReaderRepository = downtimeReasonReaderRepository;
     this.downtimeReasonWriterRepository = downtimeReasonWriterRepository;
     this.areaClient = areaClient;
-    this.lineClient = lineClient;
-    this.machineClient = machineClient;
+    this.workCenterClient = workCenterClient;
+    this.equipmentClient = equipmentClient;
     this.fallbackLogger = logger ?? baseLogger;
   }
 
@@ -90,28 +90,30 @@ class DowntimeReasonService implements TDowntimeReasonService {
     const areaIds = items.map((dr) => dr.areaIds).flat();
     const uniqueAreaIds = [...new Set(areaIds)];
 
-    const lineIds = items.map((dr) => dr.lineIds).flat();
-    const uniqueLineIds = [...new Set(lineIds)];
+    const workCenterIds = items.map((dr) => dr.workCenterIds).flat();
+    const uniqueWorkCenterIds = [...new Set(workCenterIds)];
 
-    const machineIds = items.map((dr) => dr.machineIds).flat();
-    const uniqueMachineIds = [...new Set(machineIds)];
+    const equipmentIds = items.map((dr) => dr.equipmentIds).flat();
+    const uniqueEquipmentIds = [...new Set(equipmentIds)];
 
     const areaResult = await this.areaClient.getMany(uniqueAreaIds);
     const areaById = new Map(areaResult.found.map((a) => [a.id, a]));
 
-    const lineResult = await this.lineClient.getMany(uniqueLineIds);
-    const lineById = new Map(lineResult.found.map((l) => [l.id, l]));
+    const workCenterResult = await this.workCenterClient.getMany(uniqueWorkCenterIds);
+    const workCenterById = new Map(workCenterResult.found.map((l) => [l.id, l]));
 
-    const machineResult = await this.machineClient.getMany(uniqueMachineIds);
-    const machineById = new Map(machineResult.found.map((m) => [m.id, m]));
+    const equipmentResult = await this.equipmentClient.getMany(uniqueEquipmentIds);
+    const equipmentById = new Map(equipmentResult.found.map((m) => [m.id, m]));
 
-    const enriched = items.map(({ areaIds, lineIds, machineIds, ...rest }) => ({
+    const enriched = items.map(({ areaIds, workCenterIds, equipmentIds, ...rest }) => ({
       ...rest,
       areas: areaIds.map((id) => areaById.get(id)).filter((a): a is AreaSummary => a !== undefined),
-      lines: lineIds.map((id) => lineById.get(id)).filter((a): a is LineSummary => a !== undefined),
-      machines: machineIds
-        .map((id) => machineById.get(id))
-        .filter((a): a is MachineSummary => a !== undefined),
+      workCenters: workCenterIds
+        .map((id) => workCenterById.get(id))
+        .filter((a): a is WorkCenterSummary => a !== undefined),
+      equipments: equipmentIds
+        .map((id) => equipmentById.get(id))
+        .filter((a): a is EquipmentSummary => a !== undefined),
     }));
 
     return { items: enriched, meta: buildPageMeta(page, size, totalElements) };
@@ -121,27 +123,29 @@ class DowntimeReasonService implements TDowntimeReasonService {
     const dr = await this.downtimeReasonReaderRepository.findById(id);
     if (!dr) throw new HTTPException(404, { message: "reason not found" });
 
-    const { areaIds, lineIds, machineIds, ...rest } = dr;
+    const { areaIds, workCenterIds, equipmentIds, ...rest } = dr;
     const uniqueAreaIds = [...new Set(areaIds)];
-    const uniqueLineIds = [...new Set(lineIds)];
-    const uniqueMachineIds = [...new Set(machineIds)];
+    const uniqueWorkCenterIds = [...new Set(workCenterIds)];
+    const uniqueEquipmentIds = [...new Set(equipmentIds)];
 
     const areaResult = await this.areaClient.getMany(uniqueAreaIds);
     const areaById = new Map(areaResult.found.map((a) => [a.id, a]));
 
-    const lineResult = await this.lineClient.getMany(uniqueLineIds);
-    const lineById = new Map(lineResult.found.map((l) => [l.id, l]));
+    const workCenterResult = await this.workCenterClient.getMany(uniqueWorkCenterIds);
+    const workCenterById = new Map(workCenterResult.found.map((l) => [l.id, l]));
 
-    const machineResult = await this.machineClient.getMany(uniqueMachineIds);
-    const machineById = new Map(machineResult.found.map((m) => [m.id, m]));
+    const equipmentResult = await this.equipmentClient.getMany(uniqueEquipmentIds);
+    const equipmentById = new Map(equipmentResult.found.map((m) => [m.id, m]));
 
     return {
       ...rest,
       areas: areaIds.map((id) => areaById.get(id)).filter((a): a is AreaSummary => a !== undefined),
-      lines: lineIds.map((id) => lineById.get(id)).filter((a): a is LineSummary => a !== undefined),
-      machines: machineIds
-        .map((id) => machineById.get(id))
-        .filter((a): a is MachineSummary => a !== undefined),
+      workCenters: workCenterIds
+        .map((id) => workCenterById.get(id))
+        .filter((a): a is WorkCenterSummary => a !== undefined),
+      equipments: equipmentIds
+        .map((id) => equipmentById.get(id))
+        .filter((a): a is EquipmentSummary => a !== undefined),
     };
   }
 
@@ -160,35 +164,40 @@ class DowntimeReasonService implements TDowntimeReasonService {
     }
   }
 
-  private async checkLine(ids: number[]) {
+  private async checkWorkCenter(ids: number[]) {
     const missingIds = await withLog(
       this.logger,
-      "line_client_get_many",
+      "work_center_client_get_many",
       { ids: ids },
       async () => {
-        const { missingIds } = await this.lineClient.getMany(ids);
+        const { missingIds } = await this.workCenterClient.getMany(ids);
         return missingIds;
       },
     );
 
     if (missingIds.length > 0) {
       return new HTTPException(404, {
-        message: `line with ids: ${missingIds.join(",")} not found`,
+        message: `work center with ids: ${missingIds.join(",")} not found`,
       });
     } else {
       return null;
     }
   }
 
-  private async checkMachine(ids: number[]) {
-    const missingIds = await withLog(this.logger, "machine_client_get_many", { ids }, async () => {
-      const { missingIds } = await this.machineClient.getMany(ids);
-      return missingIds;
-    });
+  private async checkEquipment(ids: number[]) {
+    const missingIds = await withLog(
+      this.logger,
+      "equipment_client_get_many",
+      { ids },
+      async () => {
+        const { missingIds } = await this.equipmentClient.getMany(ids);
+        return missingIds;
+      },
+    );
 
     if (missingIds.length > 0) {
       return new HTTPException(404, {
-        message: `machine with ids: ${missingIds.join(",")} not found`,
+        message: `equipment with ids: ${missingIds.join(",")} not found`,
       });
     } else {
       return null;
@@ -201,14 +210,14 @@ class DowntimeReasonService implements TDowntimeReasonService {
       throw errArea;
     }
 
-    const errLine = await this.checkLine(input.lineIds);
-    if (errLine !== null) {
-      throw errLine;
+    const errWorkCenter = await this.checkWorkCenter(input.workCenterIds);
+    if (errWorkCenter !== null) {
+      throw errWorkCenter;
     }
 
-    const errMachine = await this.checkMachine(input.machineIds);
-    if (errMachine !== null) {
-      throw errMachine;
+    const errEquipment = await this.checkEquipment(input.equipmentIds);
+    if (errEquipment !== null) {
+      throw errEquipment;
     }
 
     return await withLog(this.logger, "downtime_reason_create", { input }, () =>
@@ -226,17 +235,17 @@ class DowntimeReasonService implements TDowntimeReasonService {
       }
     }
 
-    if (patch.lineIds) {
-      const errLine = await this.checkLine(patch.lineIds);
-      if (errLine !== null) {
-        throw errLine;
+    if (patch.workCenterIds) {
+      const errWorkCenter = await this.checkWorkCenter(patch.workCenterIds);
+      if (errWorkCenter !== null) {
+        throw errWorkCenter;
       }
     }
 
-    if (patch.machineIds) {
-      const errMachine = await this.checkMachine(patch.machineIds);
-      if (errMachine !== null) {
-        throw errMachine;
+    if (patch.equipmentIds) {
+      const errEquipment = await this.checkEquipment(patch.equipmentIds);
+      if (errEquipment !== null) {
+        throw errEquipment;
       }
     }
 

@@ -9,8 +9,8 @@ import type {
 } from "./downtime-reason.js";
 import {
   downtimeReasonAreaTable,
-  downtimeReasonLineTable,
-  downtimeReasonMachineTable,
+  downtimeReasonWorkCenterTable,
+  downtimeReasonEquipmentTable,
   downtimeReasonTable,
 } from "../../shared/database/schema/schema.js";
 import { isUniqueViolation } from "../../shared/database/helper/catcher.js";
@@ -58,29 +58,31 @@ class DowntimeReasonReaderRepository implements DowntimeReasonReader {
     );
   }
 
-  private lineAgg() {
-    return this.db.$with("line_agg").as(
+  private workCenterAgg() {
+    return this.db.$with("work_center_agg").as(
       this.db
         .select({
-          reasonId: downtimeReasonLineTable.reasonId,
-          lineIds: sql<number[]>`ARRAY_AGG(${downtimeReasonLineTable.lineId})`.as("lineIds"),
+          reasonId: downtimeReasonWorkCenterTable.reasonId,
+          workCenterIds: sql<number[]>`ARRAY_AGG(${downtimeReasonWorkCenterTable.workCenterId})`.as(
+            "workCenterIds",
+          ),
         })
-        .from(downtimeReasonLineTable)
-        .groupBy(downtimeReasonLineTable.reasonId),
+        .from(downtimeReasonWorkCenterTable)
+        .groupBy(downtimeReasonWorkCenterTable.reasonId),
     );
   }
 
-  private machineAgg() {
-    return this.db.$with("machine_agg").as(
+  private equipmentAgg() {
+    return this.db.$with("equipment_agg").as(
       this.db
         .select({
-          reasonId: downtimeReasonMachineTable.reasonId,
-          machineIds: sql<number[]>`ARRAY_AGG(${downtimeReasonMachineTable.machineId})`.as(
-            "machineIds",
+          reasonId: downtimeReasonEquipmentTable.reasonId,
+          equipmentIds: sql<number[]>`ARRAY_AGG(${downtimeReasonEquipmentTable.equipmentId})`.as(
+            "equipmentIds",
           ),
         })
-        .from(downtimeReasonMachineTable)
-        .groupBy(downtimeReasonMachineTable.reasonId),
+        .from(downtimeReasonEquipmentTable)
+        .groupBy(downtimeReasonEquipmentTable.reasonId),
     );
   }
 
@@ -102,7 +104,7 @@ class DowntimeReasonReaderRepository implements DowntimeReasonReader {
     const where = and(...baseConds);
     const [rows, totals] = await Promise.all([
       this.db
-        .with(this.areaAgg(), this.lineAgg(), this.machineAgg())
+        .with(this.areaAgg(), this.workCenterAgg(), this.equipmentAgg())
         .select({
           id: downtimeReasonTable.id,
           name: downtimeReasonTable.name,
@@ -111,13 +113,17 @@ class DowntimeReasonReaderRepository implements DowntimeReasonReader {
           region: downtimeReasonTable.region,
           createdAt: downtimeReasonTable.createdAt,
           areaIds: sql<number[]>`COALESCE(${this.areaAgg().areaIds}, ARRAY[]::int[])`,
-          lineIds: sql<number[]>`COALESCE(${this.lineAgg().lineIds}, ARRAY[]::int[])`,
-          machineIds: sql<number[]>`COALESCE(${this.machineAgg().machineIds}, ARRAY[]::int[])`,
+          workCenterIds: sql<
+            number[]
+          >`COALESCE(${this.workCenterAgg().workCenterIds}, ARRAY[]::int[])`,
+          equipmentIds: sql<
+            number[]
+          >`COALESCE(${this.equipmentAgg().equipmentIds}, ARRAY[]::int[])`,
         })
         .from(downtimeReasonTable)
         .leftJoin(this.areaAgg(), eq(downtimeReasonTable.id, this.areaAgg().reasonId))
-        .leftJoin(this.lineAgg(), eq(downtimeReasonTable.id, this.lineAgg().reasonId))
-        .leftJoin(this.machineAgg(), eq(downtimeReasonTable.id, this.machineAgg().reasonId))
+        .leftJoin(this.workCenterAgg(), eq(downtimeReasonTable.id, this.workCenterAgg().reasonId))
+        .leftJoin(this.equipmentAgg(), eq(downtimeReasonTable.id, this.equipmentAgg().reasonId))
         .where(where)
         .orderBy(desc(downtimeReasonTable.createdAt), asc(downtimeReasonTable.id))
         .limit(limit)
@@ -138,11 +144,11 @@ class DowntimeReasonReaderRepository implements DowntimeReasonReader {
         areas: {
           columns: { areaId: true },
         },
-        lines: {
-          columns: { lineId: true },
+        workCenters: {
+          columns: { workCenterId: true },
         },
-        machines: {
-          columns: { machineId: true },
+        equipments: {
+          columns: { equipmentId: true },
         },
       },
     });
@@ -154,8 +160,8 @@ class DowntimeReasonReaderRepository implements DowntimeReasonReader {
     return {
       ...row,
       areaIds: row.areas.map((area) => area.areaId),
-      lineIds: row.lines.map((line) => line.lineId),
-      machineIds: row.machines.map((machine) => machine.machineId),
+      workCenterIds: row.workCenters.map((wc) => wc.workCenterId),
+      equipmentIds: row.equipments.map((equipment) => equipment.equipmentId),
     };
   }
 }
@@ -246,9 +252,9 @@ class DowntimeReasonWriterRepository implements DowntimeReasonWriter {
   ): Promise<void> {
     if (areaIds.length === 0) return;
     await tx.insert(downtimeReasonAreaTable).values(
-      areaIds.map((a) => ({
+      areaIds.map((areaId) => ({
         region: this.region,
-        areaId: a,
+        areaId,
         reasonId,
       })),
     );
@@ -275,31 +281,31 @@ class DowntimeReasonWriterRepository implements DowntimeReasonWriter {
 
     if (toAdd.length > 0) {
       await tx.insert(downtimeReasonAreaTable).values(
-        toAdd.map((a) => ({
+        toAdd.map((areaId) => ({
           region: this.region,
-          areaId: a,
+          areaId,
           reasonId,
         })),
       );
     }
   }
 
-  private async insertReasonLines(
+  private async insertReasonWorkCenters(
     tx: Transaction,
     reasonId: number,
-    lineIds: number[],
+    workCenterIds: number[],
   ): Promise<void> {
-    if (lineIds.length === 0) return;
-    await tx.insert(downtimeReasonLineTable).values(
-      lineIds.map((l) => ({
+    if (workCenterIds.length === 0) return;
+    await tx.insert(downtimeReasonWorkCenterTable).values(
+      workCenterIds.map((workCenterId) => ({
         region: this.region,
-        lineId: l,
+        workCenterId,
         reasonId,
       })),
     );
   }
 
-  private async updateReasonLines(
+  private async updateReasonWorkCenters(
     tx: Transaction,
     reasonId: number,
     next: number[],
@@ -308,43 +314,43 @@ class DowntimeReasonWriterRepository implements DowntimeReasonWriter {
     const { toAdd, toRemove } = this.diffByKey(next, existing, (l) => l);
     if (toRemove.length > 0) {
       await tx
-        .delete(downtimeReasonLineTable)
+        .delete(downtimeReasonWorkCenterTable)
         .where(
           and(
-            eq(downtimeReasonLineTable.region, this.region),
-            eq(downtimeReasonLineTable.reasonId, reasonId),
-            inArray(downtimeReasonLineTable.lineId, toRemove),
+            eq(downtimeReasonWorkCenterTable.region, this.region),
+            eq(downtimeReasonWorkCenterTable.reasonId, reasonId),
+            inArray(downtimeReasonWorkCenterTable.workCenterId, toRemove),
           ),
         );
     }
 
     if (toAdd.length > 0) {
-      await tx.insert(downtimeReasonLineTable).values(
-        toAdd.map((l) => ({
+      await tx.insert(downtimeReasonWorkCenterTable).values(
+        toAdd.map((workCenterId) => ({
           region: this.region,
-          lineId: l,
+          workCenterId,
           reasonId,
         })),
       );
     }
   }
 
-  private async insertReasonMachines(
+  private async insertReasonEquipments(
     tx: Transaction,
     reasonId: number,
-    machineIds: number[],
+    equipmentIds: number[],
   ): Promise<void> {
-    if (machineIds.length === 0) return;
-    await tx.insert(downtimeReasonMachineTable).values(
-      machineIds.map((m) => ({
+    if (equipmentIds.length === 0) return;
+    await tx.insert(downtimeReasonEquipmentTable).values(
+      equipmentIds.map((equipmentId) => ({
         region: this.region,
-        machineId: m,
+        equipmentId,
         reasonId,
       })),
     );
   }
 
-  private async updateReasonMachines(
+  private async updateReasonEquipments(
     tx: Transaction,
     reasonId: number,
     next: number[],
@@ -353,21 +359,21 @@ class DowntimeReasonWriterRepository implements DowntimeReasonWriter {
     const { toAdd, toRemove } = this.diffByKey(next, existing, (m) => m);
     if (toRemove.length > 0) {
       await tx
-        .delete(downtimeReasonMachineTable)
+        .delete(downtimeReasonEquipmentTable)
         .where(
           and(
-            eq(downtimeReasonMachineTable.region, this.region),
-            eq(downtimeReasonMachineTable.reasonId, reasonId),
-            inArray(downtimeReasonMachineTable.machineId, toRemove),
+            eq(downtimeReasonEquipmentTable.region, this.region),
+            eq(downtimeReasonEquipmentTable.reasonId, reasonId),
+            inArray(downtimeReasonEquipmentTable.equipmentId, toRemove),
           ),
         );
     }
 
     if (toAdd.length > 0) {
-      await tx.insert(downtimeReasonMachineTable).values(
-        toAdd.map((m) => ({
+      await tx.insert(downtimeReasonEquipmentTable).values(
+        toAdd.map((equipmentId) => ({
           region: this.region,
-          machineId: m,
+          equipmentId,
           reasonId,
         })),
       );
@@ -386,37 +392,37 @@ class DowntimeReasonWriterRepository implements DowntimeReasonWriter {
     return rows.map((a) => a.areaId);
   }
 
-  private async findAllReasonLine(tx: Transaction, reasonId: number): Promise<number[]> {
-    const rows = await tx.query.downtimeReasonLineTable.findMany({
+  private async findAllReasonWorkCenter(tx: Transaction, reasonId: number): Promise<number[]> {
+    const rows = await tx.query.downtimeReasonWorkCenterTable.findMany({
       where: {
         region: this.region,
         reasonId,
       },
-      columns: { lineId: true },
+      columns: { workCenterId: true },
     });
 
-    return rows.map((l) => l.lineId);
+    return rows.map((workCenter) => workCenter.workCenterId);
   }
 
-  private async findAllReasonMachine(tx: Transaction, reasonId: number): Promise<number[]> {
-    const rows = await tx.query.downtimeReasonMachineTable.findMany({
+  private async findAllReasonEquipment(tx: Transaction, reasonId: number): Promise<number[]> {
+    const rows = await tx.query.downtimeReasonEquipmentTable.findMany({
       where: {
         region: this.region,
         reasonId,
       },
-      columns: { machineId: true },
+      columns: { equipmentId: true },
     });
 
-    return rows.map((m) => m.machineId);
+    return rows.map((equipment) => equipment.equipmentId);
   }
 
   async create(input: CreateDowntimeReason): Promise<{ id: number }> {
     const reason = await this.db.transaction(async (tx) => {
-      const { areaIds, lineIds, machineIds, ...reasonShape } = input;
+      const { areaIds, workCenterIds, equipmentIds, ...reasonShape } = input;
       const save = await this.insertReason(tx, reasonShape);
       await this.insertReasonAreas(tx, save.id, areaIds);
-      await this.insertReasonLines(tx, save.id, lineIds);
-      await this.insertReasonMachines(tx, save.id, machineIds);
+      await this.insertReasonWorkCenters(tx, save.id, workCenterIds);
+      await this.insertReasonEquipments(tx, save.id, equipmentIds);
 
       return save;
     });
@@ -428,8 +434,8 @@ class DowntimeReasonWriterRepository implements DowntimeReasonWriter {
     const reason = await this.db.transaction(async (tx) => {
       const {
         areaIds: nextAreaIds,
-        lineIds: nextLineIds,
-        machineIds: nextMachineIds,
+        workCenterIds: nextWorkCenterIds,
+        equipmentIds: nextEquipmentIds,
         ...reasonShape
       } = patch;
       const save = await this.updateReason(tx, id, reasonShape);
@@ -439,14 +445,14 @@ class DowntimeReasonWriterRepository implements DowntimeReasonWriter {
         await this.updateReasonAreas(tx, save.id, nextAreaIds, existingAreaIds);
       }
 
-      if (nextLineIds) {
-        const existingLineIds = await this.findAllReasonLine(tx, save.id);
-        await this.updateReasonLines(tx, save.id, nextLineIds, existingLineIds);
+      if (nextWorkCenterIds) {
+        const existingWorkCenterIds = await this.findAllReasonWorkCenter(tx, save.id);
+        await this.updateReasonWorkCenters(tx, save.id, nextWorkCenterIds, existingWorkCenterIds);
       }
 
-      if (nextMachineIds) {
-        const existingMachineIds = await this.findAllReasonMachine(tx, save.id);
-        await this.updateReasonMachines(tx, save.id, nextMachineIds, existingMachineIds);
+      if (nextEquipmentIds) {
+        const existingEquipmentIds = await this.findAllReasonEquipment(tx, save.id);
+        await this.updateReasonEquipments(tx, save.id, nextEquipmentIds, existingEquipmentIds);
       }
 
       return save;

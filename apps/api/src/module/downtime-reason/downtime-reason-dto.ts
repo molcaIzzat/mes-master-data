@@ -17,14 +17,14 @@ const downtimeReasonSchema = z.object({
 
 const createDowntimeReasonSchema = downtimeReasonSchema.extend({
   areaIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
-  lineIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
-  machineIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
+  workCenterIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
+  equipmentIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
 });
 
 const updateDowntimeReasonSchema = downtimeReasonSchema.partial().extend({
   areaIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
-  lineIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
-  machineIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
+  workCenterIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
+  equipmentIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
 });
 
 const downtimeReasonValidator = {

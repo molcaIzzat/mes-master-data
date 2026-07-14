@@ -43,11 +43,11 @@ class AreaReaderRepository implements AreaReader {
   async findAll({ limit, offset, filter }: ListAreaInput): Promise<PagedArea> {
     const baseConds = [eq(areaTable.region, this.region)];
 
-    if (filter.factoryId !== undefined) baseConds.push(eq(areaTable.factoryId, filter.factoryId));
+    if (filter.siteId !== undefined) baseConds.push(eq(areaTable.siteId, filter.siteId));
 
     if (filter.q !== undefined) {
       const pattern = `%${filter.q}%`;
-      const qOr = or(ilike(areaTable.name, pattern), ilike(areaTable.displayName, pattern));
+      const qOr = or(ilike(areaTable.name, pattern), ilike(areaTable.code, pattern));
       if (qOr !== undefined) baseConds.push(qOr);
     }
 
@@ -56,9 +56,9 @@ class AreaReaderRepository implements AreaReader {
       this.db
         .select({
           id: areaTable.id,
+          code: areaTable.code,
           name: areaTable.name,
-          displayName: areaTable.displayName,
-          factoryId: areaTable.factoryId,
+          siteId: areaTable.siteId,
           region: areaTable.region,
           createdAt: areaTable.createdAt,
           updatedAt: areaTable.updatedAt,
@@ -99,7 +99,7 @@ class AreaReaderRepository implements AreaReader {
         },
         region: this.region,
       },
-      columns: { id: true, name: true, displayName: true },
+      columns: { id: true, name: true, code: true },
     });
   }
 }
@@ -119,9 +119,9 @@ class AreaWriterRepository implements AreaWriter {
         .insert(areaTable)
         .values({
           name: area.name,
-          displayName: area.displayName,
+          code: area.code,
           region: this.region,
-          factoryId: area.factoryId,
+          siteId: area.siteId,
         })
         .returning({
           id: areaTable.id,

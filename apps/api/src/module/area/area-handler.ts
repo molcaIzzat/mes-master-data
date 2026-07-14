@@ -16,10 +16,10 @@ function createAreaHandler({ areaService, authMw }: AreaHandlerDeps) {
   app.use("*", authMw);
 
   app.get("/", areaValidator.paginate, async (c) => {
-    const { page, size, q, factoryId } = c.req.valid("query");
+    const { page, size, q, siteId } = c.req.valid("query");
     const filter = {
       q,
-      factoryId,
+      siteId,
     };
     const { items, meta } = await areaService.findAll(page, size, filter);
     return c.json(WebResponse.builder<AreaList[]>().data(items).meta(meta).build(), 200);

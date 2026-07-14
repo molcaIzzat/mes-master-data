@@ -209,13 +209,6 @@ export const equipmentFlowTable = msCore.table(
   ],
 );
 
-// export const productCycleTimeUnit = msCore.enum("product_cycle_time_unit", [
-//   "BAG_PER_MINUTE",
-//   "SHOT_PER_MINUTE",
-//   "SAK_PER_MINUTE",
-//   "PCS_PER_MINUTE",
-// ]);
-
 export const unitTable = msCore.table(
   "uom",
   {
