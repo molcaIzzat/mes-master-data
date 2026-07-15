@@ -1,13 +1,13 @@
 type UpdateProductConvertion = {
-  value?: number;
-  unit?: string;
+  factorToBase?: number;
+  uomId?: number;
   sortOrder?: number;
 };
 
 function toFormatString(patch: UpdateProductConvertion) {
   return {
     ...patch,
-    value: patch.value ? String(patch.value) : undefined,
+    factorToBase: patch.factorToBase ? String(patch.factorToBase) : undefined,
   };
 }
 

@@ -60,22 +60,10 @@ class ProductService implements TProductService {
     const product = await this.productReaderRepository.findById(id);
     if (!product) throw new HTTPException(404, { message: "product not found" });
     return {
-      id: product.id,
-      code: product.code,
-      name: product.name,
-      region: product.region,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
-      cycleTime: product.cycleTime,
-      cycleTimeUnit: product.cycleTimeUnit,
-      price: product.price,
-      cost: product.cost,
-      area: product.area,
-      packages: product.packages,
-      convertions: product.convertions,
-      lines: product.lines.map((l) => ({
-        id: l.line?.id ?? 0,
-        lineName: l.line?.name ?? "",
+      ...product,
+      workCenters: product.workCenters.map((wc) => ({
+        id: wc.workCenterId,
+        name: wc.workCenter?.name ?? "",
       })),
     };
   }

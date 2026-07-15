@@ -3,8 +3,8 @@ import { jsonValidator } from "@molca/helper";
 
 const updateProductConvertionSchema = z
   .object({
-    value: z.number().check(z.positive()),
-    unit: z.string(),
+    factorToBase: z.number().check(z.positive()),
+    uomId: z.number().check(z.positive(), z.int()),
     sortOrder: z.number().check(z.positive()),
   })
   .partial();

@@ -1,13 +1,11 @@
 import * as z from "zod";
 import { jsonValidator } from "@molca/helper";
 
-import { PRODUCT_PACKAGING_TYPE } from "../product/product.js";
-
 const updateProductPackageSchema = z
   .object({
     main: z.boolean(),
+    uomId: z.number().check(z.positive(), z.int()),
     sortOrder: z.number().check(z.positive()),
-    package: z.enum(PRODUCT_PACKAGING_TYPE),
     stdWeight: z.number().check(z.positive()),
     minWeight: z.number().check(z.positive()),
     maxWeight: z.number().check(z.positive()),

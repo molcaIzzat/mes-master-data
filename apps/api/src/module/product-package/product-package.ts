@@ -1,9 +1,7 @@
-import type { ProductPackagingType } from "../product/product.js";
-
 type UpdateProductPackage = {
   main?: boolean;
+  uomId?: number;
   sortOrder?: number;
-  package?: ProductPackagingType;
   stdWeight?: number;
   minWeight?: number;
   maxWeight?: number;

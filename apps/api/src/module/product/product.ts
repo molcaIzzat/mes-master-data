@@ -1,52 +1,55 @@
 import type { Paged } from "@molca/network";
 
-const PRODUCT_CYCLE_TIME_UNIT = [
-  "BAG_PER_MINUTE",
-  "SHOT_PER_MINUTE",
-  "SAK_PER_MINUTE",
-  "PCS_PER_MINUTE",
-] as const;
-
-const PRODUCT_PACKAGING_TYPE = ["BAG", "SHOT", "CALENDER", "INNER", "CARTON", "SAK"] as const;
-
-type ProductCycleTimeUnit = (typeof PRODUCT_CYCLE_TIME_UNIT)[number];
-type ProductPackagingType = (typeof PRODUCT_PACKAGING_TYPE)[number];
-
 type Product = {
   id: number;
-  name: string;
   code: string;
-  region: string;
+  name: string;
   area: {
     id: number;
-    displayName: string | null;
+    code: string;
+    name: string;
   } | null;
-  lines: {
+  baseUom: {
     id: number;
-    lineName: string;
+    code: string;
+    name: string;
+  } | null;
+  workCenters: {
+    id: number;
+    name: string;
   }[];
-  cycleTime: number;
-  cycleTimeUnit: string;
-  price: number | null;
-  cost: number | null;
+  idealRatePerHour: string | null;
+  price: string | null;
+  cost: string | null;
   packages: {
     id: number;
     main: boolean;
-    package: string;
-    stdWeight: string;
-    minWeight: string;
-    maxWeight: string;
+    sortOrder: number;
+    uom: {
+      id: number;
+      code: string;
+      name: string;
+    } | null;
+    stdWeight: number | null;
+    minWeight: number | null;
+    maxWeight: number | null;
   }[];
   convertions: {
     id: number;
-    value: string;
-    unit: string;
+    sortOrder: number;
+    uom: {
+      id: number;
+      code: string;
+      name: string;
+    } | null;
+    factorToBase: number;
   }[];
+  region: string;
   createdAt: Date;
   updatedAt: Date;
 };
 
-type ProductList = Pick<Product, "id" | "code" | "name" | "region" | "area" | "lines">;
+type ProductList = Pick<Product, "id" | "code" | "name" | "region" | "area" | "workCenters">;
 
 type ProductFilter = {
   q?: string;
@@ -63,49 +66,46 @@ type PagedProduct = Paged<ProductList>;
 
 type ProductPackage = {
   main: boolean;
+  uomId: number;
   sortOrder: number;
-  package: ProductPackagingType;
-  stdWeight: number;
-  minWeight: number;
-  maxWeight: number;
-  length: number;
-  width: number;
-  height: number;
-  vol: number;
+  stdWeight: number | null;
+  minWeight: number | null;
+  maxWeight: number | null;
+  length: number | null;
+  width: number | null;
+  height: number | null;
+  vol: number | null;
 };
 
 type ProductConvertion = {
-  value: number;
-  unit: string;
+  uomId: number;
   sortOrder: number;
+  factorToBase: number;
 };
 
 type OwnerCreateProduct = {
   code: string;
   name: string;
   areaId: number;
-  cycleTime: number;
-  cycleTimeUnit: ProductCycleTimeUnit;
-  price: number;
-  cost: number;
+  baseUomId: number;
+  idealRatePerHour: string | null;
+  price: string | null;
+  cost: string | null;
 };
 
 type CreateProduct = OwnerCreateProduct & {
-  lineIds: number[];
+  workCenterIds: number[];
   packages: ProductPackage[];
   convertions: ProductConvertion[];
 };
 
 type UpdateProduct = Partial<OwnerCreateProduct> & {
-  lineIds?: number[];
+  workCenterIds?: number[];
   packages?: (ProductPackage & { id: number })[];
   convertions?: (ProductConvertion & { id: number })[];
 };
 
-export { PRODUCT_CYCLE_TIME_UNIT, PRODUCT_PACKAGING_TYPE };
 export type {
-  ProductCycleTimeUnit,
-  ProductPackagingType,
   Product,
   ProductList,
   ProductFilter,
