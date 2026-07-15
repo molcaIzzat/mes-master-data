@@ -1,4 +1,4 @@
-import type { AreaSummary, LineSummary, MachineSummary } from "@molca/contract-client";
+import type { AreaSummary, WorkCenterSummary, EquipmentSummary } from "@molca/contract-client";
 import type { Paged } from "@molca/network";
 
 type RejectReason = {
@@ -7,8 +7,8 @@ type RejectReason = {
   code: string;
   region: string;
   areaIds: number[];
-  lineIds: number[];
-  machineIds: number[];
+  workCenterIds: number[];
+  equipmentIds: number[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -18,8 +18,8 @@ type RejectReasonEnriched = {
   name: string;
   code: string;
   areas: AreaSummary[];
-  lines: LineSummary[];
-  machines: MachineSummary[];
+  workCenters: WorkCenterSummary[];
+  equipments: EquipmentSummary[];
   region: string;
   createdAt: Date;
   updatedAt: Date;
@@ -43,8 +43,8 @@ type PagedRejectReason = Paged<RejectReasonList>;
 
 type CreateRejectReason = {
   areaIds: number[];
-  lineIds: number[];
-  machineIds: number[];
+  workCenterIds: number[];
+  equipmentIds: number[];
   code: string;
   name: string;
 };

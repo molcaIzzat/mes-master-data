@@ -9,8 +9,8 @@ import type {
 } from "./reject-reason.js";
 import {
   rejectReasonAreaTable,
-  rejectReasonLineTable,
-  rejectReasonMachineTable,
+  rejectReasonWorkCenterTable,
+  rejectReasonEquipmentTable,
   rejectReasonTable,
 } from "../../shared/database/schema/schema.js";
 import { isUniqueViolation } from "../../shared/database/helper/catcher.js";
@@ -58,29 +58,31 @@ class RejectReasonReaderRepository implements RejectReasonReader {
     );
   }
 
-  private lineAgg() {
-    return this.db.$with("line_agg").as(
+  private workCenterAgg() {
+    return this.db.$with("work_center_agg").as(
       this.db
         .select({
-          reasonId: rejectReasonLineTable.reasonId,
-          lineIds: sql<number[]>`ARRAY_AGG(${rejectReasonLineTable.lineId})`.as("lineIds"),
+          reasonId: rejectReasonWorkCenterTable.reasonId,
+          workCenterIds: sql<number[]>`ARRAY_AGG(${rejectReasonWorkCenterTable.workCenterId})`.as(
+            "workCenterIds",
+          ),
         })
-        .from(rejectReasonLineTable)
-        .groupBy(rejectReasonLineTable.reasonId),
+        .from(rejectReasonWorkCenterTable)
+        .groupBy(rejectReasonWorkCenterTable.reasonId),
     );
   }
 
-  private machineAgg() {
-    return this.db.$with("machine_agg").as(
+  private equipmentAgg() {
+    return this.db.$with("equipment_agg").as(
       this.db
         .select({
-          reasonId: rejectReasonMachineTable.reasonId,
-          machineIds: sql<number[]>`ARRAY_AGG(${rejectReasonMachineTable.machineId})`.as(
-            "machineIds",
+          reasonId: rejectReasonEquipmentTable.reasonId,
+          equipmentIds: sql<number[]>`ARRAY_AGG(${rejectReasonEquipmentTable.equipmentId})`.as(
+            "equipmentIds",
           ),
         })
-        .from(rejectReasonMachineTable)
-        .groupBy(rejectReasonMachineTable.reasonId),
+        .from(rejectReasonEquipmentTable)
+        .groupBy(rejectReasonEquipmentTable.reasonId),
     );
   }
 
@@ -99,7 +101,7 @@ class RejectReasonReaderRepository implements RejectReasonReader {
     const where = and(...baseConds);
     const [rows, totals] = await Promise.all([
       this.db
-        .with(this.areaAgg(), this.lineAgg(), this.machineAgg())
+        .with(this.areaAgg(), this.workCenterAgg(), this.equipmentAgg())
         .select({
           id: rejectReasonTable.id,
           name: rejectReasonTable.name,
@@ -107,13 +109,17 @@ class RejectReasonReaderRepository implements RejectReasonReader {
           region: rejectReasonTable.region,
           createdAt: rejectReasonTable.createdAt,
           areaIds: sql<number[]>`COALESCE(${this.areaAgg().areaIds}, ARRAY[]::int[])`,
-          lineIds: sql<number[]>`COALESCE(${this.lineAgg().lineIds}, ARRAY[]::int[])`,
-          machineIds: sql<number[]>`COALESCE(${this.machineAgg().machineIds}, ARRAY[]::int[])`,
+          workCenterIds: sql<
+            number[]
+          >`COALESCE(${this.workCenterAgg().workCenterIds}, ARRAY[]::int[])`,
+          equipmentIds: sql<
+            number[]
+          >`COALESCE(${this.equipmentAgg().equipmentIds}, ARRAY[]::int[])`,
         })
         .from(rejectReasonTable)
         .leftJoin(this.areaAgg(), eq(rejectReasonTable.id, this.areaAgg().reasonId))
-        .leftJoin(this.lineAgg(), eq(rejectReasonTable.id, this.lineAgg().reasonId))
-        .leftJoin(this.machineAgg(), eq(rejectReasonTable.id, this.machineAgg().reasonId))
+        .leftJoin(this.workCenterAgg(), eq(rejectReasonTable.id, this.workCenterAgg().reasonId))
+        .leftJoin(this.equipmentAgg(), eq(rejectReasonTable.id, this.equipmentAgg().reasonId))
         .where(where)
         .orderBy(desc(rejectReasonTable.createdAt), asc(rejectReasonTable.id))
         .limit(limit)
@@ -134,11 +140,11 @@ class RejectReasonReaderRepository implements RejectReasonReader {
         areas: {
           columns: { areaId: true },
         },
-        lines: {
-          columns: { lineId: true },
+        workCenters: {
+          columns: { workCenterId: true },
         },
-        machines: {
-          columns: { machineId: true },
+        equipments: {
+          columns: { equipmentId: true },
         },
       },
     });
@@ -150,8 +156,8 @@ class RejectReasonReaderRepository implements RejectReasonReader {
     return {
       ...row,
       areaIds: row.areas.map((area) => area.areaId),
-      lineIds: row.lines.map((line) => line.lineId),
-      machineIds: row.machines.map((machine) => machine.machineId),
+      workCenterIds: row.workCenters.map((workCenter) => workCenter.workCenterId),
+      equipmentIds: row.equipments.map((equipment) => equipment.equipmentId),
     };
   }
 }
@@ -236,9 +242,9 @@ class RejectReasonWriterRepository implements RejectReasonWriter {
   ): Promise<void> {
     if (areaIds.length === 0) return;
     await tx.insert(rejectReasonAreaTable).values(
-      areaIds.map((a) => ({
+      areaIds.map((areaId) => ({
         region: this.region,
-        areaId: a,
+        areaId,
         reasonId,
       })),
     );
@@ -250,7 +256,7 @@ class RejectReasonWriterRepository implements RejectReasonWriter {
     next: number[],
     existing: number[],
   ): Promise<void> {
-    const { toAdd, toRemove } = this.diffByKey(next, existing, (a) => a);
+    const { toAdd, toRemove } = this.diffByKey(next, existing, (areaId) => areaId);
     if (toRemove.length > 0) {
       await tx
         .delete(rejectReasonAreaTable)
@@ -265,99 +271,99 @@ class RejectReasonWriterRepository implements RejectReasonWriter {
 
     if (toAdd.length > 0) {
       await tx.insert(rejectReasonAreaTable).values(
-        toAdd.map((a) => ({
+        toAdd.map((areaId) => ({
           region: this.region,
-          areaId: a,
+          areaId,
           reasonId,
         })),
       );
     }
   }
 
-  private async insertReasonLines(
+  private async insertReasonWorkCenters(
     tx: Transaction,
     reasonId: number,
-    lineIds: number[],
+    workCenterIds: number[],
   ): Promise<void> {
-    if (lineIds.length === 0) return;
-    await tx.insert(rejectReasonLineTable).values(
-      lineIds.map((l) => ({
+    if (workCenterIds.length === 0) return;
+    await tx.insert(rejectReasonWorkCenterTable).values(
+      workCenterIds.map((workCenterId) => ({
         region: this.region,
-        lineId: l,
+        workCenterId,
         reasonId,
       })),
     );
   }
 
-  private async updateReasonLines(
+  private async updateReasonWorkCenters(
     tx: Transaction,
     reasonId: number,
     next: number[],
     existing: number[],
   ): Promise<void> {
-    const { toAdd, toRemove } = this.diffByKey(next, existing, (l) => l);
+    const { toAdd, toRemove } = this.diffByKey(next, existing, (workCenterId) => workCenterId);
     if (toRemove.length > 0) {
       await tx
-        .delete(rejectReasonLineTable)
+        .delete(rejectReasonWorkCenterTable)
         .where(
           and(
-            eq(rejectReasonLineTable.region, this.region),
-            eq(rejectReasonLineTable.reasonId, reasonId),
-            inArray(rejectReasonLineTable.lineId, toRemove),
+            eq(rejectReasonWorkCenterTable.region, this.region),
+            eq(rejectReasonWorkCenterTable.reasonId, reasonId),
+            inArray(rejectReasonWorkCenterTable.workCenterId, toRemove),
           ),
         );
     }
 
     if (toAdd.length > 0) {
-      await tx.insert(rejectReasonLineTable).values(
-        toAdd.map((l) => ({
+      await tx.insert(rejectReasonWorkCenterTable).values(
+        toAdd.map((workCenterId) => ({
           region: this.region,
-          lineId: l,
+          workCenterId,
           reasonId,
         })),
       );
     }
   }
 
-  private async insertReasonMachines(
+  private async insertReasonEquipments(
     tx: Transaction,
     reasonId: number,
-    machineIds: number[],
+    equipmentIds: number[],
   ): Promise<void> {
-    if (machineIds.length === 0) return;
-    await tx.insert(rejectReasonMachineTable).values(
-      machineIds.map((m) => ({
+    if (equipmentIds.length === 0) return;
+    await tx.insert(rejectReasonEquipmentTable).values(
+      equipmentIds.map((equipmentId) => ({
         region: this.region,
-        machineId: m,
+        equipmentId,
         reasonId,
       })),
     );
   }
 
-  private async updateReasonMachines(
+  private async updateReasonEquipments(
     tx: Transaction,
     reasonId: number,
     next: number[],
     existing: number[],
   ): Promise<void> {
-    const { toAdd, toRemove } = this.diffByKey(next, existing, (m) => m);
+    const { toAdd, toRemove } = this.diffByKey(next, existing, (equipmentId) => equipmentId);
     if (toRemove.length > 0) {
       await tx
-        .delete(rejectReasonMachineTable)
+        .delete(rejectReasonEquipmentTable)
         .where(
           and(
-            eq(rejectReasonMachineTable.region, this.region),
-            eq(rejectReasonMachineTable.reasonId, reasonId),
-            inArray(rejectReasonMachineTable.machineId, toRemove),
+            eq(rejectReasonEquipmentTable.region, this.region),
+            eq(rejectReasonEquipmentTable.reasonId, reasonId),
+            inArray(rejectReasonEquipmentTable.equipmentId, toRemove),
           ),
         );
     }
 
     if (toAdd.length > 0) {
-      await tx.insert(rejectReasonMachineTable).values(
-        toAdd.map((m) => ({
+      await tx.insert(rejectReasonEquipmentTable).values(
+        toAdd.map((equipmentId) => ({
           region: this.region,
-          machineId: m,
+          equipmentId,
           reasonId,
         })),
       );
@@ -376,37 +382,37 @@ class RejectReasonWriterRepository implements RejectReasonWriter {
     return rows.map((a) => a.areaId);
   }
 
-  private async findAllReasonLine(tx: Transaction, reasonId: number): Promise<number[]> {
-    const rows = await tx.query.rejectReasonLineTable.findMany({
+  private async findAllReasonWorkCenter(tx: Transaction, reasonId: number): Promise<number[]> {
+    const rows = await tx.query.rejectReasonWorkCenterTable.findMany({
       where: {
         region: this.region,
         reasonId,
       },
-      columns: { lineId: true },
+      columns: { workCenterId: true },
     });
 
-    return rows.map((l) => l.lineId);
+    return rows.map((l) => l.workCenterId);
   }
 
-  private async findAllReasonMachine(tx: Transaction, reasonId: number): Promise<number[]> {
-    const rows = await tx.query.rejectReasonMachineTable.findMany({
+  private async findAllReasonEquipment(tx: Transaction, reasonId: number): Promise<number[]> {
+    const rows = await tx.query.rejectReasonEquipmentTable.findMany({
       where: {
         region: this.region,
         reasonId,
       },
-      columns: { machineId: true },
+      columns: { equipmentId: true },
     });
 
-    return rows.map((m) => m.machineId);
+    return rows.map((m) => m.equipmentId);
   }
 
   async create(input: CreateRejectReason): Promise<{ id: number }> {
     const reason = await this.db.transaction(async (tx) => {
-      const { areaIds, lineIds, machineIds, ...reasonShape } = input;
+      const { areaIds, workCenterIds, equipmentIds, ...reasonShape } = input;
       const save = await this.insertReason(tx, reasonShape);
       await this.insertReasonAreas(tx, save.id, areaIds);
-      await this.insertReasonLines(tx, save.id, lineIds);
-      await this.insertReasonMachines(tx, save.id, machineIds);
+      await this.insertReasonWorkCenters(tx, save.id, workCenterIds);
+      await this.insertReasonEquipments(tx, save.id, equipmentIds);
 
       return save;
     });
@@ -418,8 +424,8 @@ class RejectReasonWriterRepository implements RejectReasonWriter {
     const reason = await this.db.transaction(async (tx) => {
       const {
         areaIds: nextAreaIds,
-        lineIds: nextLineIds,
-        machineIds: nextMachineIds,
+        workCenterIds: nextWorkCenterIds,
+        equipmentIds: nextEquipmentIds,
         ...reasonShape
       } = patch;
       const save = await this.updateReason(tx, id, reasonShape);
@@ -429,14 +435,14 @@ class RejectReasonWriterRepository implements RejectReasonWriter {
         await this.updateReasonAreas(tx, save.id, nextAreaIds, existingAreaIds);
       }
 
-      if (nextLineIds) {
-        const existingLineIds = await this.findAllReasonLine(tx, save.id);
-        await this.updateReasonLines(tx, save.id, nextLineIds, existingLineIds);
+      if (nextWorkCenterIds) {
+        const existingWorkCenterIds = await this.findAllReasonWorkCenter(tx, save.id);
+        await this.updateReasonWorkCenters(tx, save.id, nextWorkCenterIds, existingWorkCenterIds);
       }
 
-      if (nextMachineIds) {
-        const existingMachineIds = await this.findAllReasonMachine(tx, save.id);
-        await this.updateReasonMachines(tx, save.id, nextMachineIds, existingMachineIds);
+      if (nextEquipmentIds) {
+        const existingEquipmentIds = await this.findAllReasonEquipment(tx, save.id);
+        await this.updateReasonEquipments(tx, save.id, nextEquipmentIds, existingEquipmentIds);
       }
 
       return save;

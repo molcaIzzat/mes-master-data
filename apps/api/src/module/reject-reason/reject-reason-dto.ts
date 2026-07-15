@@ -3,8 +3,14 @@ import * as z from "zod";
 import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 
 const listRejectReasonInputSchema = paginationSchema.extend({
-  q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
-  areaId: z.optional(z.coerce.number().transform((v) => (v === 0 ? undefined : v))),
+  q: z.pipe(
+    z.optional(z.string()),
+    z.transform((v) => (v === "" ? undefined : v)),
+  ),
+  areaId: z.pipe(
+    z.optional(z.coerce.number()),
+    z.transform((v) => (v === 0 ? undefined : v)),
+  ),
 });
 
 const rejectReasonSchema = z.object({
@@ -13,15 +19,15 @@ const rejectReasonSchema = z.object({
 });
 
 const createRejectReasonSchema = rejectReasonSchema.extend({
-  areaIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
-  lineIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
-  machineIds: z.array(z.number().check(z.positive())).check(z.minLength(1)),
+  areaIds: z.array(z.number().check(z.positive(), z.int())).check(z.minLength(1)),
+  workCenterIds: z.array(z.number().check(z.positive(), z.int())).check(z.minLength(1)),
+  equipmentIds: z.array(z.number().check(z.positive(), z.int())).check(z.minLength(1)),
 });
 
 const updateRejectReasonSchema = rejectReasonSchema.partial().extend({
-  areaIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
-  lineIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
-  machineIds: z.optional(z.array(z.number().check(z.positive())).check(z.minLength(1))),
+  areaIds: z.optional(z.array(z.number().check(z.positive(), z.int())).check(z.minLength(1))),
+  workCenterIds: z.optional(z.array(z.number().check(z.positive(), z.int())).check(z.minLength(1))),
+  equipmentIds: z.optional(z.array(z.number().check(z.positive(), z.int())).check(z.minLength(1))),
 });
 
 const rejectReasonValidator = {
