@@ -3,6 +3,7 @@ import { createContainer as newContainer, InjectionMode, asValue, asFunction } f
 
 import type {
   AreaClientContract,
+  EquipmentClientContract,
   LineClientContract,
   MachineClientContract,
   WorkCenterClientContract,
@@ -85,6 +86,12 @@ import type {
 } from "../../module/work-unit/work-unit-repository.js";
 import type { TWorkUnitService } from "../../module/work-unit/work-unit-service.js";
 import { registerWorkUnit } from "../../module/work-unit/work-unit-module.js";
+import type {
+  EquipmentReader,
+  EquipmentWriter,
+} from "../../module/equipment/equipment-repository.js";
+import type { TEquipmentService } from "../../module/equipment/equipment-service.js";
+import { registerEquipment } from "../../module/equipment/equipment-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -94,6 +101,7 @@ type Cradle = {
   areaClient: AreaClientContract;
   lineClient: LineClientContract;
   workCenterClient: WorkCenterClientContract;
+  equipmentClient: EquipmentClientContract;
   machineClient: MachineClientContract;
   areaReaderRepository: AreaReader;
   areaWriterRepository: AreaWriter;
@@ -135,6 +143,9 @@ type Cradle = {
   workUnitReaderRepository: WorkUnitReader;
   workUnitWriterRepository: WorkUnitWriter;
   workUnitService: TWorkUnitService;
+  equipmentReaderRepository: EquipmentReader;
+  equipmentWriterRepository: EquipmentWriter;
+  equipmentService: TEquipmentService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -154,6 +165,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerWorkCenter(container);
   registerWorkUnit(container);
   registerEquipmentClass(container);
+  registerEquipment(container);
   registerLine(container);
   registerMachine(container);
   registerHierarcy(container);

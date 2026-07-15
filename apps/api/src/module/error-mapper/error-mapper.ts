@@ -35,9 +35,31 @@ import {
   InvalidWorkUnitWorkCenterIdReferenceError,
   DuplicateWorkUnitError,
 } from "../work-unit/work-unit-errors.js";
+import {
+  InvalidEquipmentUnitIdReferenceError,
+  InvalidEquipmentParentIdReferenceError,
+  InvalidEquipmentClassIdReferenceError,
+  DuplicateEquipmentError,
+} from "../equipment/equipment-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof InvalidEquipmentUnitIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidEquipmentParentIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidEquipmentClassIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateEquipmentError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof InvalidWorkUnitWorkCenterIdReferenceError) {
     return new HTTPException(409, { message: err.message });
