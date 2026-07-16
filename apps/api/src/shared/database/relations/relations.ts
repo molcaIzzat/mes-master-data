@@ -6,6 +6,10 @@ const relations = defineRelations(schema, (r) => ({
     areas: r.many.areaTable(),
   },
   areaTable: {
+    site: r.one.siteTable({
+      from: r.areaTable.siteId,
+      to: r.siteTable.id,
+    }),
     workCenters: r.many.workCenterTable(),
     products: r.many.productTable(),
   },

@@ -1,0 +1,4811 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "cfda3c64-8825-4725-af38-d964c6917074",
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
+  "ddl": [
+    {
+      "name": "ms_core",
+      "entityType": "schemas"
+    },
+    {
+      "name": "ms_downtime",
+      "entityType": "schemas"
+    },
+    {
+      "name": "ms_reject",
+      "entityType": "schemas"
+    },
+    {
+      "values": ["infeed", "good_output", "reject"],
+      "name": "count_role",
+      "entityType": "enums",
+      "schema": "ms_core"
+    },
+    {
+      "values": ["plc", "manual"],
+      "name": "count_source",
+      "entityType": "enums",
+      "schema": "ms_core"
+    },
+    {
+      "values": ["PLANNED", "UNPLANNED", "SMALL_STOP"],
+      "name": "downtime_cat",
+      "entityType": "enums",
+      "schema": "ms_downtime"
+    },
+    {
+      "values": ["continuous", "batch", "discrete", "none"],
+      "name": "oee_mode",
+      "entityType": "enums",
+      "schema": "ms_core"
+    },
+    {
+      "values": ["production_line", "process_cell", "production_unit", "storage_zone"],
+      "name": "work_center_type",
+      "entityType": "enums",
+      "schema": "ms_core"
+    },
+    {
+      "values": ["work_cell", "unit", "storage_unit"],
+      "name": "work_unit_type",
+      "entityType": "enums",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "areas",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "downtime_actions",
+      "entityType": "tables",
+      "schema": "ms_downtime"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "downtime_reasons_areas",
+      "entityType": "tables",
+      "schema": "ms_downtime"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "downtime_reasons_equipments",
+      "entityType": "tables",
+      "schema": "ms_downtime"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "downtime_reasons",
+      "entityType": "tables",
+      "schema": "ms_downtime"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "downtime_reasons_work_centers",
+      "entityType": "tables",
+      "schema": "ms_downtime"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "equipment_classes",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "equipment_flows",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "equipments",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "oee_count_points",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "product_code_aliases",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "product_convertions",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "product_equipment_specs",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "product_packages",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "products",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "products_work_centers",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "reject_reasons_areas",
+      "entityType": "tables",
+      "schema": "ms_reject"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "reject_reasons_equipments",
+      "entityType": "tables",
+      "schema": "ms_reject"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "reject_reasons",
+      "entityType": "tables",
+      "schema": "ms_reject"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "reject_reasons_work_centers",
+      "entityType": "tables",
+      "schema": "ms_reject"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "sites",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "uom",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "work_center_classes",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "work_centers",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "work_units",
+      "entityType": "tables",
+      "schema": "ms_core"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "site_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "color",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reason_id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "area_id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reason_id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "equipment_id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "type": "downtime_cat",
+      "typeSchema": "ms_downtime",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "category",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reason_id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "work_center_id",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "work_center_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "from_equipment_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "to_equipment_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "work_unit_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "parent_equipment_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "equipmentClassId",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "true",
+      "generated": null,
+      "identity": null,
+      "name": "is_oee_relevant",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "true",
+      "generated": null,
+      "identity": null,
+      "name": "is_acuirable",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "telemetry_tags",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "equipment_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "count_role",
+      "typeSchema": "ms_core",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "role",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "uom",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "count_source",
+      "typeSchema": "ms_core",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'plc'",
+      "generated": null,
+      "identity": null,
+      "name": "source",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "source_tag",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "equipment_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "product_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "external_code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "sort_order",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "product_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "uom_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "numeric(15,3)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "factor_to_base",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "product_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "equipment_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "uom_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "numeric(15,3)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "ideal_rate_per_hour",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "product_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "sort_order",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "uom_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "main",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "numeric(10,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "std_weight",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "numeric(10,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "max_weight",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "numeric(10,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "min_weight",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "numeric(10,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "length",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "numeric(10,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "width",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "numeric(10,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "height",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "numeric(10,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "vol",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "area_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "base_uom_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "ideal_rate_per_hour",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "numeric(15,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "price",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "numeric(15,3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "cost",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "product_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "work_center_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reason_id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "area_id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reason_id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "equipment_id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reason_id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "work_center_id",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "type": "varchar",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "timezone",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "area_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "work_center_type",
+      "typeSchema": "ms_core",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "type",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "oee_mode",
+      "typeSchema": "ms_core",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "oee_mode",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "workCenterClassId",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "ideal_rate_per_hour",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "type": "varchar(10)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "region",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "code",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "type": "varchar(100)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "work_center_id",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "type": "work_unit_type",
+      "typeSchema": "ms_core",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "type",
+      "entityType": "columns",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "areas_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "site_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "areas_site_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "downtime_actions_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dra_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "area_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dra_area_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reason_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dra_reason_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dre_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "equipment_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dre_machine_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reason_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dre_reason_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dr_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "drwc_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "work_center_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "drwc_line_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reason_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "drwc_reason_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "ec_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "ef_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "work_center_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "ef_wc_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "to_equipment_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "ef_to_eq_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "equipments_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "work_unit_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "equipments_wu_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "parent_equipment_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "equipments_parent_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "ocp_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "equipment_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "ix_ocp_eq",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "product_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pca_product_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "equipment_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pca_equipment_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pconv_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "product_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pconv_product_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "uom_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pconv_uom_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pes_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "equipment_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pes_equipment_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "product_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pes_product_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "uom_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pes_uom_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "products_packages_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "product_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "product_packages_product_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "uom_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "product_packages_uom_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "products_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "area_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "products_area_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pwc_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "product_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "pwc_product_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "reject_reasons_areas_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "area_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "reject_reasons_areas_area_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reason_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "reject_reasons_areas_reason_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "rre_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "equipment_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "rre_machine_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reason_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "rre_reason_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "reject_reasons_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "rrwc_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "work_center_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "rrwc_line_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reason_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "rrwc_reason_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "sites_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "uom_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "wcc_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "wc_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "area_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "wc_area_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "region",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "wu_region_updated_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "work_center_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "wu_wc_id_idx",
+      "entityType": "indexes",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["site_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "sites",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "areas_site_id_sites_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["reason_id"],
+      "schemaTo": "ms_downtime",
+      "tableTo": "downtime_reasons",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "downtime_reasons_areas_reason_id_downtime_reasons_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["reason_id"],
+      "schemaTo": "ms_downtime",
+      "tableTo": "downtime_reasons",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "downtime_reasons_equipments_reason_id_downtime_reasons_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["reason_id"],
+      "schemaTo": "ms_downtime",
+      "tableTo": "downtime_reasons",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "downtime_reasons_work_centers_xOvNa48QEwFR_fkey",
+      "entityType": "fks",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["work_center_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "work_centers",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "equipment_flows_work_center_id_work_centers_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["from_equipment_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "equipments",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "equipment_flows_from_equipment_id_equipments_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["to_equipment_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "equipments",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "equipment_flows_to_equipment_id_equipments_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["work_unit_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "work_units",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "equipments_work_unit_id_work_units_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["parent_equipment_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "equipments",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "equipments_parent_equipment_id_equipments_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["equipmentClassId"],
+      "schemaTo": "ms_core",
+      "tableTo": "equipment_classes",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "equipments_equipmentClassId_equipment_classes_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["equipment_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "equipments",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "oee_count_points_equipment_id_equipments_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["equipment_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "equipments",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "product_code_aliases_equipment_id_equipments_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["product_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "products",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "product_code_aliases_product_id_products_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["product_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "products",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "product_convertions_product_id_products_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["uom_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "uom",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "product_convertions_uom_id_uom_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["product_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "products",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "product_equipment_specs_product_id_products_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["equipment_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "equipments",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "product_equipment_specs_equipment_id_equipments_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["uom_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "uom",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "product_equipment_specs_uom_id_uom_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["product_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "products",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "product_packages_product_id_products_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["uom_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "uom",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "product_packages_uom_id_uom_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["area_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "areas",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "products_area_id_areas_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["base_uom_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "uom",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "products_base_uom_id_uom_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["product_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "products",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "products_work_centers_product_id_products_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["work_center_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "work_centers",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "products_work_centers_work_center_id_work_centers_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["reason_id"],
+      "schemaTo": "ms_reject",
+      "tableTo": "reject_reasons",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "reject_reasons_areas_reason_id_reject_reasons_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["reason_id"],
+      "schemaTo": "ms_reject",
+      "tableTo": "reject_reasons",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "reject_reasons_equipments_reason_id_reject_reasons_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["reason_id"],
+      "schemaTo": "ms_reject",
+      "tableTo": "reject_reasons",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "reject_reasons_work_centers_reason_id_reject_reasons_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["area_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "areas",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "work_centers_area_id_areas_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["workCenterClassId"],
+      "schemaTo": "ms_core",
+      "tableTo": "work_center_classes",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "work_centers_workCenterClassId_work_center_classes_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["work_center_id"],
+      "schemaTo": "ms_core",
+      "tableTo": "work_centers",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "name": "work_units_work_center_id_work_centers_id_fkey",
+      "entityType": "fks",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "areas_pkey",
+      "schema": "ms_core",
+      "table": "areas",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "downtime_actions_pkey",
+      "schema": "ms_downtime",
+      "table": "downtime_actions",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "downtime_reasons_areas_pkey",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "downtime_reasons_equipments_pkey",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "downtime_reasons_pkey",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "downtime_reasons_work_centers_pkey",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "equipment_classes_pkey",
+      "schema": "ms_core",
+      "table": "equipment_classes",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "equipment_flows_pkey",
+      "schema": "ms_core",
+      "table": "equipment_flows",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "equipments_pkey",
+      "schema": "ms_core",
+      "table": "equipments",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "oee_count_points_pkey",
+      "schema": "ms_core",
+      "table": "oee_count_points",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "product_code_aliases_pkey",
+      "schema": "ms_core",
+      "table": "product_code_aliases",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "product_convertions_pkey",
+      "schema": "ms_core",
+      "table": "product_convertions",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "product_equipment_specs_pkey",
+      "schema": "ms_core",
+      "table": "product_equipment_specs",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "product_packages_pkey",
+      "schema": "ms_core",
+      "table": "product_packages",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "products_pkey",
+      "schema": "ms_core",
+      "table": "products",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "products_work_centers_pkey",
+      "schema": "ms_core",
+      "table": "products_work_centers",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "reject_reasons_areas_pkey",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "reject_reasons_equipments_pkey",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "reject_reasons_pkey",
+      "schema": "ms_reject",
+      "table": "reject_reasons",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "reject_reasons_work_centers_pkey",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "sites_pkey",
+      "schema": "ms_core",
+      "table": "sites",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "uom_pkey",
+      "schema": "ms_core",
+      "table": "uom",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "work_center_classes_pkey",
+      "schema": "ms_core",
+      "table": "work_center_classes",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "work_centers_pkey",
+      "schema": "ms_core",
+      "table": "work_centers",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "work_units_pkey",
+      "schema": "ms_core",
+      "table": "work_units",
+      "entityType": "pks"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "areas_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "downtime_actions_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_downtime",
+      "table": "downtime_actions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["reason_id", "area_id"],
+      "nullsNotDistinct": false,
+      "name": "dra_key",
+      "entityType": "uniques",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["reason_id", "equipment_id"],
+      "nullsNotDistinct": false,
+      "name": "dre_key",
+      "entityType": "uniques",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "dr_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["reason_id", "work_center_id"],
+      "nullsNotDistinct": false,
+      "name": "drwc_key",
+      "entityType": "uniques",
+      "schema": "ms_downtime",
+      "table": "downtime_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "ec_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "equipment_classes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["from_equipment_id", "to_equipment_id"],
+      "nullsNotDistinct": false,
+      "name": "ef_equipment_keys",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "equipments_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["equipment_id", "role", "source_tag"],
+      "nullsNotDistinct": false,
+      "name": "uq_ocp_eq_role_tag",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["equipment_id", "external_code"],
+      "nullsNotDistinct": false,
+      "name": "pca_external_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "product_code_aliases"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["product_id", "uom_id"],
+      "nullsNotDistinct": false,
+      "name": "pconv_product_uom_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["product_id", "equipment_id"],
+      "nullsNotDistinct": false,
+      "name": "pes_equipment_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "product_equipment_specs"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["product_id", "uom_id"],
+      "nullsNotDistinct": false,
+      "name": "product_packages_product_uom_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "product_packages"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "products_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "products"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["product_id", "work_center_id"],
+      "nullsNotDistinct": false,
+      "name": "pwc_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "products_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["reason_id", "area_id"],
+      "nullsNotDistinct": false,
+      "name": "reject_reasons_areas_key",
+      "entityType": "uniques",
+      "schema": "ms_reject",
+      "table": "reject_reasons_areas"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["reason_id", "equipment_id"],
+      "nullsNotDistinct": false,
+      "name": "rre_key",
+      "entityType": "uniques",
+      "schema": "ms_reject",
+      "table": "reject_reasons_equipments"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "reject_reasons_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_reject",
+      "table": "reject_reasons"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["reason_id", "work_center_id"],
+      "nullsNotDistinct": false,
+      "name": "rrwc_key",
+      "entityType": "uniques",
+      "schema": "ms_reject",
+      "table": "reject_reasons_work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "sites_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "sites"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "uom_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "uom"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "wcc_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "work_center_classes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "wc_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "work_centers"
+    },
+    {
+      "nameExplicit": true,
+      "columns": ["code", "region"],
+      "nullsNotDistinct": false,
+      "name": "wu_code_region_key",
+      "entityType": "uniques",
+      "schema": "ms_core",
+      "table": "work_units"
+    },
+    {
+      "value": "from_equipment_id <> to_equipment_id",
+      "name": "ef_no_self_loop",
+      "entityType": "checks",
+      "schema": "ms_core",
+      "table": "equipment_flows"
+    },
+    {
+      "value": "parent_equipment_id IS DISTINCT FROM id",
+      "name": "equipments_not_own_parent_ckx",
+      "entityType": "checks",
+      "schema": "ms_core",
+      "table": "equipments"
+    },
+    {
+      "value": "\n    (source = 'plc'    AND source_tag IS NOT NULL) OR\n    (source = 'manual' AND source_tag IS NULL)\n  ",
+      "name": "ck_ocp_source_tag",
+      "entityType": "checks",
+      "schema": "ms_core",
+      "table": "oee_count_points"
+    },
+    {
+      "value": "factor_to_base > 0",
+      "name": "pconv_pconv_ftb_cx",
+      "entityType": "checks",
+      "schema": "ms_core",
+      "table": "product_convertions"
+    },
+    {
+      "value": "\n      (type = 'production_unit'  AND oee_mode = 'continuous') OR\n      (type = 'process_cell'     AND oee_mode = 'batch')      OR\n      (type = 'production_line'  AND oee_mode = 'discrete')   OR\n      (type = 'storage_zone'     AND oee_mode = 'none')\n    ",
+      "name": "wc_mode_matches_type_ckx",
+      "entityType": "checks",
+      "schema": "ms_core",
+      "table": "work_centers"
+    }
+  ],
+  "renames": []
+}

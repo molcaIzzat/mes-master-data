@@ -52,7 +52,7 @@ class SiteService implements TSiteService {
 
   async findById(id: number): Promise<Site> {
     const site = await this.siteReaderRepository.findById(id);
-    if (!site) throw new HTTPException(404, { message: "site unit not found" });
+    if (!site) throw new HTTPException(404, { message: "site not found" });
     return site;
   }
 

@@ -30,6 +30,7 @@ import { createProductConvertionHandler } from "../../module/product-convertion/
 import { createDowntimeReasonHandler } from "../../module/downtime-reason/downtime-reason-handler.js";
 import { createRejectReasonHandler } from "../../module/reject-reason/reject-reason-handler.js";
 import { createDowntimeActionHandler } from "../../module/downtime-action/downtime-action-handler.js";
+import { createSiteHandler } from "../../module/site/site-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -54,6 +55,14 @@ app.route(
 );
 
 const api = new Hono().basePath("/v1");
+
+api.route(
+  "/sites",
+  createSiteHandler({
+    authMw: container.resolve("authMw"),
+    siteService: container.resolve("siteService"),
+  }),
+);
 
 api.route(
   "/areas",

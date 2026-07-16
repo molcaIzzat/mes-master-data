@@ -41,9 +41,14 @@ import {
   InvalidEquipmentClassIdReferenceError,
   DuplicateEquipmentError,
 } from "../equipment/equipment-errors.js";
+import { DuplicateSiteError } from "../site/site-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof DuplicateSiteError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof InvalidEquipmentUnitIdReferenceError) {
     return new HTTPException(409, { message: err.message });
