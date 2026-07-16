@@ -1,7 +1,7 @@
 import { DrizzleQueryError } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
-import { DuplicateAreaError } from "../area/area-errors.js";
+import { DuplicateAreaError, InvalidAreaSiteIdReferenceError } from "../area/area-errors.js";
 import { DuplicateLineError, InvalidLineAreaIdReferenceError } from "../line/line-errors.js";
 import {
   DuplicateMachineError,
@@ -45,6 +45,10 @@ import { DuplicateSiteError } from "../site/site-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof InvalidAreaSiteIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof DuplicateSiteError) {
     return new HTTPException(409, { message: err.message });

@@ -3,14 +3,20 @@ import * as z from "zod";
 import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 
 const listAreaInputSchema = paginationSchema.extend({
-  q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
-  siteId: z.optional(z.coerce.number().transform((v) => (v === 0 ? undefined : v))),
+  q: z.pipe(
+    z.optional(z.string()),
+    z.transform((v) => (v === "" ? undefined : v)),
+  ),
+  siteId: z.pipe(
+    z.optional(z.coerce.number()),
+    z.transform((v) => (v === 0 ? undefined : v)),
+  ),
 });
 
 const createAreaSchema = z.object({
-  name: z.string().min(5),
-  code: z.string().min(5),
-  siteId: z.number(),
+  code: z.string().check(z.minLength(2)),
+  name: z.string().check(z.minLength(2)),
+  siteId: z.number().check(z.positive(), z.int()),
 });
 
 const updateAreaSchema = createAreaSchema.partial();

@@ -4,8 +4,8 @@ import { areaTable } from "../../shared/database/schema/schema.js";
 
 import type { Area, CreateArea, ListAreaInput, PagedArea, UpdateArea } from "./area.js";
 import type { PostgresDB } from "../../shared/database/postgres.js";
-import { isUniqueViolation } from "../../shared/database/helper/catcher.js";
-import { DuplicateAreaError } from "./area-errors.js";
+import { isForeignKeyViolation, isUniqueViolation } from "../../shared/database/helper/catcher.js";
+import { DuplicateAreaError, InvalidAreaSiteIdReferenceError } from "./area-errors.js";
 import type { AreaSummary } from "@molca/contract-client";
 
 type AreaReaderDeps = {
@@ -130,7 +130,10 @@ class AreaWriterRepository implements AreaWriter {
       return row;
     } catch (err) {
       if (isUniqueViolation(err)) {
-        throw new DuplicateAreaError(area.name);
+        throw new DuplicateAreaError(area.code);
+      }
+      if (isForeignKeyViolation(err)) {
+        throw new InvalidAreaSiteIdReferenceError(area.siteId);
       }
       throw err;
     }
@@ -152,7 +155,10 @@ class AreaWriterRepository implements AreaWriter {
       return row;
     } catch (err) {
       if (isUniqueViolation(err)) {
-        throw new DuplicateAreaError(patch.name);
+        throw new DuplicateAreaError(patch.code);
+      }
+      if (isForeignKeyViolation(err)) {
+        throw new InvalidAreaSiteIdReferenceError(patch.siteId);
       }
       throw err;
     }
