@@ -2,6 +2,8 @@ import * as z from "zod";
 
 import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 
+import { positionSchema } from "../../shared/database/helper/common.js";
+
 const listEquipmentInputSchema = paginationSchema.extend({
   q: z.pipe(
     z.optional(z.string()),
@@ -17,6 +19,7 @@ const createEquipmentSchema = z.object({
   equipmentClassId: z.nullable(z.number().check(z.positive(), z.int())),
   isOeeRelevant: z.boolean(),
   isAcquirable: z.boolean(),
+  position: positionSchema,
   telemetryTags: z.nullable(z.record(z.string(), z.string())),
 });
 

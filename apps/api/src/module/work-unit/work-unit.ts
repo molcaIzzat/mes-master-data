@@ -1,5 +1,7 @@
 import type { Paged } from "@molca/network";
 
+import type { Position } from "../../shared/database/helper/common.js";
+
 const WORK_UNIT_TYPE = [
   "work_cell", // under production_line
   "unit", // under process_cell / production_unit
@@ -18,6 +20,7 @@ type WorkUnit = {
     name: string;
   } | null;
   type: WorkUnitType;
+  position: Position;
   region: string;
   createdAt: Date;
   updatedAt: Date;
@@ -44,6 +47,7 @@ type CreateWorkUnit = {
   name: string;
   workCenterId: number;
   type: WorkUnitType;
+  position: Position;
 };
 
 type UpdateWorkUnit = Partial<CreateWorkUnit>;

@@ -1,6 +1,8 @@
 import { sql } from "drizzle-orm";
 import * as p from "drizzle-orm/pg-core";
 
+import type { Position } from "../helper/common.js";
+
 const defaultColumns = () => ({
   id: p.serial("id").primaryKey(),
   region: p.varchar({ length: 10 }).notNull(),
@@ -87,6 +89,7 @@ export const workCenterTable = msCore.table(
       .integer()
       .references(() => workCenterClassTable.id, { onDelete: "restrict" }),
     idealRatePerHour: p.numeric("ideal_rate_per_hour"),
+    position: p.jsonb("position").$type<Position>().notNull().default({ x: 0, y: 0 }),
   },
   (t) => [
     ...defaultIndexes(t, "wc"),
@@ -112,6 +115,7 @@ export const workUnitTable = msCore.table(
       .notNull()
       .references(() => workCenterTable.id, { onDelete: "restrict" }),
     type: workUnitType("type").notNull(),
+    position: p.jsonb("position").$type<Position>().notNull().default({ x: 0, y: 0 }),
   },
   (t) => [...defaultIndexes(t, "wu"), p.index("wu_wc_id_idx").on(t.workCenterId)],
 );
@@ -140,6 +144,7 @@ export const equipmentTable = msCore.table(
       .references(() => equipmentClassTable.id, { onDelete: "restrict" }),
     isOeeRelevant: p.boolean("is_oee_relevant").notNull().default(true),
     isAcquirable: p.boolean("is_acuirable").notNull().default(true),
+    position: p.jsonb("position").$type<Position>().notNull().default({ x: 0, y: 0 }),
     telemetryTags: p.jsonb("telemetry_tags").$type<Record<string, string>>(),
   },
   (t) => [

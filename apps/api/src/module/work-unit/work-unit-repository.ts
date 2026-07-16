@@ -81,6 +81,7 @@ class WorkUnitReaderRepository implements WorkUnitReader {
           code: true,
           name: true,
           type: true,
+          position: true,
           region: true,
           createdAt: true,
         },
@@ -107,6 +108,7 @@ class WorkUnitReaderRepository implements WorkUnitReader {
         code: true,
         name: true,
         type: true,
+        position: true,
         region: true,
         createdAt: true,
         updatedAt: true,
@@ -146,6 +148,7 @@ class WorkUnitWriterRepository implements WorkUnitWriter {
           workCenterId: workUnit.workCenterId,
           name: workUnit.name,
           type: workUnit.type,
+          position: workUnit.position,
           region: this.region,
         })
         .returning({

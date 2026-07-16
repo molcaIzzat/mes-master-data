@@ -171,6 +171,7 @@ class EquipmentWriterRepository implements EquipmentWriter {
           equipmentClassId: equipment.equipmentClassId,
           isAcquirable: equipment.isAcquirable,
           isOeeRelevant: equipment.isOeeRelevant,
+          position: equipment.position,
           telemetryTags: equipment.telemetryTags,
         })
         .returning({

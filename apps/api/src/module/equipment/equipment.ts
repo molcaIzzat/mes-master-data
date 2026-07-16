@@ -1,5 +1,7 @@
 import type { Paged } from "@molca/network";
 
+import type { Position } from "../../shared/database/helper/common.js";
+
 type Equipment = {
   id: number;
   code: string;
@@ -49,6 +51,7 @@ type CreateEquipment = {
   equipmentClassId: number | null;
   isOeeRelevant: boolean;
   isAcquirable: boolean;
+  position: Position;
   telemetryTags: Record<string, string> | null;
 };
 

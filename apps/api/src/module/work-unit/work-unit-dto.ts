@@ -3,6 +3,8 @@ import * as z from "zod";
 import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 import { WORK_UNIT_TYPE } from "./work-unit.js";
 
+import { positionSchema } from "../../shared/database/helper/common.js";
+
 const listWorkUnitInputSchema = paginationSchema.extend({
   q: z.pipe(
     z.optional(z.string()),
@@ -20,6 +22,7 @@ const createWorkUnitSchema = z.object({
   name: z.string().check(z.minLength(5)),
   workCenterId: z.number().check(z.positive(), z.int()),
   type: z.enum(WORK_UNIT_TYPE),
+  position: positionSchema,
 });
 
 const updateWorkUnitSchema = createWorkUnitSchema.partial();
