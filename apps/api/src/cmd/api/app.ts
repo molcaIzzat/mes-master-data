@@ -31,6 +31,7 @@ import { createDowntimeReasonHandler } from "../../module/downtime-reason/downti
 import { createRejectReasonHandler } from "../../module/reject-reason/reject-reason-handler.js";
 import { createDowntimeActionHandler } from "../../module/downtime-action/downtime-action-handler.js";
 import { createSiteHandler } from "../../module/site/site-handler.js";
+import { createWorkCenterClassHandler } from "../../module/work-center-class/work-center-class-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -69,6 +70,14 @@ api.route(
   createAreaHandler({
     authMw: container.resolve("authMw"),
     areaService: container.resolve("areaService"),
+  }),
+);
+
+api.route(
+  "/work-center-classes",
+  createWorkCenterClassHandler({
+    authMw: container.resolve("authMw"),
+    workCenterClassService: container.resolve("workCenterClassService"),
   }),
 );
 
