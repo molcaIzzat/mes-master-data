@@ -92,6 +92,9 @@ import type {
 } from "../../module/equipment/equipment-repository.js";
 import type { TEquipmentService } from "../../module/equipment/equipment-service.js";
 import { registerEquipment } from "../../module/equipment/equipment-module.js";
+import type { SiteReader, SiteWriter } from "../../module/site/site-repository.js";
+import type { TSiteService } from "../../module/site/site-service.js";
+import { registerSite } from "../../module/site/site-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -103,6 +106,9 @@ type Cradle = {
   workCenterClient: WorkCenterClientContract;
   equipmentClient: EquipmentClientContract;
   machineClient: MachineClientContract;
+  siteReaderRepository: SiteReader;
+  siteWriterRepository: SiteWriter;
+  siteService: TSiteService;
   areaReaderRepository: AreaReader;
   areaWriterRepository: AreaWriter;
   areaService: TAreaService;
@@ -160,6 +166,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   });
   registerInfra(container, config);
   registerHealth(container, config);
+  registerSite(container);
   registerArea(container);
   registerWorkCenterClass(container);
   registerWorkCenter(container);
