@@ -33,6 +33,7 @@ import { createDowntimeActionHandler } from "../../module/downtime-action/downti
 import { createSiteHandler } from "../../module/site/site-handler.js";
 import { createWorkCenterClassHandler } from "../../module/work-center-class/work-center-class-handler.js";
 import { createEquipmentClassHandler } from "../../module/equipment-class/equipment-class-handler.js";
+import { createWorkCenterHandler } from "../../module/work-center/work-center-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -79,6 +80,14 @@ api.route(
   createWorkCenterClassHandler({
     authMw: container.resolve("authMw"),
     workCenterClassService: container.resolve("workCenterClassService"),
+  }),
+);
+
+api.route(
+  "/work-centers",
+  createWorkCenterHandler({
+    authMw: container.resolve("authMw"),
+    workCenterService: container.resolve("workCenterService"),
   }),
 );
 
