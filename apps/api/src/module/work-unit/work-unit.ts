@@ -19,8 +19,16 @@ type WorkUnit = {
     code: string;
     name: string;
   } | null;
+  class: {
+    id: number;
+    code: string;
+    name: string;
+  } | null;
   type: WorkUnitType;
   position: Position;
+  isOeeRelevant: boolean;
+  isAcquirable: boolean;
+  telemetryTags: Record<string, string> | null;
   region: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,6 +54,10 @@ type CreateWorkUnit = {
   code: string;
   name: string;
   workCenterId: number;
+  workUnitClassId: number | null;
+  isOeeRelevant: boolean;
+  isAcquirable: boolean;
+  telemetryTags: Record<string, string> | null;
   type: WorkUnitType;
   position: Position;
 };

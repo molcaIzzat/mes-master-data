@@ -6,7 +6,7 @@ import type { AuthEnv, AuthMiddleware } from "@molca/security";
 import { siteValidator } from "./site-dto.js";
 
 import type { TSiteService } from "./site-service.js";
-import type { Site, SiteList } from "./site.js";
+import type { SiteEnriched, SiteEnrichedList } from "./site.js";
 
 type SiteHandlerDeps = {
   siteService: TSiteService;
@@ -24,7 +24,7 @@ function createSiteHandler({ siteService, authMw }: SiteHandlerDeps) {
       q,
     };
     const { items, meta } = await siteService.findAll(page, size, filter);
-    return c.json(WebResponse.builder<SiteList[]>().data(items).meta(meta).build(), 200);
+    return c.json(WebResponse.builder<SiteEnrichedList[]>().data(items).meta(meta).build(), 200);
   });
 
   app.post("/", siteValidator.create, async (c) => {
@@ -36,7 +36,7 @@ function createSiteHandler({ siteService, authMw }: SiteHandlerDeps) {
   app.get("/:id", async (c) => {
     const id = c.req.param("id");
     const response = await siteService.findById(parseInt(id));
-    return c.json(WebResponse.builder<Site>().data(response).build(), 200);
+    return c.json(WebResponse.builder<SiteEnriched>().data(response).build(), 200);
   });
 
   app.put("/:id", siteValidator.update, async (c) => {

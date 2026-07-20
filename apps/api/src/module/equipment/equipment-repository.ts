@@ -75,15 +75,10 @@ class EquipmentReaderRepository implements EquipmentReader {
           name: true,
           region: true,
           createdAt: true,
-          isAcquirable: true,
-          isOeeRelevant: true,
-          telemetryTags: true,
+          productSignalTag: true,
         },
         with: {
           unit: {
-            columns: { id: true, code: true, name: true },
-          },
-          parent: {
             columns: { id: true, code: true, name: true },
           },
           class: {
@@ -108,17 +103,12 @@ class EquipmentReaderRepository implements EquipmentReader {
         code: true,
         name: true,
         region: true,
+        productSignalTag: true,
         createdAt: true,
-        isAcquirable: true,
-        isOeeRelevant: true,
-        telemetryTags: true,
         updatedAt: true,
       },
       with: {
         unit: {
-          columns: { id: true, code: true, name: true },
-        },
-        parent: {
           columns: { id: true, code: true, name: true },
         },
         class: {
@@ -167,12 +157,8 @@ class EquipmentWriterRepository implements EquipmentWriter {
           name: equipment.name,
           region: this.region,
           workUnitId: equipment.workUnitId,
-          parentEquipmentId: equipment.parentEquipmentId,
           equipmentClassId: equipment.equipmentClassId,
-          isAcquirable: equipment.isAcquirable,
-          isOeeRelevant: equipment.isOeeRelevant,
-          position: equipment.position,
-          telemetryTags: equipment.telemetryTags,
+          productSignalTag: equipment.productSignalTag,
         })
         .returning({
           id: equipmentTable.id,

@@ -34,6 +34,7 @@ import { createSiteHandler } from "../../module/site/site-handler.js";
 import { createWorkCenterClassHandler } from "../../module/work-center-class/work-center-class-handler.js";
 import { createEquipmentClassHandler } from "../../module/equipment-class/equipment-class-handler.js";
 import { createWorkCenterHandler } from "../../module/work-center/work-center-handler.js";
+import { createEnterpriseHandler } from "../../module/enterprise/enterprise-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -58,6 +59,14 @@ app.route(
 );
 
 const api = new Hono().basePath("/v1");
+
+api.route(
+  "/enterprises",
+  createEnterpriseHandler({
+    authMw: container.resolve("authMw"),
+    enterpriseService: container.resolve("enterpriseService"),
+  }),
+);
 
 api.route(
   "/sites",

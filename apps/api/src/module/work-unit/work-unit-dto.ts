@@ -21,6 +21,10 @@ const createWorkUnitSchema = z.object({
   code: z.string().check(z.minLength(5)),
   name: z.string().check(z.minLength(5)),
   workCenterId: z.number().check(z.positive(), z.int()),
+  workUnitClassId: z._default(z.nullable(z.number().check(z.positive(), z.int())), null),
+  isOeeRelevant: z.boolean(),
+  isAcquirable: z.boolean(),
+  telemetryTags: z._default(z.nullable(z.record(z.string(), z.string())), null),
   type: z.enum(WORK_UNIT_TYPE),
   position: positionSchema,
 });

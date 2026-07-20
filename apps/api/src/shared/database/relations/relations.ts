@@ -2,6 +2,7 @@ import { defineRelations } from "drizzle-orm";
 import * as schema from "../schema/schema.js";
 
 const relations = defineRelations(schema, (r) => ({
+  enterpriseTable: {},
   siteTable: {
     areas: r.many.areaTable(),
   },
@@ -26,15 +27,30 @@ const relations = defineRelations(schema, (r) => ({
       to: r.workCenterClassTable.id,
     }),
     units: r.many.workUnitTable(),
-    equipmentFlows: r.many.equipmentFlowTable(),
+    unitFlows: r.many.workUnitFlowTable(),
     products: r.many.productWorkCenterTable(),
+  },
+  workUnitClassTable: {
+    units: r.many.workUnitTable(),
   },
   workUnitTable: {
     workCenter: r.one.workCenterTable({
       from: r.workUnitTable.workCenterId,
       to: r.workCenterTable.id,
     }),
+    class: r.one.workUnitClassTable({
+      from: r.workUnitTable.workUnitClassId,
+      to: r.workUnitTable.workUnitClassId,
+    }),
+    countPoints: r.many.countPointTable(),
     equipments: r.many.equipmentTable(),
+    flowFrom: r.many.workUnitFlowTable({
+      alias: "from",
+    }),
+    toFlow: r.many.workUnitFlowTable({
+      alias: "to",
+    }),
+    productSpecs: r.many.productWorkUnitSpecTable(),
   },
   equipmentClassTable: {
     equipments: r.many.equipmentTable(),
@@ -44,44 +60,36 @@ const relations = defineRelations(schema, (r) => ({
       from: r.equipmentTable.workUnitId,
       to: r.workUnitTable.id,
     }),
-    parent: r.one.equipmentTable({
-      from: r.equipmentTable.parentEquipmentId,
-      to: r.equipmentTable.id,
-    }),
     class: r.one.equipmentClassTable({
       from: r.equipmentTable.equipmentClassId,
       to: r.equipmentClassTable.id,
     }),
-    madeByFrom: r.many.equipmentTable(),
-    oeeCountPoints: r.many.oeeCountPointTable(),
-    flowFrom: r.many.equipmentFlowTable({
-      alias: "from",
-    }),
-    flowTo: r.many.equipmentFlowTable({
-      alias: "to",
-    }),
     productAliases: r.many.productCodeAliasTable(),
-    productSpecs: r.many.productEquipmentSpecTable(),
+    countPoints: r.many.countPointTable(),
   },
-  oeeCountPointTable: {
+  countPointTable: {
+    unit: r.one.workUnitTable({
+      from: r.countPointTable.workUnitId,
+      to: r.workUnitTable.id,
+    }),
     equipment: r.one.equipmentTable({
-      from: r.oeeCountPointTable.equipmentId,
+      from: r.countPointTable.equipmentId,
       to: r.equipmentTable.id,
     }),
   },
-  equipmentFlowTable: {
+  workUnitFlowTable: {
     workCenter: r.one.workCenterTable({
-      from: r.equipmentFlowTable.workCenterId,
+      from: r.workUnitFlowTable.workCenterId,
       to: r.workCenterTable.id,
     }),
-    from: r.one.equipmentTable({
-      from: r.equipmentFlowTable.fromEquipmentId,
-      to: r.equipmentTable.id,
+    from: r.one.workUnitTable({
+      from: r.workUnitFlowTable.fromWorkUnitId,
+      to: r.workUnitTable.id,
       alias: "from",
     }),
-    to: r.one.equipmentTable({
-      from: r.equipmentFlowTable.toEquipmentId,
-      to: r.equipmentTable.id,
+    to: r.one.workUnitTable({
+      from: r.workUnitFlowTable.toWorkUnitId,
+      to: r.workUnitTable.id,
       alias: "to",
     }),
   },
@@ -89,7 +97,7 @@ const relations = defineRelations(schema, (r) => ({
     products: r.many.productTable(),
     productPackages: r.many.productPackagingTable(),
     productConvertions: r.many.productConvertionTable(),
-    productSpecs: r.many.productEquipmentSpecTable(),
+    productSpecs: r.many.productWorkUnitSpecTable(),
   },
   productTable: {
     area: r.one.areaTable({
@@ -103,7 +111,7 @@ const relations = defineRelations(schema, (r) => ({
     packages: r.many.productPackagingTable(),
     convertions: r.many.productConvertionTable(),
     aliases: r.many.productCodeAliasTable(),
-    specs: r.many.productEquipmentSpecTable(),
+    specs: r.many.productWorkUnitSpecTable(),
     workCenters: r.many.productWorkCenterTable(),
   },
   productPackagingTable: {
@@ -136,17 +144,17 @@ const relations = defineRelations(schema, (r) => ({
       to: r.equipmentTable.id,
     }),
   },
-  productEquipmentSpecTable: {
+  productWorkUnitSpecTable: {
     product: r.one.productTable({
-      from: r.productEquipmentSpecTable.productId,
+      from: r.productWorkUnitSpecTable.productId,
       to: r.productTable.id,
     }),
-    equipment: r.one.equipmentTable({
-      from: r.productEquipmentSpecTable.equipmentId,
-      to: r.equipmentTable.id,
+    unit: r.one.equipmentTable({
+      from: r.productWorkUnitSpecTable.workUnitId,
+      to: r.workUnitTable.id,
     }),
-    unit: r.one.unitTable({
-      from: r.productEquipmentSpecTable.uomId,
+    uom: r.one.unitTable({
+      from: r.productWorkUnitSpecTable.uomId,
       to: r.unitTable.id,
     }),
   },

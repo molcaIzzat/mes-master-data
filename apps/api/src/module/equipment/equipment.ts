@@ -1,7 +1,5 @@
 import type { Paged } from "@molca/network";
 
-import type { Position } from "../../shared/database/helper/common.js";
-
 type Equipment = {
   id: number;
   code: string;
@@ -11,19 +9,12 @@ type Equipment = {
     code: string;
     name: string;
   } | null;
-  parent: {
-    id: number;
-    code: string;
-    name: string;
-  } | null;
   class: {
     id: number;
     code: string;
     name: string;
   } | null;
-  isOeeRelevant: boolean;
-  isAcquirable: boolean;
-  telemetryTags: Record<string, string> | null;
+  productSignalTag: string;
   region: string;
   createdAt: Date;
   updatedAt: Date;
@@ -47,12 +38,8 @@ type CreateEquipment = {
   code: string;
   name: string;
   workUnitId: number;
-  parentEquipmentId: number | null;
   equipmentClassId: number | null;
-  isOeeRelevant: boolean;
-  isAcquirable: boolean;
-  position: Position;
-  telemetryTags: Record<string, string> | null;
+  productSignalTag: string;
 };
 
 type UpdateEquipment = Partial<CreateEquipment>;

@@ -12,6 +12,7 @@ const listSiteInputSchema = paginationSchema.extend({
 const createSiteSchema = z.object({
   code: z.string().check(z.minLength(5)),
   name: z.string().check(z.minLength(5)),
+  enterpriseId: z._default(z.nullable(z.number().check(z.positive(), z.int())), null),
   timezone: z.string(),
 });
 

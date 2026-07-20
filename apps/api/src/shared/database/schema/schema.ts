@@ -46,10 +46,27 @@ export const oeeMode = msCore.enum("oee_mode", ["continuous", "batch", "discrete
 export const countRole = msCore.enum("count_role", ["infeed", "good_output", "reject"]);
 export const countSource = msCore.enum("count_source", ["plc", "manual"]);
 
+export const unitTable = msCore.table(
+  "uom",
+  {
+    ...defaultColumns(),
+  },
+  (t) => [...defaultIndexes(t, "uom")],
+);
+
+export const enterpriseTable = msCore.table(
+  "enterprices",
+  {
+    ...defaultColumns(),
+  },
+  (t) => [...defaultIndexes(t, "enterprices")],
+);
+
 export const siteTable = msCore.table(
   "sites",
   {
     ...defaultColumns(),
+    enterpriseId: p.integer("enterprise_id"),
     timezone: p.varchar().notNull(),
   },
   (t) => [...defaultIndexes(t, "sites")],
@@ -106,6 +123,14 @@ export const workCenterTable = msCore.table(
   ],
 );
 
+export const workUnitClassTable = msCore.table(
+  "work_unit_classes",
+  {
+    ...defaultColumns(),
+  },
+  (t) => [...defaultIndexes(t, "ec")],
+);
+
 export const workUnitTable = msCore.table(
   "work_units",
   {
@@ -114,10 +139,46 @@ export const workUnitTable = msCore.table(
       .integer("work_center_id")
       .notNull()
       .references(() => workCenterTable.id, { onDelete: "restrict" }),
+    workUnitClassId: p
+      .integer("work_unit_class_id")
+      .references(() => workUnitClassTable.id, { onDelete: "restrict" }),
     type: workUnitType("type").notNull(),
+    isOeeRelevant: p.boolean("is_oee_relevant").notNull().default(true),
+    isAcquirable: p.boolean("is_acuirable").notNull().default(true),
+    telemetryTags: p.jsonb("telemetry_tags").$type<Record<string, string>>(),
     position: p.jsonb("position").$type<Position>().notNull().default({ x: 0, y: 0 }),
   },
   (t) => [...defaultIndexes(t, "wu"), p.index("wu_wc_id_idx").on(t.workCenterId)],
+);
+
+export const workUnitFlowTable = msCore.table(
+  "work_unit_flows",
+  {
+    id: p.serial("id").primaryKey(),
+    workCenterId: p
+      .integer("work_center_id")
+      .notNull()
+      .references(() => workCenterTable.id, { onDelete: "restrict" }),
+    fromWorkUnitId: p
+      .integer("from_work_unit_id")
+      .notNull()
+      .references(() => workUnitTable.id, { onDelete: "cascade" }),
+    toWorkUnitId: p
+      .integer("to_work_unit_id")
+      .notNull()
+      .references(() => workUnitTable.id, { onDelete: "cascade" }),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    p.unique("wuf_from_wu_to_wu_keys").on(t.fromWorkUnitId, t.toWorkUnitId),
+    p.index("wuf_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("wuf_wc_id_idx").on(t.workCenterId),
+    p.index("wuf_to_wu_id_idx").on(t.toWorkUnitId),
+    p.index("wuf_from_wu_id_idx").on(t.fromWorkUnitId),
+    p.check("wuf_no_self_loop", sql`from_work_unit_id <> to_work_unit_id`),
+  ],
 );
 
 export const equipmentClassTable = msCore.table(
@@ -136,32 +197,24 @@ export const equipmentTable = msCore.table(
       .integer("work_unit_id")
       .notNull()
       .references(() => workUnitTable.id, { onDelete: "restrict" }),
-    parentEquipmentId: p
-      .integer("parent_equipment_id")
-      .references((): p.AnyPgColumn => equipmentTable.id, { onDelete: "cascade" }),
     equipmentClassId: p
       .integer()
       .references(() => equipmentClassTable.id, { onDelete: "restrict" }),
-    isOeeRelevant: p.boolean("is_oee_relevant").notNull().default(true),
-    isAcquirable: p.boolean("is_acuirable").notNull().default(true),
-    position: p.jsonb("position").$type<Position>().notNull().default({ x: 0, y: 0 }),
-    telemetryTags: p.jsonb("telemetry_tags").$type<Record<string, string>>(),
+    productSignalTag: p.varchar("product_signal_tag", { length: 255 }).notNull(), // OPC-UA node id / Telegraf tag
   },
-  (t) => [
-    ...defaultIndexes(t, "equipments"),
-    p.index("equipments_wu_id_idx").on(t.workUnitId),
-    p.index("equipments_parent_id_idx").on(t.parentEquipmentId),
-    p.check("equipments_not_own_parent_ckx", sql`parent_equipment_id IS DISTINCT FROM id`),
-  ],
+  (t) => [...defaultIndexes(t, "equipments"), p.index("equipments_wu_id_idx").on(t.workUnitId)],
 );
 
-export const oeeCountPointTable = msCore.table(
-  "oee_count_points",
+export const countPointTable = msCore.table(
+  "count_points",
   {
     id: p.serial("id").primaryKey(),
+    workUnitId: p
+      .integer("work_unit_id")
+      .notNull()
+      .references(() => workUnitTable.id, { onDelete: "cascade" }),
     equipmentId: p
       .integer("equipment_id")
-      .notNull()
       .references(() => equipmentTable.id, { onDelete: "cascade" }),
     role: countRole("role").notNull(),
     uom: p.varchar("uom", { length: 100 }).notNull(), // 'shot' | 'bag' | 'carton' — converted via products.*
@@ -172,54 +225,17 @@ export const oeeCountPointTable = msCore.table(
     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    p.unique("uq_ocp_eq_role_tag").on(t.equipmentId, t.role, t.sourceTag),
-    p.index("ocp_region_updated_idx").on(t.region, t.updatedAt),
-    p.index("ix_ocp_eq").on(t.equipmentId),
+    p.unique("cp_wu_role_source_tag_key").on(t.workUnitId, t.role, t.sourceTag),
+    p.index("cp_region_updated_idx").on(t.region, t.updatedAt),
+    p.index("cp_wu_id_idx").on(t.workUnitId),
     p.check(
-      "ck_ocp_source_tag",
+      "cp_source_tag_cx",
       sql`
     (source = 'plc'    AND source_tag IS NOT NULL) OR
     (source = 'manual' AND source_tag IS NULL)
   `,
     ),
   ],
-);
-
-export const equipmentFlowTable = msCore.table(
-  "equipment_flows",
-  {
-    id: p.serial("id").primaryKey(),
-    workCenterId: p
-      .integer("work_center_id")
-      .notNull()
-      .references(() => workCenterTable.id, { onDelete: "restrict" }),
-    fromEquipmentId: p
-      .integer("from_equipment_id")
-      .notNull()
-      .references(() => equipmentTable.id, { onDelete: "cascade" }),
-    toEquipmentId: p
-      .integer("to_equipment_id")
-      .notNull()
-      .references(() => equipmentTable.id, { onDelete: "cascade" }),
-    region: p.varchar({ length: 10 }).notNull(),
-    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [
-    p.unique("ef_equipment_keys").on(t.fromEquipmentId, t.toEquipmentId),
-    p.index("ef_region_updated_idx").on(t.region, t.updatedAt),
-    p.index("ef_wc_id_idx").on(t.workCenterId),
-    p.index("ef_to_eq_id_idx").on(t.toEquipmentId),
-    p.check("ef_no_self_loop", sql`from_equipment_id <> to_equipment_id`),
-  ],
-);
-
-export const unitTable = msCore.table(
-  "uom",
-  {
-    ...defaultColumns(),
-  },
-  (t) => [...defaultIndexes(t, "uom")],
 );
 
 export const productTable = msCore.table(
@@ -322,18 +338,18 @@ export const productCodeAliasTable = msCore.table(
   ],
 );
 
-export const productEquipmentSpecTable = msCore.table(
-  "product_equipment_specs",
+export const productWorkUnitSpecTable = msCore.table(
+  "product_work_unit_specs",
   {
     id: p.serial("id").primaryKey(),
     productId: p
       .integer("product_id")
       .notNull()
       .references(() => productTable.id, { onDelete: "cascade" }),
-    equipmentId: p
-      .integer("equipment_id")
+    workUnitId: p
+      .integer("wor_unit_id")
       .notNull()
-      .references(() => equipmentTable.id, { onDelete: "cascade" }),
+      .references(() => workUnitTable.id, { onDelete: "cascade" }),
     uomId: p
       .integer("uom_id")
       .notNull()
@@ -344,9 +360,9 @@ export const productEquipmentSpecTable = msCore.table(
     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    p.unique("pes_equipment_key").on(t.productId, t.equipmentId),
+    p.unique("pes_product_wu_key").on(t.productId, t.workUnitId),
     p.index("pes_region_updated_idx").on(t.region, t.updatedAt),
-    p.index("pes_equipment_id_idx").on(t.equipmentId),
+    p.index("pes_work_unit_id_idx").on(t.workUnitId),
     p.index("pes_product_id_idx").on(t.productId),
     p.index("pes_uom_id_idx").on(t.uomId),
   ],

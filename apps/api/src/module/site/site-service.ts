@@ -3,20 +3,22 @@ import { buildPageMeta, type PagedResult } from "@molca/network";
 import { withLog, type Logger } from "@molca/utils";
 import { baseLogger, getRequestContext } from "@molca/observability";
 
-import type { CreateSite, Site, SiteFilter, SiteList, UpdateSite } from "./site.js";
+import type { CreateSite, SiteEnriched, SiteEnrichedList, SiteFilter, UpdateSite } from "./site.js";
 import type { SiteReader, SiteWriter } from "./site-repository.js";
+import type { EnterpriseClientContract, EnterpriseSummary } from "@molca/contract-client";
 
-type PagedSiteResult = PagedResult<SiteList>;
+type PagedSiteResult = PagedResult<SiteEnrichedList>;
 
 type SiteServiceDeps = {
   siteReaderRepository: SiteReader;
   siteWriterRepository: SiteWriter;
+  enterpriseClient: EnterpriseClientContract;
   logger?: Logger;
 };
 
 type TSiteService = {
   findAll: (page: number, size: number, filter: SiteFilter) => Promise<PagedSiteResult>;
-  findById: (id: number) => Promise<Site>;
+  findById: (id: number) => Promise<SiteEnriched>;
   create: (input: CreateSite) => Promise<{ id: number }>;
   update: (id: number, input: UpdateSite) => Promise<{ id: number }>;
   delete: (id: number) => Promise<string>;
@@ -26,10 +28,17 @@ class SiteService implements TSiteService {
   private siteReaderRepository: SiteReader;
   private siteWriterRepository: SiteWriter;
   private fallbackLogger: Logger;
+  private enterpriseClient: EnterpriseClientContract;
 
-  constructor({ siteReaderRepository, siteWriterRepository, logger }: SiteServiceDeps) {
+  constructor({
+    siteReaderRepository,
+    siteWriterRepository,
+    enterpriseClient,
+    logger,
+  }: SiteServiceDeps) {
     this.siteReaderRepository = siteReaderRepository;
     this.siteWriterRepository = siteWriterRepository;
+    this.enterpriseClient = enterpriseClient;
     this.fallbackLogger = logger ?? baseLogger;
   }
 
@@ -47,13 +56,35 @@ class SiteService implements TSiteService {
       filter,
     });
 
-    return { items, meta: buildPageMeta(page, size, totalElements) };
+    const enterpriseIds = items
+      .map((site) => site.enterpriseId)
+      .filter((enterpriseId) => enterpriseId !== null);
+    const uniqueEnterpriseIds = [...new Set(enterpriseIds)];
+
+    const enterpriseResult = await this.enterpriseClient.getMany(uniqueEnterpriseIds);
+    const enterpriseById = new Map(enterpriseResult.found.map((e) => [e.id, e]));
+
+    const enrichedItems = items.map(({ enterpriseId, ...rest }) => ({
+      ...rest,
+      enterprise: enterpriseId === null ? null : enterpriseById.get(enterpriseId),
+    }));
+
+    return { items: enrichedItems, meta: buildPageMeta(page, size, totalElements) };
   }
 
-  async findById(id: number): Promise<Site> {
+  async findById(id: number): Promise<SiteEnriched> {
     const site = await this.siteReaderRepository.findById(id);
     if (!site) throw new HTTPException(404, { message: "site not found" });
-    return site;
+    let enterprise: EnterpriseSummary | null = null;
+
+    if (site.enterpriseId) {
+      const foundEnterprise = await this.enterpriseClient.findById(site.enterpriseId);
+      enterprise = foundEnterprise ?? null;
+    }
+    return {
+      ...site,
+      enterprise,
+    };
   }
 
   async create(input: CreateSite): Promise<{ id: number }> {

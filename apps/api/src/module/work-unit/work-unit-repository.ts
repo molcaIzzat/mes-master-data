@@ -82,11 +82,17 @@ class WorkUnitReaderRepository implements WorkUnitReader {
           name: true,
           type: true,
           position: true,
+          isOeeRelevant: true,
+          isAcquirable: true,
+          telemetryTags: true,
           region: true,
           createdAt: true,
         },
         with: {
           workCenter: {
+            columns: { id: true, code: true, name: true },
+          },
+          class: {
             columns: { id: true, code: true, name: true },
           },
         },
@@ -109,12 +115,18 @@ class WorkUnitReaderRepository implements WorkUnitReader {
         name: true,
         type: true,
         position: true,
+        isOeeRelevant: true,
+        isAcquirable: true,
+        telemetryTags: true,
         region: true,
         createdAt: true,
         updatedAt: true,
       },
       with: {
         workCenter: {
+          columns: { id: true, code: true, name: true },
+        },
+        class: {
           columns: { id: true, code: true, name: true },
         },
       },
@@ -146,9 +158,13 @@ class WorkUnitWriterRepository implements WorkUnitWriter {
         .values({
           code: workUnit.code,
           workCenterId: workUnit.workCenterId,
+          workUnitClassId: workUnit.workUnitClassId,
           name: workUnit.name,
           type: workUnit.type,
           position: workUnit.position,
+          isOeeRelevant: workUnit.isOeeRelevant,
+          isAcquirable: workUnit.isAcquirable,
+          telemetryTags: workUnit.telemetryTags,
           region: this.region,
         })
         .returning({
