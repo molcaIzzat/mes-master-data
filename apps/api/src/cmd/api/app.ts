@@ -35,6 +35,9 @@ import { createWorkCenterClassHandler } from "../../module/work-center-class/wor
 import { createEquipmentClassHandler } from "../../module/equipment-class/equipment-class-handler.js";
 import { createWorkCenterHandler } from "../../module/work-center/work-center-handler.js";
 import { createEnterpriseHandler } from "../../module/enterprise/enterprise-handler.js";
+import { createWorkUnitClassHandler } from "../../module/work-unit-class/work-unit-class-handler.js";
+import { createWorkUnitHandler } from "../../module/work-unit/work-unit-handler.js";
+import { createEquipmentHandler } from "../../module/equipment/equipment-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -101,6 +104,22 @@ api.route(
 );
 
 api.route(
+  "/work-unit-classes",
+  createWorkUnitClassHandler({
+    authMw: container.resolve("authMw"),
+    workUnitClassService: container.resolve("workUnitClassService"),
+  }),
+);
+
+api.route(
+  "/work-units",
+  createWorkUnitHandler({
+    authMw: container.resolve("authMw"),
+    workUnitService: container.resolve("workUnitService"),
+  }),
+);
+
+api.route(
   "/equipment-classes",
   createEquipmentClassHandler({
     authMw: container.resolve("authMw"),
@@ -109,26 +128,10 @@ api.route(
 );
 
 api.route(
-  "/lines",
-  createLineHandler({
+  "/equipments",
+  createEquipmentHandler({
     authMw: container.resolve("authMw"),
-    lineService: container.resolve("lineService"),
-  }),
-);
-
-api.route(
-  "/machines",
-  createMachineHandler({
-    authMw: container.resolve("authMw"),
-    machineService: container.resolve("machineService"),
-  }),
-);
-
-api.route(
-  "/hierarcies",
-  createHierarcyHandler({
-    authMw: container.resolve("authMw"),
-    hierarcyService: container.resolve("hierarcyService"),
+    equipmentService: container.resolve("equipmentService"),
   }),
 );
 
@@ -177,6 +180,45 @@ api.route(
   createRejectReasonHandler({
     authMw: container.resolve("authMw"),
     rejectReasonService: container.resolve("rejectReasonService"),
+  }),
+);
+
+/**
+ * @deprecated
+ * This API Resource is no longger use
+ *
+ **/
+api.route(
+  "/lines",
+  createLineHandler({
+    authMw: container.resolve("authMw"),
+    lineService: container.resolve("lineService"),
+  }),
+);
+
+/**
+ * @deprecated
+ * This API Resource is no longger use
+ *
+ **/
+api.route(
+  "/machines",
+  createMachineHandler({
+    authMw: container.resolve("authMw"),
+    machineService: container.resolve("machineService"),
+  }),
+);
+
+/**
+ * @deprecated
+ * This API Resource is no longger use
+ *
+ **/
+api.route(
+  "/hierarcies",
+  createHierarcyHandler({
+    authMw: container.resolve("authMw"),
+    hierarcyService: container.resolve("hierarcyService"),
   }),
 );
 

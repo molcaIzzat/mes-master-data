@@ -1,8 +1,13 @@
 import { and, count, eq, ilike, or } from "drizzle-orm";
 import type { EquipmentSummary } from "@molca/contract-client";
 
-import { DuplicateEquipmentError } from "./equipment-errors.js";
-import { isUniqueViolation } from "../../shared/database/helper/catcher.js";
+import { DuplicateEquipmentError, InvalidEquipmentReferenceError } from "./equipment-errors.js";
+import {
+  FkViolationError,
+  isUniqueViolation,
+  toPgConstraintError,
+  UniqueViolationError,
+} from "../../shared/database/helper/catcher.js";
 import { equipmentTable } from "../../shared/database/schema/schema.js";
 
 import type {
@@ -166,10 +171,14 @@ class EquipmentWriterRepository implements EquipmentWriter {
 
       return row;
     } catch (err) {
-      if (isUniqueViolation(err)) {
+      const constraintError = toPgConstraintError(err);
+      if (constraintError instanceof UniqueViolationError) {
         throw new DuplicateEquipmentError(equipment.code);
+      } else if (constraintError instanceof FkViolationError) {
+        throw new InvalidEquipmentReferenceError(constraintError.column, constraintError.value);
+      } else {
+        throw err;
       }
-      throw err;
     }
   }
 
@@ -188,10 +197,14 @@ class EquipmentWriterRepository implements EquipmentWriter {
 
       return row;
     } catch (err) {
-      if (isUniqueViolation(err)) {
+      const constraintError = toPgConstraintError(err);
+      if (constraintError instanceof UniqueViolationError) {
         throw new DuplicateEquipmentError(patch.code);
+      } else if (constraintError instanceof FkViolationError) {
+        throw new InvalidEquipmentReferenceError(constraintError.column, constraintError.value);
+      } else {
+        throw err;
       }
-      throw err;
     }
   }
 

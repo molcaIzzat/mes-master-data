@@ -3,12 +3,15 @@ import * as z from "zod";
 import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 
 const listWorkCenterClassInputSchema = paginationSchema.extend({
-  q: z.optional(z.string().transform((v) => (v === "" ? undefined : v))),
+  q: z.pipe(
+    z.optional(z.string()),
+    z.transform((v) => (v === "" ? undefined : v)),
+  ),
 });
 
 const createWorkCenterClassSchema = z.object({
-  code: z.string().min(5),
-  name: z.string().min(5),
+  code: z.string().check(z.minLength(3)),
+  name: z.string().check(z.minLength(3)),
 });
 
 const updateWorkCenterClassSchema = createWorkCenterClassSchema.partial();

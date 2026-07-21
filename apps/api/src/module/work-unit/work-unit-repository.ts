@@ -1,10 +1,11 @@
 import { and, count, eq, ilike, or } from "drizzle-orm";
 
+import { DuplicateWorkUnitError, InvalidWorkUnitReferenceError } from "./work-unit-errors.js";
 import {
-  DuplicateWorkUnitError,
-  InvalidWorkUnitWorkCenterIdReferenceError,
-} from "./work-unit-errors.js";
-import { isForeignKeyViolation, isUniqueViolation } from "../../shared/database/helper/catcher.js";
+  FkViolationError,
+  toPgConstraintError,
+  UniqueViolationError,
+} from "../../shared/database/helper/catcher.js";
 import { workUnitTable } from "../../shared/database/schema/schema.js";
 
 import type {
@@ -173,13 +174,14 @@ class WorkUnitWriterRepository implements WorkUnitWriter {
 
       return row;
     } catch (err) {
-      if (isUniqueViolation(err)) {
+      const constraintError = toPgConstraintError(err);
+      if (constraintError instanceof UniqueViolationError) {
         throw new DuplicateWorkUnitError(workUnit.code);
+      } else if (constraintError instanceof FkViolationError) {
+        throw new InvalidWorkUnitReferenceError(constraintError.column, constraintError.value);
+      } else {
+        throw err;
       }
-      if (isForeignKeyViolation(err)) {
-        throw new InvalidWorkUnitWorkCenterIdReferenceError(workUnit.workCenterId);
-      }
-      throw err;
     }
   }
 
@@ -198,13 +200,14 @@ class WorkUnitWriterRepository implements WorkUnitWriter {
 
       return row;
     } catch (err) {
-      if (isUniqueViolation(err)) {
+      const constraintError = toPgConstraintError(err);
+      if (constraintError instanceof UniqueViolationError) {
         throw new DuplicateWorkUnitError(patch.code);
+      } else if (constraintError instanceof FkViolationError) {
+        throw new InvalidWorkUnitReferenceError(constraintError.column, constraintError.value);
+      } else {
+        throw err;
       }
-      if (isForeignKeyViolation(err)) {
-        throw new InvalidWorkUnitWorkCenterIdReferenceError(patch.workCenterId);
-      }
-      throw err;
     }
   }
 

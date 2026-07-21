@@ -14,18 +14,22 @@ class DuplicateWorkUnitError extends Error {
   }
 }
 
-class InvalidWorkUnitWorkCenterIdReferenceError extends Error {
-  public readonly workCenterId?: number;
+class InvalidWorkUnitReferenceError extends Error {
+  public readonly columnName?: string;
+  public readonly targetId?: string;
 
-  constructor(workCenterId?: number) {
+  constructor(columnName?: string, targetId?: string) {
     super(
-      workCenterId ? `work center "${workCenterId}" does not exist` : "work center does not exist",
+      columnName && targetId
+        ? `"${columnName}" with value "${targetId}" does not exist`
+        : "references does not exist",
     );
-    this.name = "InvalidWorkUnitWorkCenterIdReferenceError";
-    this.workCenterId = workCenterId;
+    this.name = "InvalidWorkUnitReferenceError";
+    this.columnName = columnName;
+    this.targetId = targetId;
     if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);
-    Object.setPrototypeOf(this, InvalidWorkUnitWorkCenterIdReferenceError.prototype);
+    Object.setPrototypeOf(this, InvalidWorkUnitReferenceError.prototype);
   }
 }
 
-export { DuplicateWorkUnitError, InvalidWorkUnitWorkCenterIdReferenceError };
+export { DuplicateWorkUnitError, InvalidWorkUnitReferenceError };

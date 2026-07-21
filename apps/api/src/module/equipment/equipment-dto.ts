@@ -10,8 +10,8 @@ const listEquipmentInputSchema = paginationSchema.extend({
 });
 
 const createEquipmentSchema = z.object({
-  code: z.string().check(z.minLength(5)),
-  name: z.string().check(z.minLength(5)),
+  code: z.string().check(z.minLength(3)),
+  name: z.string().check(z.minLength(3)),
   workUnitId: z.number().check(z.positive(), z.int()),
   equipmentClassId: z.nullable(z.number().check(z.positive(), z.int())),
   productSignalTag: z.string().check(z.minLength(3)),

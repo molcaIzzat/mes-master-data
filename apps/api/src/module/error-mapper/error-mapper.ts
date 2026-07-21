@@ -32,14 +32,12 @@ import {
   DuplicateWorkCenterError,
 } from "../work-center/work-center-errors.js";
 import {
-  InvalidWorkUnitWorkCenterIdReferenceError,
+  InvalidWorkUnitReferenceError,
   DuplicateWorkUnitError,
 } from "../work-unit/work-unit-errors.js";
 import {
-  InvalidEquipmentUnitIdReferenceError,
-  InvalidEquipmentParentIdReferenceError,
-  InvalidEquipmentClassIdReferenceError,
   DuplicateEquipmentError,
+  InvalidEquipmentReferenceError,
 } from "../equipment/equipment-errors.js";
 import { DuplicateSiteError } from "../site/site-errors.js";
 
@@ -54,15 +52,7 @@ function mapDomainError(err: unknown): HTTPException | null {
     return new HTTPException(409, { message: err.message });
   }
 
-  if (err instanceof InvalidEquipmentUnitIdReferenceError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof InvalidEquipmentParentIdReferenceError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof InvalidEquipmentClassIdReferenceError) {
+  if (err instanceof InvalidEquipmentReferenceError) {
     return new HTTPException(409, { message: err.message });
   }
 
@@ -70,7 +60,7 @@ function mapDomainError(err: unknown): HTTPException | null {
     return new HTTPException(409, { message: err.message });
   }
 
-  if (err instanceof InvalidWorkUnitWorkCenterIdReferenceError) {
+  if (err instanceof InvalidWorkUnitReferenceError) {
     return new HTTPException(409, { message: err.message });
   }
 
