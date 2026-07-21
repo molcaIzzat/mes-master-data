@@ -14,16 +14,22 @@ class DuplicateWorkCenterError extends Error {
   }
 }
 
-class InvalidWorkCenterAreaIdReferenceError extends Error {
-  public readonly areaId?: number;
+class InvalidWorkCenterReferenceError extends Error {
+  public readonly columnName?: string;
+  public readonly targetId?: string;
 
-  constructor(areaId?: number) {
-    super(areaId ? `area "${areaId}" does not exist` : "area does not exist");
-    this.name = "InvalidWorkCenterAreaIdReferenceError";
-    this.areaId = areaId;
+  constructor(columnName?: string, targetId?: string) {
+    super(
+      columnName && targetId
+        ? `"${columnName}" with value "${targetId}" does not exist`
+        : "references does not exist",
+    );
+    this.name = "InvalidWorkCenterReferenceError";
+    this.columnName = columnName;
+    this.targetId = targetId;
     if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);
-    Object.setPrototypeOf(this, InvalidWorkCenterAreaIdReferenceError.prototype);
+    Object.setPrototypeOf(this, InvalidWorkCenterReferenceError.prototype);
   }
 }
 
-export { DuplicateWorkCenterError, InvalidWorkCenterAreaIdReferenceError };
+export { DuplicateWorkCenterError, InvalidWorkCenterReferenceError };

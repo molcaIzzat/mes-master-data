@@ -122,6 +122,7 @@ class SiteWriterRepository implements SiteWriter {
           code: site.code,
           name: site.name,
           timezone: site.timezone,
+          enterpriseId: site.enterpriseId,
           region: this.region,
         })
         .returning({

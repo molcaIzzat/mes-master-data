@@ -128,7 +128,7 @@ export const workUnitClassTable = msCore.table(
   {
     ...defaultColumns(),
   },
-  (t) => [...defaultIndexes(t, "ec")],
+  (t) => [...defaultIndexes(t, "wuc")],
 );
 
 export const workUnitTable = msCore.table(

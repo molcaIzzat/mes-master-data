@@ -40,7 +40,7 @@ const relations = defineRelations(schema, (r) => ({
     }),
     class: r.one.workUnitClassTable({
       from: r.workUnitTable.workUnitClassId,
-      to: r.workUnitTable.workUnitClassId,
+      to: r.workUnitClassTable.id,
     }),
     countPoints: r.many.countPointTable(),
     equipments: r.many.equipmentTable(),
@@ -149,7 +149,7 @@ const relations = defineRelations(schema, (r) => ({
       from: r.productWorkUnitSpecTable.productId,
       to: r.productTable.id,
     }),
-    unit: r.one.equipmentTable({
+    unit: r.one.workUnitTable({
       from: r.productWorkUnitSpecTable.workUnitId,
       to: r.workUnitTable.id,
     }),

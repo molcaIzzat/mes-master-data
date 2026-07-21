@@ -64,10 +64,18 @@ class SiteService implements TSiteService {
     const enterpriseResult = await this.enterpriseClient.getMany(uniqueEnterpriseIds);
     const enterpriseById = new Map(enterpriseResult.found.map((e) => [e.id, e]));
 
-    const enrichedItems = items.map(({ enterpriseId, ...rest }) => ({
-      ...rest,
-      enterprise: enterpriseId === null ? null : enterpriseById.get(enterpriseId),
-    }));
+    const enrichedItems = items.map(({ enterpriseId, ...rest }) => {
+      let enterprise: EnterpriseSummary | null = null;
+      if (enterpriseId !== null) {
+        const foundEnterprise = enterpriseById.get(enterpriseId);
+        enterprise = foundEnterprise ?? null;
+      }
+
+      return {
+        ...rest,
+        enterprise,
+      };
+    });
 
     return { items: enrichedItems, meta: buildPageMeta(page, size, totalElements) };
   }
@@ -88,6 +96,11 @@ class SiteService implements TSiteService {
   }
 
   async create(input: CreateSite): Promise<{ id: number }> {
+    if (input.enterpriseId) {
+      const enterprise = await this.enterpriseClient.findById(input.enterpriseId);
+      if (!enterprise) throw new HTTPException(404, { message: "enterprise not found" });
+    }
+
     const save = await withLog(
       this.logger,
       "site_create",
@@ -103,6 +116,12 @@ class SiteService implements TSiteService {
   async update(id: number, input: UpdateSite): Promise<{ id: number }> {
     const found = await this.siteReaderRepository.findById(id);
     if (!found) throw new HTTPException(404, { message: "site unit not found" });
+
+    if (input.enterpriseId) {
+      const enterprise = this.enterpriseClient.findById(input.enterpriseId);
+      if (!enterprise) throw new HTTPException(404, { message: "enterprise not found" });
+    }
+
     const save = await withLog(
       this.logger,
       "site_update",

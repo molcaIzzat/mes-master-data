@@ -28,7 +28,7 @@ import {
 import { DuplicateWorkCenterClassError } from "../work-center-class/work-center-class-errors.js";
 import { DuplicateEquipmentClassError } from "../equipment-class/equipment-class-errors.js";
 import {
-  InvalidWorkCenterAreaIdReferenceError,
+  InvalidWorkCenterReferenceError,
   DuplicateWorkCenterError,
 } from "../work-center/work-center-errors.js";
 import {
@@ -78,7 +78,7 @@ function mapDomainError(err: unknown): HTTPException | null {
     return new HTTPException(409, { message: err.message });
   }
 
-  if (err instanceof InvalidWorkCenterAreaIdReferenceError) {
+  if (err instanceof InvalidWorkCenterReferenceError) {
     return new HTTPException(409, { message: err.message });
   }
 

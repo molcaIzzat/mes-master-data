@@ -1,11 +1,12 @@
 import { and, count, eq, ilike, or } from "drizzle-orm";
 import type { WorkCenterSummary } from "@molca/contract-client";
 
+import { DuplicateWorkCenterError, InvalidWorkCenterReferenceError } from "./work-center-errors.js";
 import {
-  DuplicateWorkCenterError,
-  InvalidWorkCenterAreaIdReferenceError,
-} from "./work-center-errors.js";
-import { isForeignKeyViolation, isUniqueViolation } from "../../shared/database/helper/catcher.js";
+  FkViolationError,
+  toPgConstraintError,
+  UniqueViolationError,
+} from "../../shared/database/helper/catcher.js";
 import { workCenterTable } from "../../shared/database/schema/schema.js";
 
 import type {
@@ -180,13 +181,14 @@ class WorkCenterWriterRepository implements WorkCenterWriter {
 
       return row;
     } catch (err) {
-      if (isUniqueViolation(err)) {
+      const constraintError = toPgConstraintError(err);
+      if (constraintError instanceof UniqueViolationError) {
         throw new DuplicateWorkCenterError(workCenter.code);
+      } else if (constraintError instanceof FkViolationError) {
+        throw new InvalidWorkCenterReferenceError(constraintError.column, constraintError.value);
+      } else {
+        throw err;
       }
-      if (isForeignKeyViolation(err)) {
-        throw new InvalidWorkCenterAreaIdReferenceError(workCenter.areaId);
-      }
-      throw err;
     }
   }
 
@@ -205,13 +207,14 @@ class WorkCenterWriterRepository implements WorkCenterWriter {
 
       return row;
     } catch (err) {
-      if (isUniqueViolation(err)) {
+      const constraintError = toPgConstraintError(err);
+      if (constraintError instanceof UniqueViolationError) {
         throw new DuplicateWorkCenterError(patch.code);
+      } else if (constraintError instanceof FkViolationError) {
+        throw new InvalidWorkCenterReferenceError(constraintError.column, constraintError.value);
+      } else {
+        throw err;
       }
-      if (isForeignKeyViolation(err)) {
-        throw new InvalidWorkCenterAreaIdReferenceError(patch.areaId);
-      }
-      throw err;
     }
   }
 

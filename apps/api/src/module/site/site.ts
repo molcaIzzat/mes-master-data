@@ -17,7 +17,7 @@ type SiteEnriched = {
   code: string;
   name: string;
   timezone: string;
-  enterprise?: EnterpriseSummary | null | undefined;
+  enterprise: EnterpriseSummary | null;
   region: string;
   createdAt: Date;
   updatedAt: Date;
