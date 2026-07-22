@@ -4,6 +4,7 @@ import { jsonValidator, paginationSchema, queryValidator } from "@molca/helper";
 import { WORK_UNIT_TYPE } from "./work-unit.js";
 
 import { positionSchema } from "../../shared/database/helper/common.js";
+import { COUNT_ROLE, COUNT_SOURCE } from "../count-point/count-point.js";
 
 const listWorkUnitInputSchema = paginationSchema.extend({
   q: z.pipe(
@@ -17,6 +18,8 @@ const listWorkUnitInputSchema = paginationSchema.extend({
   type: z.optional(z.enum(WORK_UNIT_TYPE)),
 });
 
+const listCountPointSchema = paginationSchema;
+
 const createWorkUnitSchema = z.object({
   code: z.string().check(z.minLength(5)),
   name: z.string().check(z.minLength(5)),
@@ -29,12 +32,24 @@ const createWorkUnitSchema = z.object({
   position: positionSchema,
 });
 
+const createCountPointSchema = z.object({
+  equipmentId: z.nullable(z.int().check(z.positive())),
+  uomId: z.int().check(z.positive()),
+  role: z.enum(COUNT_ROLE),
+  source: z._default(z.enum(COUNT_SOURCE), "plc"),
+  sourceTag: z.string().check(z.minLength(3)),
+});
+
 const updateWorkUnitSchema = createWorkUnitSchema.partial();
+const updateCountPointSchema = createCountPointSchema.partial();
 
 const workUnitValidator = {
   paginate: queryValidator(listWorkUnitInputSchema),
+  paginateCP: queryValidator(listCountPointSchema),
   create: jsonValidator(createWorkUnitSchema),
+  createCP: jsonValidator(createCountPointSchema),
   update: jsonValidator(updateWorkUnitSchema),
+  updateCP: jsonValidator(updateCountPointSchema),
 };
 
 export { workUnitValidator };

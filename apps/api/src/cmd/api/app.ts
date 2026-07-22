@@ -125,6 +125,7 @@ api.route(
   createWorkUnitHandler({
     authMw: container.resolve("authMw"),
     workUnitService: container.resolve("workUnitService"),
+    countPointService: container.resolve("countPointService"),
   }),
 );
 

@@ -76,6 +76,10 @@ const relations = defineRelations(schema, (r) => ({
       from: r.countPointTable.equipmentId,
       to: r.equipmentTable.id,
     }),
+    uom: r.one.unitTable({
+      from: r.countPointTable.uomId,
+      to: r.unitTable.id,
+    }),
   },
   workUnitFlowTable: {
     workCenter: r.one.workCenterTable({

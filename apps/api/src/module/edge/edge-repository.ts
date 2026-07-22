@@ -91,7 +91,6 @@ class EdgeWriterRepository implements EdgeWriter {
 
       return row;
     } catch (err) {
-      console.log(err);
       const constraintError = toPgConstraintError(err);
       if (constraintError instanceof FkViolationError) {
         throw new InvalidEdgeReferenceError(constraintError.column, constraintError.value);

@@ -111,6 +111,12 @@ import { registerWorkUnitClass } from "../../module/work-unit-class/work-unit-cl
 import type { EdgeReader, EdgeWriter } from "../../module/edge/edge-repository.js";
 import type { TEdgeService } from "../../module/edge/edge-service.js";
 import { registerEdge } from "../../module/edge/edge-module.js";
+import type {
+  CountPointReader,
+  CountPointWriter,
+} from "../../module/count-point/count-point-repository.js";
+import type { TCountPointService } from "../../module/count-point/count-point-service.js";
+import { registerCountPoint } from "../../module/count-point/count-point-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -178,6 +184,9 @@ type Cradle = {
   edgeReaderRepository: EdgeReader;
   edgeWriterRepository: EdgeWriter;
   edgeService: TEdgeService;
+  countPointReaderRepository: CountPointReader;
+  countPointWriterRepository: CountPointWriter;
+  countPointService: TCountPointService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -196,6 +205,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerSite(container);
   registerArea(container);
   registerWorkCenterClass(container);
+  registerCountPoint(container);
   registerWorkCenter(container);
   registerWorkUnitClass(container);
   registerWorkUnit(container);

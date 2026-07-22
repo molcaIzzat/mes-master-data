@@ -43,7 +43,14 @@ export const workUnitType = msCore.enum("work_unit_type", [
 
 export const oeeMode = msCore.enum("oee_mode", ["continuous", "batch", "discrete", "none"]);
 
-export const countRole = msCore.enum("count_role", ["infeed", "good_output", "reject"]);
+export const countRole = msCore.enum("count_role", [
+  "infeed",
+  "good_output",
+  "reject",
+  "good_weight",
+  "reject_weight",
+  "total_weight",
+]);
 export const countSource = msCore.enum("count_source", ["plc", "manual"]);
 
 export const unitTable = msCore.table(
@@ -217,7 +224,10 @@ export const countPointTable = msCore.table(
       .integer("equipment_id")
       .references(() => equipmentTable.id, { onDelete: "cascade" }),
     role: countRole("role").notNull(),
-    uom: p.varchar("uom", { length: 100 }).notNull(), // 'shot' | 'bag' | 'carton' — converted via products.*
+    uomId: p
+      .integer("uom_id")
+      .notNull()
+      .references(() => unitTable.id, { onDelete: "restrict" }),
     source: countSource("source").notNull().default("plc"),
     sourceTag: p.varchar("source_tag", { length: 255 }).notNull(), // OPC-UA node id / Telegraf tag
     region: p.varchar({ length: 10 }).notNull(),
