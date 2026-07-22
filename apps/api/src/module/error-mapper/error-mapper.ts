@@ -40,9 +40,18 @@ import {
   InvalidEquipmentReferenceError,
 } from "../equipment/equipment-errors.js";
 import { DuplicateSiteError } from "../site/site-errors.js";
+import { InvalidEdgeReferenceError, InvalidTopology } from "../edge/edge-errors.js";
 
 function mapDomainError(err: unknown): HTTPException | null {
   if (err instanceof HTTPException) return err;
+
+  if (err instanceof InvalidEdgeReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidTopology) {
+    return new HTTPException(409, { message: err.message });
+  }
 
   if (err instanceof InvalidAreaSiteIdReferenceError) {
     return new HTTPException(409, { message: err.message });

@@ -27,8 +27,15 @@ type WorkUnitWriterDeps = {
   region: string;
 };
 
+type WorkUnitSummaries = {
+  id: number;
+  code: string;
+  name: string;
+}[];
+
 type WorkUnitReader = {
   findAll: (input: ListWorkUnitInput) => Promise<PagedWorkUnit>;
+  findSummariesByWorkCenterId: (workCenterId: number) => Promise<WorkUnitSummaries>;
   findById: (id: number) => Promise<WorkUnit | undefined>;
   existById: (id: number) => Promise<boolean>;
 };
@@ -140,6 +147,17 @@ class WorkUnitReaderRepository implements WorkUnitReader {
     });
 
     return !!row;
+  }
+
+  async findSummariesByWorkCenterId(workCenterId: number): Promise<WorkUnitSummaries> {
+    return await this.db.query.workUnitTable.findMany({
+      where: { region: this.region, workCenterId },
+      columns: {
+        id: true,
+        code: true,
+        name: true,
+      },
+    });
   }
 }
 

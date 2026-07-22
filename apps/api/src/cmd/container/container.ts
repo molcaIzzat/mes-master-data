@@ -108,6 +108,9 @@ import type {
 } from "../../module/work-unit-class/work-unit-class-repository.js";
 import type { TWorkUnitClassService } from "../../module/work-unit-class/work-unit-class-service.js";
 import { registerWorkUnitClass } from "../../module/work-unit-class/work-unit-class-module.js";
+import type { EdgeReader, EdgeWriter } from "../../module/edge/edge-repository.js";
+import type { TEdgeService } from "../../module/edge/edge-service.js";
+import { registerEdge } from "../../module/edge/edge-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -172,6 +175,9 @@ type Cradle = {
   workUnitClassReaderRepository: WorkUnitClassReader;
   workUnitClassWriterRepository: WorkUnitClassWriter;
   workUnitClassService: TWorkUnitClassService;
+  edgeReaderRepository: EdgeReader;
+  edgeWriterRepository: EdgeWriter;
+  edgeService: TEdgeService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -193,6 +199,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerWorkCenter(container);
   registerWorkUnitClass(container);
   registerWorkUnit(container);
+  registerEdge(container);
   registerEquipmentClass(container);
   registerEquipment(container);
   registerLine(container);

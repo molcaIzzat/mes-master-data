@@ -38,6 +38,7 @@ import { createEnterpriseHandler } from "../../module/enterprise/enterprise-hand
 import { createWorkUnitClassHandler } from "../../module/work-unit-class/work-unit-class-handler.js";
 import { createWorkUnitHandler } from "../../module/work-unit/work-unit-handler.js";
 import { createEquipmentHandler } from "../../module/equipment/equipment-handler.js";
+import { createEdgeHandler } from "../../module/edge/edge-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -100,6 +101,14 @@ api.route(
   createWorkCenterHandler({
     authMw: container.resolve("authMw"),
     workCenterService: container.resolve("workCenterService"),
+  }),
+);
+
+api.route(
+  "/work-centers",
+  createEdgeHandler({
+    authMw: container.resolve("authMw"),
+    edgeService: container.resolve("edgeService"),
   }),
 );
 

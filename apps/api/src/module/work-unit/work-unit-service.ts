@@ -20,9 +20,16 @@ type WorkUnitServiceDeps = {
   logger?: Logger;
 };
 
+type WorkUnitSummaries = {
+  id: number;
+  code: string;
+  name: string;
+}[];
+
 type TWorkUnitService = {
   findAll: (page: number, size: number, filter: WorkUnitFilter) => Promise<PagedWorkUnitResult>;
   findById: (id: number) => Promise<WorkUnit>;
+  findSummariesByWorkCenterId: (workCenterId: number) => Promise<WorkUnitSummaries>;
   create: (input: CreateWorkUnit) => Promise<{ id: number }>;
   update: (id: number, input: UpdateWorkUnit) => Promise<{ id: number }>;
   delete: (id: number) => Promise<string>;
@@ -60,6 +67,10 @@ class WorkUnitService implements TWorkUnitService {
     const workUnit = await this.workUnitReaderRepository.findById(id);
     if (!workUnit) throw new HTTPException(404, { message: "work unit not found" });
     return workUnit;
+  }
+
+  async findSummariesByWorkCenterId(workCenterId: number): Promise<WorkUnitSummaries> {
+    return await this.workUnitReaderRepository.findSummariesByWorkCenterId(workCenterId);
   }
 
   async create(input: CreateWorkUnit): Promise<{ id: number }> {
