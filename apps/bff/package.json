@@ -38,7 +38,7 @@
     "@hono/vite-build": "catalog:",
     "@hono/vite-dev-server": "catalog:",
     "@types/node": "^20.11.17",
-    "typescript": "^5.8.3",
+    "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   }

@@ -50,7 +50,7 @@
     "@types/node": "^20.11.17",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^1.0.0-beta.22",
-    "typescript": "^5.8.3",
+    "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   }
