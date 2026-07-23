@@ -6,16 +6,6 @@ type Me = {
   email: string;
 };
 
-// core-api PostList: Omit<Post, "updatedAt" | "region">
-type Post = {
-  id: string;
-  content: string | null;
-  mediaUrl: string | null;
-  name: string | null;
-  userId: string;
-  createdAt: string;
-};
-
 type PageMeta = {
   page: number;
   size: number;
@@ -32,9 +22,4 @@ type WebResponse<T> = {
   error: string | null;
 };
 
-type CreatePostInput = {
-  content: string;
-  mediaUrl: string;
-};
-
-export type { Me, Post, PageMeta, WebResponse, CreatePostInput };
+export type { Me, PageMeta, WebResponse };

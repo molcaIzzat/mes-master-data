@@ -11,10 +11,16 @@
     "preview": "vp preview"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-router": "catalog:",
     "axios": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "lucide-react": "catalog:",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "tailwind-merge": "catalog:"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
@@ -28,6 +34,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "globals": "^17.6.0",
     "tailwindcss": "catalog:",
+    "tw-animate-css": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"

@@ -1,3 +1,5 @@
+import { fileURLToPath, URL } from "node:url";
+
 import { defineConfig } from "vite-plus";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
@@ -8,6 +10,11 @@ const BFF_TARGET = process.env.BFF_URL ?? "http://localhost:3001";
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
   server: {
     port: 3000,
     // Proxy auth + API calls to the BFF so the browser stays same-origin and
