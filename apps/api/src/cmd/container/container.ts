@@ -117,6 +117,18 @@ import type {
 } from "../../module/count-point/count-point-repository.js";
 import type { TCountPointService } from "../../module/count-point/count-point-service.js";
 import { registerCountPoint } from "../../module/count-point/count-point-module.js";
+import type {
+  ProductSpecReader,
+  ProductSpecWriter,
+} from "../../module/product-work-unit-spec/spec-repository.js";
+import type { TProductSpecService } from "../../module/product-work-unit-spec/spec-service.js";
+import { registerProductSpec } from "../../module/product-work-unit-spec/spec-module.js";
+import type {
+  ProductAliasReader,
+  ProductAliasWriter,
+} from "../../module/product-alias/product-alias-repository.js";
+import type { TProductAliasService } from "../../module/product-alias/product-alias-service.js";
+import { registerProductAlias } from "../../module/product-alias/product-alias-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -187,6 +199,12 @@ type Cradle = {
   countPointReaderRepository: CountPointReader;
   countPointWriterRepository: CountPointWriter;
   countPointService: TCountPointService;
+  productSpecReaderRepository: ProductSpecReader;
+  productSpecWriterRepository: ProductSpecWriter;
+  productSpecService: TProductSpecService;
+  productAliasReaderRepository: ProductAliasReader;
+  productAliasWriterRepository: ProductAliasWriter;
+  productAliasService: TProductAliasService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -218,6 +236,8 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerProduct(container);
   registerProductPackage(container);
   registerProductConvertion(container);
+  registerProductSpec(container);
+  registerProductAlias(container);
   registerDowntimeReason(container);
   registerRejectReason(container);
   registerDowntimeAction(container);

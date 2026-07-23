@@ -51,6 +51,7 @@ const relations = defineRelations(schema, (r) => ({
       alias: "to",
     }),
     productSpecs: r.many.productWorkUnitSpecTable(),
+    productCodeAliases: r.many.productCodeAliasTable(),
   },
   equipmentClassTable: {
     equipments: r.many.equipmentTable(),
@@ -127,6 +128,10 @@ const relations = defineRelations(schema, (r) => ({
     }),
   },
   productCodeAliasTable: {
+    unit: r.one.workUnitTable({
+      from: r.productCodeAliasTable.workUnitId,
+      to: r.workUnitTable.id,
+    }),
     product: r.one.productTable({
       from: r.productCodeAliasTable.productId,
       to: r.productTable.id,

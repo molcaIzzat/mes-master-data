@@ -126,6 +126,8 @@ api.route(
     authMw: container.resolve("authMw"),
     workUnitService: container.resolve("workUnitService"),
     countPointService: container.resolve("countPointService"),
+    productSpecService: container.resolve("productSpecService"),
+    productAliasService: container.resolve("productAliasService"),
   }),
 );
 

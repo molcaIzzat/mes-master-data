@@ -306,6 +306,10 @@ export const productCodeAliasTable = msCore.table(
   "product_code_aliases",
   {
     id: p.serial("id").primaryKey(),
+    workUnitId: p
+      .integer("work_unit_id")
+      .notNull()
+      .references(() => workUnitTable.id, { onDelete: "cascade" }),
     equipmentId: p
       .integer("equipment_id")
       .notNull()
@@ -315,9 +319,13 @@ export const productCodeAliasTable = msCore.table(
       .notNull()
       .references(() => productTable.id, { onDelete: "cascade" }),
     externalCode: p.text("external_code").notNull(),
+    region: p.varchar({ length: 10 }).notNull(),
+    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     p.unique("pca_external_key").on(t.equipmentId, t.externalCode),
+    p.index("pca_region_updated_idx").on(t.region, t.updatedAt),
     p.index("pca_product_id_idx").on(t.productId),
     p.index("pca_equipment_id_idx").on(t.equipmentId),
   ],

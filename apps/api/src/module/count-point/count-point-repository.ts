@@ -50,7 +50,10 @@ class CountPointReaderRepository implements CountPointReader {
     workUnitId: number,
     { limit, offset }: ListCountPointInput,
   ): Promise<PagedCountPoint> {
-    const baseConds = [eq(countPointTable.region, this.region)];
+    const baseConds = [
+      eq(countPointTable.region, this.region),
+      eq(countPointTable.workUnitId, workUnitId),
+    ];
 
     const where = and(...baseConds);
     const [rows, totals] = await Promise.all([
