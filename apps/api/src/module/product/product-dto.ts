@@ -34,12 +34,7 @@ const productSchema = z.object({
   name: z.string().check(z.minLength(3)),
   areaId: z.number().check(z.positive(), z.int()),
   baseUomId: z.number().check(z.positive(), z.int()),
-  idealRatePerHour: z.nullable(
-    z.pipe(
-      z.number().check(z.positive()),
-      z.transform((v) => (v === 0 ? null : String(v))),
-    ),
-  ),
+  idealRatePerHour: z.nullable(z.number().check(z.positive())),
   price: z.nullable(
     z.pipe(
       z.number().check(z.positive()),

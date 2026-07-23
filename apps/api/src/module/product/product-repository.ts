@@ -196,8 +196,8 @@ class ProductReaderRepository implements ProductReader {
       packages: row.packages.map((pck) => ({
         ...pck,
         stdWeight: Number(pck.stdWeight),
-        minWeight: Number(pck.stdWeight),
-        maxWeight: Number(pck.stdWeight),
+        minWeight: Number(pck.minWeight),
+        maxWeight: Number(pck.maxWeight),
         factorToBase: Number(pck.factorToBase),
       })),
     };
@@ -424,7 +424,13 @@ class ProductWriterRepository implements ProductWriter {
     next: (ProductPackage & { id: number })[],
     existing: (ProductPackage & { id: number })[],
   ): Promise<void> {
-    const { toAdd, toRemove } = this.diffByKey(next, existing, (pac) => pac.id);
+    const existingIds = new Set(existing.map((pac) => pac.id));
+    const nextIds = new Set(next.map((pac) => pac.id));
+
+    const toRemove = existing.filter((pac) => !nextIds.has(pac.id));
+    const toAdd = next.filter((pac) => !existingIds.has(pac.id));
+    const toUpdate = next.filter((pac) => existingIds.has(pac.id));
+
     if (toRemove.length > 0) {
       await tx.delete(productPackagingTable).where(
         and(
@@ -436,6 +442,32 @@ class ProductWriterRepository implements ProductWriter {
           ),
         ),
       );
+    }
+
+    for (const p of toUpdate) {
+      await tx
+        .update(productPackagingTable)
+        .set({
+          uomId: p.uomId,
+          sortOrder: p.sortOrder,
+          main: p.main,
+          factorToBase: String(p.factorToBase),
+          stdWeight: String(p.stdWeight),
+          minWeight: String(p.minWeight),
+          maxWeight: String(p.maxWeight),
+          length: String(p.length),
+          width: String(p.width),
+          height: String(p.height),
+          vol: String(p.vol),
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(productPackagingTable.region, this.region),
+            eq(productPackagingTable.productId, productId),
+            eq(productPackagingTable.id, p.id),
+          ),
+        );
     }
 
     if (toAdd.length > 0) {
