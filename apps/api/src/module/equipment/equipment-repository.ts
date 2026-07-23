@@ -4,7 +4,6 @@ import type { EquipmentSummary } from "@molca/contract-client";
 import { DuplicateEquipmentError, InvalidEquipmentReferenceError } from "./equipment-errors.js";
 import {
   FkViolationError,
-  isUniqueViolation,
   toPgConstraintError,
   UniqueViolationError,
 } from "../../shared/database/helper/catcher.js";

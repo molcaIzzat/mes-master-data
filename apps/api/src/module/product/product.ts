@@ -18,9 +18,9 @@ type Product = {
     id: number;
     name: string;
   }[];
-  idealRatePerHour: string | null;
-  price: string | null;
-  cost: string | null;
+  idealRatePerHour: number | null;
+  price: number | null;
+  cost: number | null;
   packages: {
     id: number;
     main: boolean;
@@ -33,15 +33,6 @@ type Product = {
     stdWeight: number | null;
     minWeight: number | null;
     maxWeight: number | null;
-  }[];
-  convertions: {
-    id: number;
-    sortOrder: number;
-    uom: {
-      id: number;
-      code: string;
-      name: string;
-    } | null;
     factorToBase: number;
   }[];
   region: string;
@@ -67,6 +58,7 @@ type PagedProduct = Paged<ProductList>;
 type ProductPackage = {
   main: boolean;
   uomId: number;
+  factorToBase: number;
   sortOrder: number;
   stdWeight: number | null;
   minWeight: number | null;
@@ -77,18 +69,12 @@ type ProductPackage = {
   vol: number | null;
 };
 
-type ProductConvertion = {
-  uomId: number;
-  sortOrder: number;
-  factorToBase: number;
-};
-
 type OwnerCreateProduct = {
   code: string;
   name: string;
   areaId: number;
   baseUomId: number;
-  idealRatePerHour: string | null;
+  idealRatePerHour: number | null;
   price: string | null;
   cost: string | null;
 };
@@ -96,13 +82,11 @@ type OwnerCreateProduct = {
 type CreateProduct = OwnerCreateProduct & {
   workCenterIds: number[];
   packages: ProductPackage[];
-  convertions: ProductConvertion[];
 };
 
 type UpdateProduct = Partial<OwnerCreateProduct> & {
   workCenterIds?: number[];
   packages?: (ProductPackage & { id: number })[];
-  convertions?: (ProductConvertion & { id: number })[];
 };
 
 export type {
@@ -112,7 +96,6 @@ export type {
   ListProductInput,
   PagedProduct,
   ProductPackage,
-  ProductConvertion,
   CreateProduct,
   UpdateProduct,
 };

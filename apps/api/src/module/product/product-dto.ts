@@ -24,20 +24,14 @@ const productPackageSchema = z.object({
   width: z.number().check(z.positive()),
   height: z.number().check(z.positive()),
   vol: z.number().check(z.positive()),
-});
-
-const productConvertionSchema = z.object({
   factorToBase: z.number().check(z.positive()),
-  uomId: z.number().check(z.positive(), z.int()),
-  unit: z.string(),
-  sortOrder: z.number().check(z.positive()),
 });
 
-const productLineSchema = z.number();
+const productWorkCenterSchema = z.number();
 
 const productSchema = z.object({
-  code: z.string().min(5),
-  name: z.string().min(5),
+  code: z.string().check(z.minLength(3)),
+  name: z.string().check(z.minLength(3)),
   areaId: z.number().check(z.positive(), z.int()),
   baseUomId: z.number().check(z.positive(), z.int()),
   idealRatePerHour: z.nullable(
@@ -61,13 +55,12 @@ const productSchema = z.object({
 });
 
 const createProductSchema = productSchema.extend({
-  workCenterIds: z.array(productLineSchema).check(z.minLength(1)),
+  workCenterIds: z.array(productWorkCenterSchema).check(z.minLength(1)),
   packages: z.array(productPackageSchema).check(z.minLength(1)),
-  convertions: z.array(productConvertionSchema),
 });
 
 const updateProductSchema = productSchema.partial().extend({
-  workCenterIds: z.optional(z.array(productLineSchema).check(z.minLength(1))),
+  workCenterIds: z.optional(z.array(productWorkCenterSchema).check(z.minLength(1))),
   packages: z.optional(
     z
       .array(
@@ -76,13 +69,6 @@ const updateProductSchema = productSchema.partial().extend({
         }),
       )
       .check(z.minLength(1)),
-  ),
-  convertions: z.optional(
-    z.array(
-      productConvertionSchema.extend({
-        id: z.number(),
-      }),
-    ),
   ),
 });
 

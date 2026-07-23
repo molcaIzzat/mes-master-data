@@ -100,7 +100,6 @@ const relations = defineRelations(schema, (r) => ({
   unitTable: {
     products: r.many.productTable(),
     productPackages: r.many.productPackagingTable(),
-    productConvertions: r.many.productConvertionTable(),
     productSpecs: r.many.productWorkUnitSpecTable(),
   },
   productTable: {
@@ -113,7 +112,6 @@ const relations = defineRelations(schema, (r) => ({
       to: r.unitTable.id,
     }),
     packages: r.many.productPackagingTable(),
-    convertions: r.many.productConvertionTable(),
     aliases: r.many.productCodeAliasTable(),
     specs: r.many.productWorkUnitSpecTable(),
     workCenters: r.many.productWorkCenterTable(),
@@ -125,16 +123,6 @@ const relations = defineRelations(schema, (r) => ({
     }),
     uom: r.one.unitTable({
       from: r.productPackagingTable.uomId,
-      to: r.unitTable.id,
-    }),
-  },
-  productConvertionTable: {
-    product: r.one.productTable({
-      from: r.productConvertionTable.productId,
-      to: r.productTable.id,
-    }),
-    uom: r.one.unitTable({
-      from: r.productConvertionTable.uomId,
       to: r.unitTable.id,
     }),
   },

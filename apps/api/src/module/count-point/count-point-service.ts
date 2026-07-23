@@ -71,7 +71,7 @@ class CountPointService implements TCountPointService {
 
   async findById(id: number): Promise<CountPoint> {
     const found = await this.countPointReaderRepository.findById(id);
-    if (!found) throw new HTTPException(404, { message: "action not found" });
+    if (!found) throw new HTTPException(404, { message: "point not found" });
     return found;
   }
 
@@ -90,7 +90,7 @@ class CountPointService implements TCountPointService {
 
   async update(id: number, input: UpdateCountPoint): Promise<{ id: number }> {
     const found = await this.countPointReaderRepository.findById(id);
-    if (!found) throw new HTTPException(404, { message: "action not found" });
+    if (!found) throw new HTTPException(404, { message: "point not found" });
     const save = await withLog(
       this.logger,
       "count_point_update",
@@ -106,7 +106,7 @@ class CountPointService implements TCountPointService {
 
   async delete(id: number): Promise<string> {
     const found = await this.countPointReaderRepository.findById(id);
-    if (!found) throw new HTTPException(404, { message: "action not found" });
+    if (!found) throw new HTTPException(404, { message: "point not found" });
     await withLog(
       this.logger,
       "count_point_delete",

@@ -1,7 +1,4 @@
-import { and, eq } from "drizzle-orm";
-
-import { toFormatString, type UpdateProductConvertion } from "./product-convertion.js";
-import { productConvertionTable } from "../../shared/database/schema/schema.js";
+import { type UpdateProductConvertion } from "./product-convertion.js";
 
 import type { PostgresDB } from "../../shared/database/postgres.js";
 
@@ -32,11 +29,8 @@ class ProductConvertionReaderRepository implements ProductConvertionReader {
     this.region = region;
   }
 
-  async existById(id: number): Promise<boolean> {
-    const found = await this.db.query.productConvertionTable.findFirst({
-      where: { region: this.region, id },
-    });
-    return !!found;
+  async existById(_id: number): Promise<boolean> {
+    return false;
   }
 }
 
@@ -49,19 +43,8 @@ class ProductConvertionWriterRepository implements ProductConvertionWriter {
     this.region = region;
   }
 
-  async update(id: number, patch: UpdateProductConvertion): Promise<{ id: number }> {
-    const [row] = await this.db
-      .update(productConvertionTable)
-      .set({
-        ...toFormatString(patch),
-        updatedAt: new Date(),
-      })
-      .where(and(eq(productConvertionTable.id, id), eq(productConvertionTable.region, this.region)))
-      .returning({
-        id: productConvertionTable.id,
-      });
-
-    return row;
+  async update(_id: number, _patch: UpdateProductConvertion): Promise<{ id: number }> {
+    throw new Error("THIS FEATURE IS AN AVAILABLE");
   }
 }
 

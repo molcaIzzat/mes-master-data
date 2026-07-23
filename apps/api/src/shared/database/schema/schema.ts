@@ -271,11 +271,11 @@ export const productPackagingTable = msCore.table(
   "product_packages",
   {
     id: p.serial("id").primaryKey(),
+    sortOrder: p.integer("sort_order").notNull(),
     productId: p
       .integer("product_id")
       .notNull()
       .references(() => productTable.id, { onDelete: "cascade" }),
-    sortOrder: p.integer("sort_order").notNull(),
     uomId: p
       .integer("uom_id")
       .notNull()
@@ -288,6 +288,7 @@ export const productPackagingTable = msCore.table(
     width: p.numeric({ precision: 10, scale: 3 }),
     height: p.numeric({ precision: 10, scale: 3 }),
     vol: p.numeric({ precision: 10, scale: 3 }),
+    factorToBase: p.numeric("factor_to_base", { precision: 10, scale: 3 }).notNull(),
     region: p.varchar({ length: 10 }).notNull(),
     createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -297,32 +298,6 @@ export const productPackagingTable = msCore.table(
     p.index("products_packages_region_updated_idx").on(t.region, t.updatedAt),
     p.index("product_packages_product_id_idx").on(t.productId),
     p.index("product_packages_uom_id_idx").on(t.uomId),
-  ],
-);
-
-export const productConvertionTable = msCore.table(
-  "product_convertions",
-  {
-    id: p.serial("id").primaryKey(),
-    sortOrder: p.integer("sort_order").notNull(),
-    productId: p
-      .integer("product_id")
-      .references(() => productTable.id, { onDelete: "cascade" })
-      .notNull(),
-    uomId: p
-      .integer("uom_id")
-      .notNull()
-      .references(() => unitTable.id, { onDelete: "restrict" }),
-    factorToBase: p.numeric("factor_to_base", { precision: 15, scale: 3 }).notNull(),
-    region: p.varchar({ length: 10 }).notNull(),
-    createdAt: p.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: p.timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [
-    p.unique("pconv_product_uom_key").on(t.productId, t.uomId),
-    p.index("pconv_region_updated_idx").on(t.region, t.updatedAt),
-    p.index("pconv_product_id_idx").on(t.productId),
-    p.index("pconv_uom_id_idx").on(t.uomId),
     p.check("pconv_pconv_ftb_cx", sql`factor_to_base > 0`),
   ],
 );

@@ -6,7 +6,6 @@ import {
   InvalidProductLineIdReferenceError,
 } from "./product-errors.js";
 import {
-  productConvertionTable,
   productPackagingTable,
   productTable,
   productWorkCenterTable,
@@ -17,7 +16,6 @@ import type {
   ListProductInput,
   PagedProduct,
   Product,
-  ProductConvertion,
   ProductList,
   ProductPackage,
   UpdateProduct,
@@ -109,10 +107,10 @@ class ProductReaderRepository implements ProductReader {
             columns: { id: true, code: true, name: true },
           },
           workCenters: {
-            columns: { id: true, workCenterId: true },
+            columns: { workCenterId: true },
             with: {
               workCenter: {
-                columns: { name: true },
+                columns: { id: true, code: true, name: true },
               },
             },
           },
@@ -131,7 +129,7 @@ class ProductReaderRepository implements ProductReader {
       region: product.region,
       area: product.area,
       workCenters: product.workCenters.map((wc) => ({
-        id: wc.id,
+        id: wc.workCenterId,
         name: wc.workCenter?.name ?? "",
       })),
     }));
@@ -155,15 +153,12 @@ class ProductReaderRepository implements ProductReader {
       },
       with: {
         area: {
-          where: { region: this.region },
           columns: { id: true, code: true, name: true },
         },
         baseUom: {
-          where: { region: this.region },
           columns: { id: true, code: true, name: true },
         },
         workCenters: {
-          where: { region: this.region },
           columns: { id: true, workCenterId: true },
           with: {
             workCenter: {
@@ -172,7 +167,6 @@ class ProductReaderRepository implements ProductReader {
           },
         },
         packages: {
-          where: { region: this.region },
           columns: {
             id: true,
             main: true,
@@ -180,6 +174,7 @@ class ProductReaderRepository implements ProductReader {
             stdWeight: true,
             minWeight: true,
             maxWeight: true,
+            factorToBase: true,
           },
           with: {
             uom: {
@@ -188,20 +183,6 @@ class ProductReaderRepository implements ProductReader {
           },
           orderBy: (p, { asc }) => [asc(p.sortOrder)],
         },
-        convertions: {
-          where: { region: this.region },
-          columns: {
-            id: true,
-            sortOrder: true,
-            factorToBase: true,
-          },
-          with: {
-            uom: {
-              columns: { id: true, code: true, name: true },
-            },
-          },
-          orderBy: (c, { asc }) => [asc(c.sortOrder)],
-        },
       },
     });
 
@@ -209,15 +190,15 @@ class ProductReaderRepository implements ProductReader {
 
     return {
       ...row,
+      idealRatePerHour: Number(row.idealRatePerHour),
+      price: Number(row.price),
+      cost: Number(row.cost),
       packages: row.packages.map((pck) => ({
         ...pck,
         stdWeight: Number(pck.stdWeight),
         minWeight: Number(pck.stdWeight),
         maxWeight: Number(pck.stdWeight),
-      })),
-      convertions: row.convertions.map((cnv) => ({
-        ...cnv,
-        factorToBase: Number(cnv.factorToBase),
+        factorToBase: Number(pck.factorToBase),
       })),
     };
   }
@@ -253,30 +234,6 @@ class ProductWriterRepository implements ProductWriter {
     return rows.map((pwc) => pwc.workCenterId);
   }
 
-  private async findAllConvertion(
-    tx: Transaction,
-    productId: number,
-  ): Promise<(ProductConvertion & { id: number })[]> {
-    const rows = await tx.query.productConvertionTable.findMany({
-      where: { region: this.region, productId },
-      columns: {
-        id: true,
-        productId: true,
-        uomId: true,
-        sortOrder: true,
-        factorToBase: true,
-      },
-    });
-
-    return rows.map((conv) => ({
-      id: conv.id,
-      productId: conv.productId,
-      factorToBase: Number(conv.factorToBase),
-      sortOrder: conv.sortOrder,
-      uomId: conv.uomId,
-    }));
-  }
-
   private async findAllPackage(
     tx: Transaction,
     productId: number,
@@ -296,6 +253,7 @@ class ProductWriterRepository implements ProductWriter {
         height: true,
         width: true,
         vol: true,
+        factorToBase: true,
       },
     });
 
@@ -305,6 +263,7 @@ class ProductWriterRepository implements ProductWriter {
       sortOrder: p.sortOrder,
       productId: p.productId,
       uomId: p.uomId,
+      factorToBase: Number(p.factorToBase),
       length: Number(p.length),
       height: Number(p.height),
       minWeight: Number(p.minWeight),
@@ -324,7 +283,7 @@ class ProductWriterRepository implements ProductWriter {
           name: product.name,
           areaId: product.areaId,
           baseUomId: product.baseUomId,
-          idealRatePerHour: product.idealRatePerHour,
+          idealRatePerHour: String(product.idealRatePerHour),
           cost: product.cost,
           price: product.price,
           region: this.region,
@@ -355,6 +314,7 @@ class ProductWriterRepository implements ProductWriter {
         .update(productTable)
         .set({
           ...patch,
+          idealRatePerHour: patch.idealRatePerHour ? String(patch.idealRatePerHour) : undefined,
           updatedAt: new Date(),
         })
         .where(and(eq(productTable.region, this.region), eq(productTable.id, productId)))
@@ -446,6 +406,7 @@ class ProductWriterRepository implements ProductWriter {
         sortOrder: p.sortOrder,
         main: p.main,
         region: this.region,
+        factorToBase: String(p.factorToBase),
         stdWeight: String(p.stdWeight),
         minWeight: String(p.minWeight),
         maxWeight: String(p.maxWeight),
@@ -483,6 +444,7 @@ class ProductWriterRepository implements ProductWriter {
           productId,
           uomId: p.uomId,
           sortOrder: p.sortOrder,
+          factorToBase: String(p.factorToBase),
           main: p.main,
           region: this.region,
           stdWeight: String(p.stdWeight),
@@ -497,62 +459,12 @@ class ProductWriterRepository implements ProductWriter {
     }
   }
 
-  private async insertProductConvertions(
-    tx: Transaction,
-    productId: number,
-    convertions: ProductConvertion[],
-  ): Promise<void> {
-    await tx.insert(productConvertionTable).values(
-      convertions.map((c) => ({
-        productId,
-        uomId: c.uomId,
-        region: this.region,
-        sortOrder: c.sortOrder,
-        factorToBase: String(c.factorToBase),
-      })),
-    );
-  }
-
-  private async updateProductConvertion(
-    tx: Transaction,
-    productId: number,
-    next: (ProductConvertion & { id: number })[],
-    existing: (ProductConvertion & { id: number })[],
-  ): Promise<void> {
-    const { toAdd, toRemove } = this.diffByKey(next, existing, (conv) => conv.id);
-    if (toRemove.length > 0) {
-      await tx.delete(productConvertionTable).where(
-        and(
-          eq(productConvertionTable.region, this.region),
-          eq(productConvertionTable.productId, productId),
-          inArray(
-            productConvertionTable.id,
-            toRemove.map((conv) => conv.id),
-          ),
-        ),
-      );
-    }
-
-    if (toAdd.length > 0) {
-      await tx.insert(productConvertionTable).values(
-        toAdd.map((c) => ({
-          productId,
-          uomId: c.uomId,
-          region: this.region,
-          sortOrder: c.sortOrder,
-          factorToBase: String(c.factorToBase),
-        })),
-      );
-    }
-  }
-
   async create(input: CreateProduct): Promise<{ id: number }> {
     const product = await this.db.transaction(async (tx) => {
-      const { workCenterIds, packages, convertions, ...productShape } = input;
+      const { workCenterIds, packages, ...productShape } = input;
       const save = await this.insertProduct(tx, productShape);
       await this.insertProductWorkCenters(tx, save.id, workCenterIds);
       await this.insertProductPackages(tx, save.id, packages);
-      await this.insertProductConvertions(tx, save.id, convertions);
 
       return save;
     });
@@ -562,12 +474,7 @@ class ProductWriterRepository implements ProductWriter {
 
   async update(id: number, patch: UpdateProduct): Promise<{ id: number }> {
     const product = await this.db.transaction(async (tx) => {
-      const {
-        workCenterIds: nextWorkCenterIds,
-        packages: nextPackages,
-        convertions: nextConvertions,
-        ...productShape
-      } = patch;
+      const { workCenterIds: nextWorkCenterIds, packages: nextPackages, ...productShape } = patch;
       const save = await this.updateProduct(tx, id, productShape);
       if (nextWorkCenterIds) {
         const existingLineIds = await this.findAllWorkCenterId(tx, save.id);
@@ -577,11 +484,6 @@ class ProductWriterRepository implements ProductWriter {
       if (nextPackages) {
         const existingPackages = await this.findAllPackage(tx, save.id);
         await this.updateProductPackages(tx, save.id, nextPackages, existingPackages);
-      }
-
-      if (nextConvertions) {
-        const existingConvertions = await this.findAllConvertion(tx, save.id);
-        await this.updateProductConvertion(tx, save.id, nextConvertions, existingConvertions);
       }
 
       return save;
