@@ -11,6 +11,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.js";
 import { RootRedirect } from "@/routes/root-redirect.js";
 import { LevelConfiguration } from "@/routes/level-configuration.js";
 import { Sku } from "@/routes/sku.js";
+import { SkuAdd } from "@/routes/sku-add.js";
 import { DowntimeReason } from "@/routes/downtime-reason.js";
 import { RejectReworkReason } from "@/routes/reject-rework-reason.js";
 import { Analytics } from "@/routes/analytics.js";
@@ -85,6 +86,13 @@ const skuRoute = createRoute({
   staticData: { title: "SKU", description: "SKU" },
 });
 
+const skuAddRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: "/sku/add",
+  component: SkuAdd,
+  staticData: { title: "Add", description: "SKU > Add" },
+});
+
 const downtimeReasonRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: "/downtime-reason",
@@ -111,6 +119,7 @@ const routeTree = rootRoute.addChildren([
   appLayoutRoute.addChildren([
     levelConfigurationRoute,
     skuRoute,
+    skuAddRoute,
     downtimeReasonRoute,
     rejectReworkReasonRoute,
     analyticsRoute,
