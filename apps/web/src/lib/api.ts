@@ -6,6 +6,7 @@ import type {
   AreaListItem,
   CreateDowntimeReasonInput,
   CreateProductInput,
+  CreateRejectReworkReasonInput,
   DowntimeReasonCategory,
   DowntimeReasonListItem,
   EquipmentListItem,
@@ -13,9 +14,11 @@ import type {
   PageMeta,
   ProductDetail,
   ProductListItem,
+  RejectReworkReasonListItem,
   UomListItem,
   UpdateDowntimeReasonInput,
   UpdateProductInput,
+  UpdateRejectReworkReasonInput,
   WebResponse,
   WorkCenterListItem,
 } from "./types.js";
@@ -201,22 +204,88 @@ async function deleteDowntimeReason(id: number): Promise<void> {
   await http.delete<WebResponse<string>>(`/api/proxy/v1/downtime-reasons/${id}`);
 }
 
+type RejectReworkReasonQuery = {
+  page: number;
+  size: number;
+  q?: string;
+  areaId?: number;
+};
+
+type RejectReworkReasonPage = {
+  items: RejectReworkReasonListItem[];
+  meta: PageMeta | undefined;
+};
+
+// Returns a page of reject & rework reasons. `q` filters by name/code; each
+// param is omitted from the request when unset.
+async function getRejectReworkReasons({
+  page,
+  size,
+  q,
+  areaId,
+}: RejectReworkReasonQuery): Promise<RejectReworkReasonPage> {
+  const params: Record<string, number | string> = { page, size };
+  if (q) params.q = q;
+  if (areaId) params.areaId = areaId;
+
+  const { data } = await http.get<WebResponse<RejectReworkReasonListItem[]>>(
+    "/api/proxy/v1/reject-reasons",
+    { params },
+  );
+  return { items: data.data ?? [], meta: data.meta };
+}
+
+// Creates a reject & rework reason. Returns the new id.
+async function createRejectReworkReason(
+  body: CreateRejectReworkReasonInput,
+): Promise<{ id: number }> {
+  const { data } = await http.post<WebResponse<{ id: number }>>(
+    "/api/proxy/v1/reject-reasons",
+    body,
+  );
+  return data.data ?? { id: 0 };
+}
+
+// Updates a reject & rework reason. Returns the id.
+async function updateRejectReworkReason({
+  id,
+  body,
+}: {
+  id: number;
+  body: UpdateRejectReworkReasonInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    `/api/proxy/v1/reject-reasons/${id}`,
+    body,
+  );
+  return data.data ?? { id };
+}
+
+// Deletes a reject & rework reason.
+async function deleteRejectReworkReason(id: number): Promise<void> {
+  await http.delete<WebResponse<string>>(`/api/proxy/v1/reject-reasons/${id}`);
+}
+
 export {
   createDowntimeReason,
   createProduct,
+  createRejectReworkReason,
   deleteDowntimeReason,
   deleteProduct,
+  deleteRejectReworkReason,
   getAreas,
   getDowntimeReasons,
   getEquipments,
   getMe,
   getProductById,
   getProducts,
+  getRejectReworkReasons,
   getUoms,
   getWorkCenters,
   login,
   logout,
   updateDowntimeReason,
   updateProduct,
+  updateRejectReworkReason,
 };
-export type { DowntimeReasonQuery, ProductQuery };
+export type { DowntimeReasonQuery, ProductQuery, RejectReworkReasonQuery };

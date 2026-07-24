@@ -9,21 +9,25 @@ import {
 import {
   createDowntimeReason,
   createProduct,
+  createRejectReworkReason,
   deleteDowntimeReason,
   deleteProduct,
+  deleteRejectReworkReason,
   getAreas,
   getDowntimeReasons,
   getEquipments,
   getMe,
   getProductById,
   getProducts,
+  getRejectReworkReasons,
   getUoms,
   getWorkCenters,
   updateDowntimeReason,
   updateProduct,
+  updateRejectReworkReason,
 } from "./api.js";
 
-import type { DowntimeReasonQuery, ProductQuery } from "./api.js";
+import type { DowntimeReasonQuery, ProductQuery, RejectReworkReasonQuery } from "./api.js";
 
 const meKey = ["me"] as const;
 
@@ -88,6 +92,46 @@ function useDeleteDowntimeReason() {
   return useMutation({
     mutationFn: deleteDowntimeReason,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["downtime-reasons"] }),
+  });
+}
+
+const rejectReworkReasonsKey = (params: RejectReworkReasonQuery) =>
+  ["reject-rework-reasons", params] as const;
+
+// keepPreviousData keeps the current rows visible while the next page/search
+// loads, avoiding an empty-table flash.
+function useRejectReworkReasons(params: RejectReworkReasonQuery) {
+  return useQuery({
+    queryKey: rejectReworkReasonsKey(params),
+    queryFn: () => getRejectReworkReasons(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+// Invalidates the list on success so the new reason shows up.
+function useCreateRejectReworkReason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createRejectReworkReason,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reject-rework-reasons"] }),
+  });
+}
+
+// Refreshes the list after an edit.
+function useUpdateRejectReworkReason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateRejectReworkReason,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reject-rework-reasons"] }),
+  });
+}
+
+// Refreshes the list after a delete.
+function useDeleteRejectReworkReason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteRejectReworkReason,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["reject-rework-reasons"] }),
   });
 }
 
@@ -178,15 +222,19 @@ export {
   useAreas,
   useCreateDowntimeReason,
   useCreateProduct,
+  useCreateRejectReworkReason,
   useDeleteDowntimeReason,
   useDeleteProduct,
+  useDeleteRejectReworkReason,
   useDowntimeReasons,
   useEquipments,
   useMe,
   useUpdateDowntimeReason,
   useProduct,
   useProducts,
+  useRejectReworkReasons,
   useUpdateProduct,
+  useUpdateRejectReworkReason,
   useUoms,
   useWorkCenters,
   meQueryOptions,

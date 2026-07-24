@@ -89,6 +89,23 @@ class RejectReasonReaderRepository implements RejectReasonReader {
   async findAll({ limit, offset, filter }: ListRejectReasonInput): Promise<PagedRejectReason> {
     const baseConds = [eq(rejectReasonTable.region, this.region)];
 
+    if (filter.areaId !== undefined) {
+      baseConds.push(
+        inArray(
+          rejectReasonTable.id,
+          this.db
+            .select({ reasonId: rejectReasonAreaTable.reasonId })
+            .from(rejectReasonAreaTable)
+            .where(
+              and(
+                eq(rejectReasonAreaTable.region, this.region),
+                eq(rejectReasonAreaTable.areaId, filter.areaId),
+              ),
+            ),
+        ),
+      );
+    }
+
     if (filter.q !== undefined) {
       const pattern = `%${filter.q}%`;
       const qOr = or(

@@ -82,6 +82,40 @@ type CreateDowntimeReasonInput = {
 // PUT /v1/downtime-reasons/:id body — same shape as create.
 type UpdateDowntimeReasonInput = CreateDowntimeReasonInput;
 
+// Shared summary shape for a reject/rework reason's related area/line/equipment.
+type RejectReworkReasonRef = {
+  id: number;
+  name: string;
+  code: string;
+};
+
+// Mirrors the core-api RejectReasonEnrichedList shape returned by
+// GET /v1/reject-reasons. There is no category field. `workCenters` are lines,
+// `equipments` are machines.
+type RejectReworkReasonListItem = {
+  id: number;
+  name: string;
+  code: string;
+  areas: RejectReworkReasonRef[];
+  workCenters: RejectReworkReasonRef[];
+  equipments: RejectReworkReasonRef[];
+  region: string;
+  createdAt: string;
+};
+
+// POST /v1/reject-reasons request body. Area is single in the UI but the API
+// takes an array, so it is sent as a one-element `areaIds`.
+type CreateRejectReworkReasonInput = {
+  code: string;
+  name: string;
+  areaIds: number[];
+  workCenterIds: number[];
+  equipmentIds: number[];
+};
+
+// PUT /v1/reject-reasons/:id body — same shape as create.
+type UpdateRejectReworkReasonInput = CreateRejectReworkReasonInput;
+
 // Mirrors the core-api EquipmentList shape returned by GET /v1/equipments
 // (only the fields the Machine multi-select needs).
 type EquipmentListItem = {
@@ -181,6 +215,7 @@ export type {
   CreateDowntimeReasonInput,
   CreateProductInput,
   CreateProductPackage,
+  CreateRejectReworkReasonInput,
   DowntimeReasonCategory,
   DowntimeReasonListItem,
   DowntimeReasonRef,
@@ -192,9 +227,12 @@ export type {
   ProductLine,
   ProductListItem,
   ProductPackageDetail,
+  RejectReworkReasonListItem,
+  RejectReworkReasonRef,
   UomListItem,
   UpdateDowntimeReasonInput,
   UpdateProductInput,
+  UpdateRejectReworkReasonInput,
   WebResponse,
   WorkCenterListItem,
 };
