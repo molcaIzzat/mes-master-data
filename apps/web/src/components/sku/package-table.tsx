@@ -7,7 +7,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -37,31 +36,8 @@ import {
 } from "@/components/ui/table.js";
 
 import type { DragEndEvent } from "@dnd-kit/core";
+import type { PackageFormValue } from "@/lib/sku-schema.js";
 import type { UomListItem } from "@/lib/types.js";
-
-// One packaging row's editable state. `factorToBase` lives here but is edited in
-// the Conversion section; `length`/`width`/`height`/`vol` are constants at submit.
-type PackageRow = {
-  id: string;
-  uomId: number | null;
-  main: boolean;
-  stdWeight: string;
-  minWeight: string;
-  maxWeight: string;
-  factorToBase: string;
-};
-
-function newPackageRow(id: string, main = false): PackageRow {
-  return {
-    id,
-    uomId: null,
-    main,
-    stdWeight: "",
-    minWeight: "",
-    maxWeight: "",
-    factorToBase: "",
-  };
-}
 
 // A weight input is invalid (once submitted) when it isn't a positive number.
 function weightInvalid(value: string, submitted: boolean): boolean {
@@ -93,13 +69,13 @@ function WeightCell({ value, onChange, invalid }: WeightCellProps) {
 }
 
 type SortableRowProps = {
-  row: PackageRow;
+  row: PackageFormValue;
   index: number;
   uoms: UomListItem[];
   submitted: boolean;
   canRemove: boolean;
-  onChange: (id: string, patch: Partial<PackageRow>) => void;
-  onRemove: (id: string) => void;
+  onChangeRow: (index: number, patch: Partial<PackageFormValue>) => void;
+  onRemove: (index: number) => void;
 };
 
 function SortableRow({
@@ -108,7 +84,7 @@ function SortableRow({
   uoms,
   submitted,
   canRemove,
-  onChange,
+  onChangeRow,
   onRemove,
 }: SortableRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -142,7 +118,7 @@ function SortableRow({
       <TableCell className="min-w-40">
         <Select
           value={row.uomId ? String(row.uomId) : undefined}
-          onValueChange={(v) => onChange(row.id, { uomId: Number(v) })}
+          onValueChange={(v) => onChangeRow(index, { uomId: Number(v) })}
         >
           <SelectTrigger aria-invalid={submitted && row.uomId == null} className="w-full">
             <SelectValue placeholder="Select unit..." />
@@ -159,21 +135,21 @@ function SortableRow({
       <TableCell className="min-w-32">
         <WeightCell
           value={row.stdWeight}
-          onChange={(v) => onChange(row.id, { stdWeight: v })}
+          onChange={(v) => onChangeRow(index, { stdWeight: v })}
           invalid={weightInvalid(row.stdWeight, submitted)}
         />
       </TableCell>
       <TableCell className="min-w-32">
         <WeightCell
           value={row.minWeight}
-          onChange={(v) => onChange(row.id, { minWeight: v })}
+          onChange={(v) => onChangeRow(index, { minWeight: v })}
           invalid={weightInvalid(row.minWeight, submitted)}
         />
       </TableCell>
       <TableCell className="min-w-32">
         <WeightCell
           value={row.maxWeight}
-          onChange={(v) => onChange(row.id, { maxWeight: v })}
+          onChange={(v) => onChangeRow(index, { maxWeight: v })}
           invalid={weightInvalid(row.maxWeight, submitted)}
         />
       </TableCell>
@@ -185,7 +161,7 @@ function SortableRow({
           className="size-8 text-destructive hover:text-destructive"
           aria-label="Remove package"
           disabled={!canRemove}
-          onClick={() => onRemove(row.id)}
+          onClick={() => onRemove(index)}
         >
           <Trash2 />
         </Button>
@@ -195,13 +171,13 @@ function SortableRow({
 }
 
 type PackageTableProps = {
-  rows: PackageRow[];
+  rows: PackageFormValue[];
   uoms: UomListItem[];
   submitted: boolean;
-  onChange: (id: string, patch: Partial<PackageRow>) => void;
-  onSetMain: (id: string) => void;
-  onRemove: (id: string) => void;
-  onReorder: (rows: PackageRow[]) => void;
+  onChangeRow: (index: number, patch: Partial<PackageFormValue>) => void;
+  onSetMain: (index: number) => void;
+  onRemove: (index: number) => void;
+  onMove: (from: number, to: number) => void;
   onAdd: () => void;
 };
 
@@ -209,10 +185,10 @@ function PackageTable({
   rows,
   uoms,
   submitted,
-  onChange,
+  onChangeRow,
   onSetMain,
   onRemove,
-  onReorder,
+  onMove,
   onAdd,
 }: PackageTableProps) {
   const sensors = useSensors(
@@ -225,16 +201,21 @@ function PackageTable({
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = rows.findIndex((r) => r.id === active.id);
-    const newIndex = rows.findIndex((r) => r.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-    onReorder(arrayMove(rows, oldIndex, newIndex));
+    const from = rows.findIndex((r) => r.id === active.id);
+    const to = rows.findIndex((r) => r.id === over.id);
+    if (from === -1 || to === -1) return;
+    onMove(from, to);
+  }
+
+  function handleSetMain(id: string) {
+    const index = rows.findIndex((r) => r.id === id);
+    if (index !== -1) onSetMain(index);
   }
 
   return (
     <div className="rounded-md border">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <RadioGroup value={mainId} onValueChange={onSetMain} className="contents">
+        <RadioGroup value={mainId} onValueChange={handleSetMain} className="contents">
           <SortableContext items={rows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
             <Table>
               <TableHeader>
@@ -257,7 +238,7 @@ function PackageTable({
                     uoms={uoms}
                     submitted={submitted}
                     canRemove={rows.length > 1}
-                    onChange={onChange}
+                    onChangeRow={onChangeRow}
                     onRemove={onRemove}
                   />
                 ))}
@@ -277,5 +258,4 @@ function PackageTable({
   );
 }
 
-export { newPackageRow, PackageTable };
-export type { PackageRow };
+export { PackageTable };

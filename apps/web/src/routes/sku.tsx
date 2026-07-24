@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
   ChevronLeft,
   ChevronRight,
   MoreVertical,
@@ -37,13 +43,27 @@ import {
   TableRow,
 } from "@/components/ui/table.js";
 
-import type { ProductLine } from "@/lib/types.js";
+import type { ProductLine, ProductListItem } from "@/lib/types.js";
+import type { RowData } from "@tanstack/react-table";
+
+// Table meta carries the current page/size so the "No" column can compute a
+// continuous row number across server-paginated pages.
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    page: number;
+    size: number;
+  }
+  interface ColumnMeta<TData extends RowData, TValue> {
+    headerClassName?: string;
+    cellClassName?: string;
+  }
+}
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 const ALL_AREAS = "all";
-const COLUMN_COUNT = 6;
 // How many line chips to show before collapsing the rest into a "+N" badge.
 const MAX_VISIBLE_LINES = 2;
+const EMPTY: ProductListItem[] = [];
 
 // Compact page list: always shows first/last and a window around the current
 // page, inserting an ellipsis marker (0) where pages are skipped.
@@ -108,6 +128,40 @@ function RowActions() {
   );
 }
 
+const columnHelper = createColumnHelper<ProductListItem>();
+
+const columns = [
+  columnHelper.display({
+    id: "no",
+    header: "No",
+    meta: { headerClassName: "w-16", cellClassName: "text-muted-foreground" },
+    cell: ({ row, table }) => {
+      const { page, size } = table.options.meta!;
+      return (page - 1) * size + row.index + 1;
+    },
+  }),
+  columnHelper.accessor("code", {
+    header: "SKU Code",
+    meta: { cellClassName: "font-medium" },
+  }),
+  columnHelper.accessor("name", { header: "SKU Name" }),
+  columnHelper.accessor((row) => row.area?.name ?? "-", {
+    id: "area",
+    header: "Area",
+  }),
+  columnHelper.display({
+    id: "line",
+    header: "Line",
+    cell: ({ row }) => <LineCell lines={row.original.workCenters} />,
+  }),
+  columnHelper.display({
+    id: "actions",
+    header: "Actions",
+    meta: { headerClassName: "w-16 text-right", cellClassName: "text-right" },
+    cell: () => <RowActions />,
+  }),
+];
+
 function Sku() {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState<number>(PAGE_SIZES[0]);
@@ -127,11 +181,20 @@ function Sku() {
   const { data: areas } = useAreas();
   const { data, isPending, isError } = useProducts({ page, size, q, areaId });
 
-  const items = data?.items ?? [];
+  const items = data?.items ?? EMPTY;
   const meta = data?.meta;
   const totalPages = meta?.totalPages ?? 0;
   const isFirst = meta?.first ?? page <= 1;
   const isLast = meta?.last ?? true;
+
+  const table = useReactTable({
+    data: items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => String(row.id),
+    manualPagination: true,
+    meta: { page, size },
+  });
 
   function handleAreaChange(value: string) {
     setAreaId(value === ALL_AREAS ? undefined : Number(value));
@@ -185,20 +248,24 @@ function Sku() {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">No</TableHead>
-              <TableHead>SKU Code</TableHead>
-              <TableHead>SKU Name</TableHead>
-              <TableHead>Area</TableHead>
-              <TableHead>Line</TableHead>
-              <TableHead className="w-16 text-right">Actions</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className={header.column.columnDef.meta?.headerClassName}
+                  >
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
             {isPending ? (
               Array.from({ length: size > 10 ? 10 : size }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: COLUMN_COUNT }).map((__, j) => (
+                  {columns.map((_col, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -207,34 +274,27 @@ function Sku() {
               ))
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={COLUMN_COUNT} className="h-24 text-center text-destructive">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-destructive">
                   Failed to load SKUs. Please try again.
                 </TableCell>
               </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={COLUMN_COUNT}
+                  colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No SKUs found.
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((product, index) => (
-                <TableRow key={product.id}>
-                  <TableCell className="text-muted-foreground">
-                    {(page - 1) * size + index + 1}
-                  </TableCell>
-                  <TableCell className="font-medium">{product.code}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.area?.name ?? "-"}</TableCell>
-                  <TableCell>
-                    <LineCell lines={product.workCenters} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <RowActions />
-                  </TableCell>
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClassName}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             )}
