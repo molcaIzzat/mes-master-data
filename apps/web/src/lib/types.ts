@@ -96,6 +96,40 @@ type CreateProductInput = {
   packages: CreateProductPackage[];
 };
 
+// PUT /v1/products/:id body — the create body where every package also carries
+// its DB `id` (0 for newly added rows; the API diffs packages by id).
+type UpdateProductInput = Omit<CreateProductInput, "packages"> & {
+  packages: (CreateProductPackage & { id: number })[];
+};
+
+// A single package as returned by GET /v1/products/:id (nested `uom`, no
+// dimensions/uomId).
+type ProductPackageDetail = {
+  id: number;
+  main: boolean;
+  sortOrder: number;
+  uom: ProductArea | null;
+  stdWeight: number | null;
+  minWeight: number | null;
+  maxWeight: number | null;
+  factorToBase: number;
+};
+
+// Mirrors the core-api Product shape returned by GET /v1/products/:id.
+type ProductDetail = {
+  id: number;
+  code: string;
+  name: string;
+  region: string;
+  area: ProductArea | null;
+  baseUom: ProductArea | null;
+  workCenters: ProductLine[];
+  idealRatePerHour: number | null;
+  price: number | null;
+  cost: number | null;
+  packages: ProductPackageDetail[];
+};
+
 export type {
   AreaListItem,
   CreateProductInput,
@@ -103,9 +137,12 @@ export type {
   Me,
   PageMeta,
   ProductArea,
+  ProductDetail,
   ProductLine,
   ProductListItem,
+  ProductPackageDetail,
   UomListItem,
+  UpdateProductInput,
   WebResponse,
   WorkCenterListItem,
 };

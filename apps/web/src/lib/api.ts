@@ -7,8 +7,10 @@ import type {
   CreateProductInput,
   Me,
   PageMeta,
+  ProductDetail,
   ProductListItem,
   UomListItem,
+  UpdateProductInput,
   WebResponse,
   WorkCenterListItem,
 } from "./types.js";
@@ -97,5 +99,43 @@ async function createProduct(body: CreateProductInput): Promise<{ id: number }> 
   return data.data ?? { id: 0 };
 }
 
-export { createProduct, getAreas, getMe, getProducts, getUoms, getWorkCenters, login, logout };
+// Fetches a single product for the edit form to prefill.
+async function getProductById(id: number): Promise<ProductDetail | null> {
+  const { data } = await http.get<WebResponse<ProductDetail>>(`/api/proxy/v1/products/${id}`);
+  return data.data;
+}
+
+// Updates a product (SKU). Returns the id.
+async function updateProduct({
+  id,
+  body,
+}: {
+  id: number;
+  body: UpdateProductInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    `/api/proxy/v1/products/${id}`,
+    body,
+  );
+  return data.data ?? { id };
+}
+
+// Deletes a product (SKU).
+async function deleteProduct(id: number): Promise<void> {
+  await http.delete<WebResponse<string>>(`/api/proxy/v1/products/${id}`);
+}
+
+export {
+  createProduct,
+  deleteProduct,
+  getAreas,
+  getMe,
+  getProductById,
+  getProducts,
+  getUoms,
+  getWorkCenters,
+  login,
+  logout,
+  updateProduct,
+};
 export type { ProductQuery };

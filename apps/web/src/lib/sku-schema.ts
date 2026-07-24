@@ -17,6 +17,9 @@ function requiredId(message: string) {
 
 const packageSchema = z.object({
   id: z.string(),
+  // Existing DB package id (0 for rows added in the form). Sent back on update
+  // so the API can diff packages by id; ignored on create.
+  dbId: z.number(),
   uomId: requiredId("Select a unit"),
   main: z.boolean(),
   stdWeight: positiveString("Must be greater than 0"),
@@ -64,6 +67,7 @@ type SkuFormValues = z.input<typeof skuSchema>;
 function makePackage(id: string, main = false): PackageFormValue {
   return {
     id,
+    dbId: 0,
     uomId: null,
     main,
     stdWeight: "",

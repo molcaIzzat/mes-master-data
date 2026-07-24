@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   createColumnHelper,
   flexRender,
@@ -42,7 +42,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.js";
+import { DeleteSkuDialog } from "@/components/sku/delete-sku-dialog.js";
+import { SkuDetailSheet } from "@/components/sku/sku-detail-sheet.js";
 
+import type { DeleteTarget } from "@/components/sku/delete-sku-dialog.js";
 import type { ProductLine, ProductListItem } from "@/lib/types.js";
 import type { RowData } from "@tanstack/react-table";
 
@@ -52,6 +55,8 @@ declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     page: number;
     size: number;
+    openView: (id: number) => void;
+    openDelete: (target: DeleteTarget) => void;
   }
   interface ColumnMeta<TData extends RowData, TValue> {
     headerClassName?: string;
@@ -101,8 +106,14 @@ function LineCell({ lines }: { lines: ProductLine[] }) {
   );
 }
 
-function RowActions() {
-  // Display-only for now — no handlers wired.
+type RowActionsProps = {
+  id: number;
+  name: string;
+  onView: (id: number) => void;
+  onDelete: (target: DeleteTarget) => void;
+};
+
+function RowActions({ id, name, onView, onDelete }: RowActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -111,15 +122,17 @@ function RowActions() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-32">
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onView(id)}>
           <Search />
           View
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Pencil />
-          Edit
+        <DropdownMenuItem asChild>
+          <Link to="/sku/$id/edit" params={{ id: String(id) }}>
+            <Pencil />
+            Edit
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive">
+        <DropdownMenuItem variant="destructive" onSelect={() => onDelete({ id, name })}>
           <Trash2 />
           Delete
         </DropdownMenuItem>
@@ -158,16 +171,26 @@ const columns = [
     id: "actions",
     header: "Actions",
     meta: { headerClassName: "w-16 text-right", cellClassName: "text-right" },
-    cell: () => <RowActions />,
+    cell: ({ row, table }) => (
+      <RowActions
+        id={row.original.id}
+        name={row.original.name}
+        onView={table.options.meta!.openView}
+        onDelete={table.options.meta!.openDelete}
+      />
+    ),
   }),
 ];
 
 function Sku() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [size, setSize] = useState<number>(PAGE_SIZES[0]);
   const [searchInput, setSearchInput] = useState("");
   const [q, setQ] = useState("");
   const [areaId, setAreaId] = useState<number | undefined>(undefined);
+  const [viewId, setViewId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
   // Debounce the search box before it hits the query; reset to page 1 on change.
   useEffect(() => {
@@ -193,7 +216,7 @@ function Sku() {
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => String(row.id),
     manualPagination: true,
-    meta: { page, size },
+    meta: { page, size, openView: setViewId, openDelete: setDeleteTarget },
   });
 
   function handleAreaChange(value: string) {
@@ -361,6 +384,23 @@ function Sku() {
           </Button>
         </div>
       </div>
+
+      <SkuDetailSheet
+        productId={viewId}
+        onOpenChange={(open) => !open && setViewId(null)}
+        onEdit={(id) => {
+          setViewId(null);
+          void navigate({ to: "/sku/$id/edit", params: { id: String(id) } });
+        }}
+        onDelete={(target) => {
+          setViewId(null);
+          setDeleteTarget(target);
+        }}
+      />
+      <DeleteSkuDialog
+        target={deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      />
     </div>
   );
 }

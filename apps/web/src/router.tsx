@@ -12,6 +12,7 @@ import { RootRedirect } from "@/routes/root-redirect.js";
 import { LevelConfiguration } from "@/routes/level-configuration.js";
 import { Sku } from "@/routes/sku.js";
 import { SkuAdd } from "@/routes/sku-add.js";
+import { SkuEdit } from "@/routes/sku-edit.js";
 import { DowntimeReason } from "@/routes/downtime-reason.js";
 import { RejectReworkReason } from "@/routes/reject-rework-reason.js";
 import { Analytics } from "@/routes/analytics.js";
@@ -93,6 +94,13 @@ const skuAddRoute = createRoute({
   staticData: { title: "Add", description: "SKU > Add" },
 });
 
+const skuEditRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: "/sku/$id/edit",
+  component: SkuEdit,
+  staticData: { title: "Edit", description: "SKU > Edit" },
+});
+
 const downtimeReasonRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: "/downtime-reason",
@@ -120,6 +128,7 @@ const routeTree = rootRoute.addChildren([
     levelConfigurationRoute,
     skuRoute,
     skuAddRoute,
+    skuEditRoute,
     downtimeReasonRoute,
     rejectReworkReasonRoute,
     analyticsRoute,
