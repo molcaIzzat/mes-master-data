@@ -1,6 +1,7 @@
-// Protected placeholder page. Layout comes later; for now just the heading.
+// Protected placeholder page. Content (the line table) comes later; the shell
+// (sidebar + header) is provided by RootLayout.
 function LevelConfiguration() {
-  return <h1>Hello World</h1>;
+  return <p className="text-muted-foreground">Level configuration content coming soon.</p>;
 }
 
 export { LevelConfiguration };
