@@ -166,13 +166,13 @@ function RejectReworkReasonForm({ item, onClose }: RejectReworkReasonFormProps) 
 
       <form.Field name="equipmentIds">
         {(field) => (
-          <FieldShell label="Machine" required error={firstError(field.state.meta.errors)}>
+          <FieldShell label="Equipment" required error={firstError(field.state.meta.errors)}>
             <MultiSelect
               options={equipments ?? []}
               selectedIds={field.state.value}
               onChange={field.handleChange}
-              placeholder="select one or more machine..."
-              emptyText="No machines available."
+              placeholder="select one or more equipment..."
+              emptyText="No equipments available."
               invalid={field.state.meta.errors.length > 0}
             />
           </FieldShell>
