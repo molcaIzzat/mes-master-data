@@ -39,6 +39,7 @@ import { createWorkUnitClassHandler } from "../../module/work-unit-class/work-un
 import { createWorkUnitHandler } from "../../module/work-unit/work-unit-handler.js";
 import { createEquipmentHandler } from "../../module/equipment/equipment-handler.js";
 import { createEdgeHandler } from "../../module/edge/edge-handler.js";
+import { createUomHandler } from "../../module/uom/uom-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -69,6 +70,14 @@ api.route(
   createEnterpriseHandler({
     authMw: container.resolve("authMw"),
     enterpriseService: container.resolve("enterpriseService"),
+  }),
+);
+
+api.route(
+  "/uoms",
+  createUomHandler({
+    authMw: container.resolve("authMw"),
+    uomService: container.resolve("uomService"),
   }),
 );
 

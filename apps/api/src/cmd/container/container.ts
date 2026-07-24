@@ -129,6 +129,9 @@ import type {
 } from "../../module/product-alias/product-alias-repository.js";
 import type { TProductAliasService } from "../../module/product-alias/product-alias-service.js";
 import { registerProductAlias } from "../../module/product-alias/product-alias-module.js";
+import type { UomReader, UomWriter } from "../../module/uom/uom-repository.js";
+import type { TUomService } from "../../module/uom/uom-service.js";
+import { registerUom } from "../../module/uom/uom-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -205,6 +208,9 @@ type Cradle = {
   productAliasReaderRepository: ProductAliasReader;
   productAliasWriterRepository: ProductAliasWriter;
   productAliasService: TProductAliasService;
+  uomReaderRepository: UomReader;
+  uomWriterRepository: UomWriter;
+  uomService: TUomService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -220,6 +226,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerInfra(container, config);
   registerHealth(container, config);
   registerEnterprise(container);
+  registerUom(container);
   registerSite(container);
   registerArea(container);
   registerWorkCenterClass(container);
