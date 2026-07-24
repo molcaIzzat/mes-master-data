@@ -4,12 +4,17 @@ import { http } from "./http.js";
 
 import type {
   AreaListItem,
+  CreateDowntimeReasonInput,
   CreateProductInput,
+  DowntimeReasonCategory,
+  DowntimeReasonListItem,
+  EquipmentListItem,
   Me,
   PageMeta,
   ProductDetail,
   ProductListItem,
   UomListItem,
+  UpdateDowntimeReasonInput,
   UpdateProductInput,
   WebResponse,
   WorkCenterListItem,
@@ -125,10 +130,85 @@ async function deleteProduct(id: number): Promise<void> {
   await http.delete<WebResponse<string>>(`/api/proxy/v1/products/${id}`);
 }
 
+type DowntimeReasonQuery = {
+  page: number;
+  size: number;
+  q?: string;
+  category?: DowntimeReasonCategory;
+  areaId?: number;
+};
+
+type DowntimeReasonPage = {
+  items: DowntimeReasonListItem[];
+  meta: PageMeta | undefined;
+};
+
+// Returns a page of downtime reasons. `q` filters by name/code, `category`
+// filters by category; each param is omitted from the request when unset.
+async function getDowntimeReasons({
+  page,
+  size,
+  q,
+  category,
+  areaId,
+}: DowntimeReasonQuery): Promise<DowntimeReasonPage> {
+  const params: Record<string, number | string> = { page, size };
+  if (q) params.q = q;
+  if (category) params.category = category;
+  if (areaId) params.areaId = areaId;
+
+  const { data } = await http.get<WebResponse<DowntimeReasonListItem[]>>(
+    "/api/proxy/v1/downtime-reasons",
+    { params },
+  );
+  return { items: data.data ?? [], meta: data.meta };
+}
+
+// Returns equipments (machines) for the "Machine" multi-select.
+async function getEquipments(): Promise<EquipmentListItem[]> {
+  const { data } = await http.get<WebResponse<EquipmentListItem[]>>("/api/proxy/v1/equipments", {
+    params: { page: 1, size: 100 },
+  });
+  return data.data ?? [];
+}
+
+// Creates a downtime reason. Returns the new id.
+async function createDowntimeReason(body: CreateDowntimeReasonInput): Promise<{ id: number }> {
+  const { data } = await http.post<WebResponse<{ id: number }>>(
+    "/api/proxy/v1/downtime-reasons",
+    body,
+  );
+  return data.data ?? { id: 0 };
+}
+
+// Updates a downtime reason. Returns the id.
+async function updateDowntimeReason({
+  id,
+  body,
+}: {
+  id: number;
+  body: UpdateDowntimeReasonInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    `/api/proxy/v1/downtime-reasons/${id}`,
+    body,
+  );
+  return data.data ?? { id };
+}
+
+// Deletes a downtime reason.
+async function deleteDowntimeReason(id: number): Promise<void> {
+  await http.delete<WebResponse<string>>(`/api/proxy/v1/downtime-reasons/${id}`);
+}
+
 export {
+  createDowntimeReason,
   createProduct,
+  deleteDowntimeReason,
   deleteProduct,
   getAreas,
+  getDowntimeReasons,
+  getEquipments,
   getMe,
   getProductById,
   getProducts,
@@ -136,6 +216,7 @@ export {
   getWorkCenters,
   login,
   logout,
+  updateDowntimeReason,
   updateProduct,
 };
-export type { ProductQuery };
+export type { DowntimeReasonQuery, ProductQuery };

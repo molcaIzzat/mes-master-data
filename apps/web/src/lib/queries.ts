@@ -7,18 +7,23 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  createDowntimeReason,
   createProduct,
+  deleteDowntimeReason,
   deleteProduct,
   getAreas,
+  getDowntimeReasons,
+  getEquipments,
   getMe,
   getProductById,
   getProducts,
   getUoms,
   getWorkCenters,
+  updateDowntimeReason,
   updateProduct,
 } from "./api.js";
 
-import type { ProductQuery } from "./api.js";
+import type { DowntimeReasonQuery, ProductQuery } from "./api.js";
 
 const meKey = ["me"] as const;
 
@@ -47,6 +52,45 @@ function useProducts(params: ProductQuery) {
   });
 }
 
+const downtimeReasonsKey = (params: DowntimeReasonQuery) => ["downtime-reasons", params] as const;
+
+// keepPreviousData keeps the current rows visible while the next page/search
+// loads, avoiding an empty-table flash.
+function useDowntimeReasons(params: DowntimeReasonQuery) {
+  return useQuery({
+    queryKey: downtimeReasonsKey(params),
+    queryFn: () => getDowntimeReasons(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+// Invalidates the list on success so the new reason shows up.
+function useCreateDowntimeReason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createDowntimeReason,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["downtime-reasons"] }),
+  });
+}
+
+// Refreshes the list after an edit.
+function useUpdateDowntimeReason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDowntimeReason,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["downtime-reasons"] }),
+  });
+}
+
+// Refreshes the list after a delete.
+function useDeleteDowntimeReason() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDowntimeReason,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["downtime-reasons"] }),
+  });
+}
+
 const areasKey = ["areas"] as const;
 
 function useAreas() {
@@ -63,6 +107,16 @@ function useUoms() {
   return useQuery({
     queryKey: uomsKey,
     queryFn: getUoms,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+const equipmentsKey = ["equipments"] as const;
+
+function useEquipments() {
+  return useQuery({
+    queryKey: equipmentsKey,
+    queryFn: getEquipments,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -122,9 +176,14 @@ function useDeleteProduct() {
 
 export {
   useAreas,
+  useCreateDowntimeReason,
   useCreateProduct,
+  useDeleteDowntimeReason,
   useDeleteProduct,
+  useDowntimeReasons,
+  useEquipments,
   useMe,
+  useUpdateDowntimeReason,
   useProduct,
   useProducts,
   useUpdateProduct,

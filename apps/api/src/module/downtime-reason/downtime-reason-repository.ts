@@ -92,6 +92,23 @@ class DowntimeReasonReaderRepository implements DowntimeReasonReader {
     if (filter.category !== undefined)
       baseConds.push(eq(downtimeReasonTable.category, filter.category));
 
+    if (filter.areaId !== undefined) {
+      baseConds.push(
+        inArray(
+          downtimeReasonTable.id,
+          this.db
+            .select({ reasonId: downtimeReasonAreaTable.reasonId })
+            .from(downtimeReasonAreaTable)
+            .where(
+              and(
+                eq(downtimeReasonAreaTable.region, this.region),
+                eq(downtimeReasonAreaTable.areaId, filter.areaId),
+              ),
+            ),
+        ),
+      );
+    }
+
     if (filter.q !== undefined) {
       const pattern = `%${filter.q}%`;
       const qOr = or(
