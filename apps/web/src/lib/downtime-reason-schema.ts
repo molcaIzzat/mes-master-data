@@ -18,7 +18,7 @@ function requiredId(message: string) {
 const downtimeReasonSchema = z.object({
   areaId: requiredId("Area is required"),
   workCenterIds: z.array(z.number()).min(1, "Select at least one line"),
-  equipmentIds: z.array(z.number()).min(1, "Select at least one machine"),
+  equipmentIds: z.array(z.number()).min(1, "Select at least one equipment"),
   category: z
     .enum(["PLANNED", "UNPLANNED", "SMALL_STOP"])
     .nullable()

@@ -24,6 +24,8 @@ type EquipmentList = Omit<Equipment, "updatedAt">;
 
 type EquipmentFilter = {
   q?: string;
+  workUnitId?: number;
+  workCenterId?: number;
 };
 
 type ListEquipmentInput = {

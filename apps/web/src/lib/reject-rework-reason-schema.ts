@@ -14,7 +14,7 @@ function requiredId(message: string) {
 const rejectReworkReasonSchema = z.object({
   areaId: requiredId("Area is required"),
   workCenterIds: z.array(z.number()).min(1, "Select at least one line"),
-  equipmentIds: z.array(z.number()).min(1, "Select at least one machine"),
+  equipmentIds: z.array(z.number()).min(1, "Select at least one equipment"),
   name: z.string().min(5, "Reason must be at least 5 characters"),
   code: z.string().min(5, "Code must be at least 5 characters"),
 });

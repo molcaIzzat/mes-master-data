@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, or } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, or } from "drizzle-orm";
 import type { EquipmentSummary } from "@molca/contract-client";
 
 import { DuplicateEquipmentError, InvalidEquipmentReferenceError } from "./equipment-errors.js";
@@ -7,7 +7,7 @@ import {
   toPgConstraintError,
   UniqueViolationError,
 } from "../../shared/database/helper/catcher.js";
-import { equipmentTable } from "../../shared/database/schema/schema.js";
+import { equipmentTable, workUnitTable } from "../../shared/database/schema/schema.js";
 
 import type {
   CreateEquipment,
@@ -53,6 +53,28 @@ class EquipmentReaderRepository implements EquipmentReader {
   async findAll({ limit, offset, filter }: ListEquipmentInput): Promise<PagedEquipment> {
     const baseConds = [eq(equipmentTable.region, this.region)];
 
+    if (filter.workUnitId !== undefined) {
+      baseConds.push(eq(equipmentTable.workUnitId, filter.workUnitId));
+    }
+
+    if (filter.workCenterId !== undefined) {
+      // Equipment has no direct workCenterId; scope via its work unit.
+      baseConds.push(
+        inArray(
+          equipmentTable.workUnitId,
+          this.db
+            .select({ id: workUnitTable.id })
+            .from(workUnitTable)
+            .where(
+              and(
+                eq(workUnitTable.region, this.region),
+                eq(workUnitTable.workCenterId, filter.workCenterId),
+              ),
+            ),
+        ),
+      );
+    }
+
     if (filter.q !== undefined) {
       const pattern = `%${filter.q}%`;
       const qOr = or(ilike(equipmentTable.name, pattern), ilike(equipmentTable.code, pattern));
@@ -64,6 +86,10 @@ class EquipmentReaderRepository implements EquipmentReader {
       this.db.query.equipmentTable.findMany({
         where: {
           region: this.region,
+          ...(filter.workUnitId !== undefined ? { workUnitId: filter.workUnitId } : {}),
+          ...(filter.workCenterId !== undefined
+            ? { unit: { workCenterId: filter.workCenterId } }
+            : {}),
           ...(filter.q !== undefined
             ? {
                 OR: [{ name: { ilike: `%${filter.q}%` } }, { code: { ilike: `%${filter.q}%` } }],

@@ -117,11 +117,13 @@ type CreateRejectReworkReasonInput = {
 type UpdateRejectReworkReasonInput = CreateRejectReworkReasonInput;
 
 // Mirrors the core-api EquipmentList shape returned by GET /v1/equipments
-// (only the fields the Machine multi-select needs).
+// (only the fields the Equipment multi-select needs). `unit` is the work unit,
+// surfaced in the option label.
 type EquipmentListItem = {
   id: number;
   code: string;
   name: string;
+  unit: { id: number; name: string; code: string } | null;
 };
 
 // Mirrors the core-api AreaList shape returned by GET /v1/areas.

@@ -7,6 +7,14 @@ const listEquipmentInputSchema = paginationSchema.extend({
     z.optional(z.string()),
     z.transform((v) => (v === "" ? undefined : v)),
   ),
+  workCenterId: z.pipe(
+    z.optional(z.coerce.number()),
+    z.transform((v) => (v === 0 ? undefined : v)),
+  ),
+  workUnitId: z.pipe(
+    z.optional(z.coerce.number()),
+    z.transform((v) => (v === 0 ? undefined : v)),
+  ),
 });
 
 const createEquipmentSchema = z.object({

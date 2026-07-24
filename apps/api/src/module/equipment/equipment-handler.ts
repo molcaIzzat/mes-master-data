@@ -19,9 +19,11 @@ function createEquipmentHandler({ equipmentService, authMw }: EquipmentHandlerDe
   app.use("*", authMw);
 
   app.get("/", equipmentValidator.paginate, async (c) => {
-    const { page, size, q } = c.req.valid("query");
+    const { page, size, q, workCenterId, workUnitId } = c.req.valid("query");
     const filter = {
       q,
+      workCenterId,
+      workUnitId,
     };
     const { items, meta } = await equipmentService.findAll(page, size, filter);
     return c.json(WebResponse.builder<EquipmentList[]>().data(items).meta(meta).build(), 200);

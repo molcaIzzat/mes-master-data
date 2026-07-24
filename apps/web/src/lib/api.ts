@@ -167,10 +167,14 @@ async function getDowntimeReasons({
   return { items: data.data ?? [], meta: data.meta };
 }
 
-// Returns equipments (machines) for the "Machine" multi-select.
-async function getEquipments(): Promise<EquipmentListItem[]> {
+// Returns equipments for the "Equipment" multi-select, scoped to a work center
+// (line) when `workCenterId` is provided.
+async function getEquipments(workCenterId?: number): Promise<EquipmentListItem[]> {
+  const params: Record<string, number> = { page: 1, size: 100 };
+  if (workCenterId) params.workCenterId = workCenterId;
+
   const { data } = await http.get<WebResponse<EquipmentListItem[]>>("/api/proxy/v1/equipments", {
-    params: { page: 1, size: 100 },
+    params,
   });
   return data.data ?? [];
 }

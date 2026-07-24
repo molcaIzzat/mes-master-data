@@ -2,6 +2,7 @@ import {
   keepPreviousData,
   queryOptions,
   useMutation,
+  useQueries,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -28,6 +29,7 @@ import {
 } from "./api.js";
 
 import type { DowntimeReasonQuery, ProductQuery, RejectReworkReasonQuery } from "./api.js";
+import type { EquipmentListItem } from "./types.js";
 
 const meKey = ["me"] as const;
 
@@ -155,13 +157,27 @@ function useUoms() {
   });
 }
 
-const equipmentsKey = ["equipments"] as const;
+const equipmentsKey = (workCenterId: number) => ["equipments", workCenterId] as const;
 
-function useEquipments() {
-  return useQuery({
-    queryKey: equipmentsKey,
-    queryFn: getEquipments,
-    staleTime: 5 * 60 * 1000,
+// Fetches equipment for each selected line (work center) and returns the deduped
+// union, so the Equipment select shows only equipment on the chosen lines.
+function useEquipmentsByWorkCenters(workCenterIds: number[]) {
+  return useQueries({
+    queries: workCenterIds.map((id) => ({
+      queryKey: equipmentsKey(id),
+      queryFn: () => getEquipments(id),
+      staleTime: 5 * 60 * 1000,
+    })),
+    combine: (results) => {
+      const byId = new Map<number, EquipmentListItem>();
+      for (const result of results) {
+        for (const equipment of result.data ?? []) byId.set(equipment.id, equipment);
+      }
+      return {
+        data: [...byId.values()],
+        isPending: results.some((r) => r.isPending),
+      };
+    },
   });
 }
 
@@ -227,7 +243,7 @@ export {
   useDeleteProduct,
   useDeleteRejectReworkReason,
   useDowntimeReasons,
-  useEquipments,
+  useEquipmentsByWorkCenters,
   useMe,
   useUpdateDowntimeReason,
   useProduct,

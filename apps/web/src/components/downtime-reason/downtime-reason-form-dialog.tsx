@@ -6,7 +6,7 @@ import { Save } from "lucide-react";
 import {
   useAreas,
   useCreateDowntimeReason,
-  useEquipments,
+  useEquipmentsByWorkCenters,
   useUpdateDowntimeReason,
   useWorkCenters,
 } from "@/lib/queries.js";
@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select.js";
 import { MultiSelect } from "@/components/downtime-reason/multi-select.js";
+import { formatEquipmentLabel } from "@/lib/utils.js";
 
 import type { DowntimeReasonCategory, DowntimeReasonListItem } from "@/lib/types.js";
 import type { ReactNode } from "react";
@@ -86,7 +87,6 @@ function DowntimeReasonForm({ item, onClose }: DowntimeReasonFormProps) {
   const updateReason = useUpdateDowntimeReason();
 
   const { data: areas } = useAreas();
-  const { data: equipments } = useEquipments();
 
   const form = useForm({
     defaultValues: item ? toFormValues(item) : defaultDowntimeReasonValues(),
@@ -108,7 +108,13 @@ function DowntimeReasonForm({ item, onClose }: DowntimeReasonFormProps) {
   });
 
   const areaId = useStore(form.store, (s) => s.values.areaId);
+  const workCenterIds = useStore(form.store, (s) => s.values.workCenterIds);
   const { data: workCenters } = useWorkCenters(areaId ?? undefined);
+  const { data: equipments } = useEquipmentsByWorkCenters(workCenterIds);
+  const equipmentOptions = (equipments ?? []).map((e) => ({
+    id: e.id,
+    name: formatEquipmentLabel(e),
+  }));
 
   return (
     <form
@@ -132,7 +138,9 @@ function DowntimeReasonForm({ item, onClose }: DowntimeReasonFormProps) {
               value={field.state.value ? String(field.state.value) : undefined}
               onValueChange={(v) => {
                 field.handleChange(Number(v));
-                form.setFieldValue("workCenterIds", []); // lines are area-scoped
+                // Lines are area-scoped and equipment is line-scoped; reset both.
+                form.setFieldValue("workCenterIds", []);
+                form.setFieldValue("equipmentIds", []);
               }}
             >
               <SelectTrigger aria-invalid={field.state.meta.errors.length > 0} className="w-full">
@@ -156,7 +164,10 @@ function DowntimeReasonForm({ item, onClose }: DowntimeReasonFormProps) {
             <MultiSelect
               options={workCenters ?? []}
               selectedIds={field.state.value}
-              onChange={field.handleChange}
+              onChange={(ids) => {
+                field.handleChange(ids);
+                form.setFieldValue("equipmentIds", []); // equipment is line-scoped
+              }}
               placeholder="select line..."
               emptyText="No lines available."
               disabled={areaId == null}
@@ -170,11 +181,12 @@ function DowntimeReasonForm({ item, onClose }: DowntimeReasonFormProps) {
         {(field) => (
           <FieldShell label="Equipment" required error={firstError(field.state.meta.errors)}>
             <MultiSelect
-              options={equipments ?? []}
+              options={equipmentOptions}
               selectedIds={field.state.value}
               onChange={field.handleChange}
               placeholder="select one or more equipment..."
-              emptyText="No equipments available."
+              emptyText="No equipment available."
+              disabled={workCenterIds.length === 0}
               invalid={field.state.meta.errors.length > 0}
             />
           </FieldShell>
