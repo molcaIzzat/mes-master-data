@@ -45,6 +45,8 @@ type ProductList = Pick<Product, "id" | "code" | "name" | "region" | "area" | "w
 type ProductFilter = {
   q?: string;
   areaId?: number;
+  // Scopes the list to the products assigned to one work center (line).
+  workCenterId?: number;
 };
 
 type ListProductInput = {

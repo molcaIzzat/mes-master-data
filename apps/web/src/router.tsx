@@ -10,6 +10,7 @@ import { AppHeader } from "@/components/layout/app-header.js";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.js";
 import { RootRedirect } from "@/routes/root-redirect.js";
 import { LevelConfiguration } from "@/routes/level-configuration.js";
+import { MachineDetail } from "@/routes/machine-detail.js";
 import { Sku } from "@/routes/sku.js";
 import { SkuAdd } from "@/routes/sku-add.js";
 import { SkuEdit } from "@/routes/sku-edit.js";
@@ -80,6 +81,13 @@ const levelConfigurationRoute = createRoute({
   staticData: { title: "Level Configuration", description: "Level Configuration" },
 });
 
+const machineDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: "/level-configuration/machine/$id",
+  component: MachineDetail,
+  staticData: { title: "Detail Machine", description: "Level Configuration > Detail Machine" },
+});
+
 const skuRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: "/sku",
@@ -126,6 +134,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   appLayoutRoute.addChildren([
     levelConfigurationRoute,
+    machineDetailRoute,
     skuRoute,
     skuAddRoute,
     skuEditRoute,

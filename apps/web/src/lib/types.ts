@@ -116,14 +116,16 @@ type CreateRejectReworkReasonInput = {
 // PUT /v1/reject-reasons/:id body — same shape as create.
 type UpdateRejectReworkReasonInput = CreateRejectReworkReasonInput;
 
-// Mirrors the core-api EquipmentList shape returned by GET /v1/equipments
-// (only the fields the Equipment multi-select needs). `unit` is the work unit,
-// surfaced in the option label.
+// Mirrors the core-api EquipmentList shape returned by GET /v1/equipments.
+// `unit` is the work unit, surfaced in the option label; `class` and
+// `productSignalTag` are columns of the machine detail page's Equipment table.
 type EquipmentListItem = {
   id: number;
   code: string;
   name: string;
   unit: { id: number; name: string; code: string } | null;
+  class: LevelNodeRef | null;
+  productSignalTag: string;
 };
 
 // Mirrors the core-api AreaList shape returned by GET /v1/areas.
@@ -283,13 +285,102 @@ type LevelConfigurationListItem = LevelNodeRef & {
   workUnits: LevelWorkUnitItem[];
 };
 
+// Mirrors the core-api WorkUnit shape returned by GET /v1/work-units/:id. The
+// machine detail page reads the parent line off `workCenter` and the Machine
+// Category off `class`.
+type WorkUnitDetail = LevelNodeRef & {
+  workCenter: LevelNodeRef | null;
+  class: LevelNodeRef | null;
+};
+
+// Mirrors the core-api WorkCenter shape returned by GET /v1/work-centers/:id.
+// Supplies the Area Name and Line Category of the machine's line, neither of
+// which the work unit itself carries.
+type WorkCenterDetail = LevelNodeRef & {
+  area: LevelNodeRef | null;
+  class: LevelNodeRef | null;
+};
+
+// Mirrors ProductSpecList from GET /v1/work-units/:id/product-specs.
+// `idealRatePerHour` is what the UI labels "Cycle Time".
+type ProductSpecListItem = {
+  id: number;
+  workUnitId: number;
+  product: LevelNodeRef | null;
+  uom: LevelNodeRef | null;
+  idealRatePerHour: number;
+};
+
+// Mirrors ProductAliasList from GET /v1/work-units/:id/product-aliases.
+type ProductAliasListItem = {
+  id: number;
+  workUnitId: number;
+  product: LevelNodeRef | null;
+  equipment: LevelNodeRef | null;
+  externalCode: string;
+};
+
+// Mirrors the core-api COUNT_ROLE / COUNT_SOURCE enums.
+const COUNT_ROLES = [
+  "infeed",
+  "good_output",
+  "reject",
+  "good_weight",
+  "reject_weight",
+  "total_weight",
+] as const;
+const COUNT_SOURCES = ["plc", "manual"] as const;
+
+type CountRole = (typeof COUNT_ROLES)[number];
+type CountSource = (typeof COUNT_SOURCES)[number];
+
+// Mirrors CountPointList from GET /v1/work-units/:id/count-points.
+type CountPointListItem = {
+  id: number;
+  workUnitId: number;
+  equipment: LevelNodeRef | null;
+  uom: LevelNodeRef | null;
+  role: CountRole;
+  source: CountSource;
+  sourceTag: string;
+};
+
+// POST/PUT bodies for the three machine children. The work unit comes from the
+// path, so none of them carries it.
+type CreateProductSpecInput = {
+  productId: number;
+  uomId: number;
+  idealRatePerHour: number;
+};
+
+type CreateProductAliasInput = {
+  productId: number;
+  equipmentId: number;
+  externalCode: string;
+};
+
+type CreateCountPointInput = {
+  equipmentId: number | null;
+  uomId: number;
+  role: CountRole;
+  source: CountSource;
+  sourceTag: string;
+};
+
+export { COUNT_ROLES, COUNT_SOURCES };
 export type {
   AreaListItem,
   ClassListItem,
+  CountPointListItem,
+  CountRole,
+  CountSource,
+  CreateCountPointInput,
   CreateDowntimeReasonInput,
   CreateEquipmentInput,
+  CreateProductAliasInput,
   CreateProductInput,
   CreateProductPackage,
+  CreateProductSpecInput,
   CreateRejectReworkReasonInput,
   CreateWorkCenterInput,
   CreateWorkUnitInput,
@@ -303,11 +394,13 @@ export type {
   LevelWorkUnitItem,
   Me,
   PageMeta,
+  ProductAliasListItem,
   ProductArea,
   ProductDetail,
   ProductLine,
   ProductListItem,
   ProductPackageDetail,
+  ProductSpecListItem,
   RejectReworkReasonListItem,
   RejectReworkReasonRef,
   UomListItem,
@@ -315,5 +408,7 @@ export type {
   UpdateProductInput,
   UpdateRejectReworkReasonInput,
   WebResponse,
+  WorkCenterDetail,
   WorkCenterListItem,
+  WorkUnitDetail,
 };

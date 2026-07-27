@@ -5,9 +5,13 @@ import { http } from "./http.js";
 import type {
   AreaListItem,
   ClassListItem,
+  CountPointListItem,
+  CreateCountPointInput,
   CreateDowntimeReasonInput,
   CreateEquipmentInput,
+  CreateProductAliasInput,
   CreateProductInput,
+  CreateProductSpecInput,
   CreateRejectReworkReasonInput,
   CreateWorkCenterInput,
   CreateWorkUnitInput,
@@ -17,15 +21,19 @@ import type {
   LevelConfigurationListItem,
   Me,
   PageMeta,
+  ProductAliasListItem,
   ProductDetail,
   ProductListItem,
+  ProductSpecListItem,
   RejectReworkReasonListItem,
   UomListItem,
   UpdateDowntimeReasonInput,
   UpdateProductInput,
   UpdateRejectReworkReasonInput,
   WebResponse,
+  WorkCenterDetail,
   WorkCenterListItem,
+  WorkUnitDetail,
 } from "./types.js";
 
 // Returns the current user, or null when not authenticated.
@@ -58,6 +66,7 @@ type ProductQuery = {
   size: number;
   q?: string;
   areaId?: number;
+  workCenterId?: number;
 };
 
 type ProductPage = {
@@ -66,11 +75,19 @@ type ProductPage = {
 };
 
 // Returns a page of products (SKUs). `q` filters by name/code, `areaId` filters
-// by area; both are omitted from the request when unset.
-async function getProducts({ page, size, q, areaId }: ProductQuery): Promise<ProductPage> {
+// by area and `workCenterId` narrows to the products assigned to one line; each
+// param is omitted from the request when unset.
+async function getProducts({
+  page,
+  size,
+  q,
+  areaId,
+  workCenterId,
+}: ProductQuery): Promise<ProductPage> {
   const params: Record<string, number | string> = { page, size };
   if (q) params.q = q;
   if (areaId) params.areaId = areaId;
+  if (workCenterId) params.workCenterId = workCenterId;
 
   const { data } = await http.get<WebResponse<ProductListItem[]>>("/api/proxy/v1/products", {
     params,
@@ -303,6 +320,127 @@ async function getEquipments(workCenterId?: number): Promise<EquipmentListItem[]
   return data.data ?? [];
 }
 
+// Single machine and single line behind the machine detail page header. The
+// work unit carries its line but not the line's area or category, so the page
+// follows `workCenter.id` up to the line.
+async function getWorkUnitById(id: number): Promise<WorkUnitDetail | null> {
+  const { data } = await http.get<WebResponse<WorkUnitDetail>>(`/api/proxy/v1/work-units/${id}`);
+  return data.data;
+}
+
+async function getWorkCenterById(id: number): Promise<WorkCenterDetail | null> {
+  const { data } = await http.get<WebResponse<WorkCenterDetail>>(
+    `/api/proxy/v1/work-centers/${id}`,
+  );
+  return data.data;
+}
+
+type EquipmentQuery = {
+  workUnitId: number;
+  page: number;
+  size: number;
+};
+
+type Page<T> = {
+  items: T[];
+  meta: PageMeta | undefined;
+};
+
+// Paged sibling of `getEquipments` for the machine detail page's Equipment
+// table; `getEquipments` stays the single-page feed behind the selects.
+async function getEquipmentsPage({
+  workUnitId,
+  page,
+  size,
+}: EquipmentQuery): Promise<Page<EquipmentListItem>> {
+  const { data } = await http.get<WebResponse<EquipmentListItem[]>>("/api/proxy/v1/equipments", {
+    params: { page, size, workUnitId },
+  });
+  return { items: data.data ?? [], meta: data.meta };
+}
+
+// Specs, code aliases and count points all hang off a work unit under the same
+// nested route shape, so one set of helpers serves all three.
+type MachineChildResource = "product-specs" | "product-aliases" | "count-points";
+
+type MachineChildQuery = {
+  workUnitId: number;
+  page: number;
+  size: number;
+};
+
+function childUrl(resource: MachineChildResource, workUnitId: number, id?: number): string {
+  const base = `/api/proxy/v1/work-units/${workUnitId}/${resource}`;
+  return id === undefined ? base : `${base}/${id}`;
+}
+
+async function listMachineChildren<T>(
+  resource: MachineChildResource,
+  { workUnitId, page, size }: MachineChildQuery,
+): Promise<Page<T>> {
+  const { data } = await http.get<WebResponse<T[]>>(childUrl(resource, workUnitId), {
+    params: { page, size },
+  });
+  return { items: data.data ?? [], meta: data.meta };
+}
+
+async function createMachineChild<TBody>(
+  resource: MachineChildResource,
+  { workUnitId, body }: { workUnitId: number; body: TBody },
+): Promise<{ id: number }> {
+  const { data } = await http.post<WebResponse<{ id: number }>>(
+    childUrl(resource, workUnitId),
+    body,
+  );
+  return data.data ?? { id: 0 };
+}
+
+async function updateMachineChild<TBody>(
+  resource: MachineChildResource,
+  { workUnitId, id, body }: { workUnitId: number; id: number; body: TBody },
+): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    childUrl(resource, workUnitId, id),
+    body,
+  );
+  return data.data ?? { id };
+}
+
+async function deleteMachineChild(
+  resource: MachineChildResource,
+  { workUnitId, id }: { workUnitId: number; id: number },
+): Promise<void> {
+  await http.delete<WebResponse<string>>(childUrl(resource, workUnitId, id));
+}
+
+type MachineChildMutation<TBody> = { workUnitId: number; body: TBody };
+type MachineChildUpdate<TBody> = MachineChildMutation<TBody> & { id: number };
+type MachineChildRef = { workUnitId: number; id: number };
+
+const getProductSpecs = (query: MachineChildQuery) =>
+  listMachineChildren<ProductSpecListItem>("product-specs", query);
+const createProductSpec = (vars: MachineChildMutation<CreateProductSpecInput>) =>
+  createMachineChild("product-specs", vars);
+const updateProductSpec = (vars: MachineChildUpdate<CreateProductSpecInput>) =>
+  updateMachineChild("product-specs", vars);
+const deleteProductSpec = (vars: MachineChildRef) => deleteMachineChild("product-specs", vars);
+
+const getProductAliases = (query: MachineChildQuery) =>
+  listMachineChildren<ProductAliasListItem>("product-aliases", query);
+const createProductAlias = (vars: MachineChildMutation<CreateProductAliasInput>) =>
+  createMachineChild("product-aliases", vars);
+const updateProductAlias = (vars: MachineChildUpdate<CreateProductAliasInput>) =>
+  updateMachineChild("product-aliases", vars);
+const deleteProductAlias = (vars: MachineChildRef) => deleteMachineChild("product-aliases", vars);
+
+const getCountPoints = (query: MachineChildQuery) =>
+  listMachineChildren<CountPointListItem>("count-points", query);
+const createCountPoint = (vars: MachineChildMutation<CreateCountPointInput>) =>
+  createMachineChild("count-points", vars);
+const updateCountPoint = (vars: MachineChildUpdate<CreateCountPointInput>) =>
+  updateMachineChild("count-points", vars);
+const deleteCountPoint = (vars: MachineChildRef) => deleteMachineChild("count-points", vars);
+
 // Creates a downtime reason. Returns the new id.
 async function createDowntimeReason(body: CreateDowntimeReasonInput): Promise<{ id: number }> {
   const { data } = await http.post<WebResponse<{ id: number }>>(
@@ -395,38 +533,60 @@ async function deleteRejectReworkReason(id: number): Promise<void> {
 }
 
 export {
+  createCountPoint,
   createDowntimeReason,
   createEquipment,
   createProduct,
+  createProductAlias,
+  createProductSpec,
   createRejectReworkReason,
   createWorkCenter,
   createWorkUnit,
+  deleteCountPoint,
   deleteDowntimeReason,
   deleteEquipment,
   deleteProduct,
+  deleteProductAlias,
+  deleteProductSpec,
   deleteRejectReworkReason,
   deleteWorkCenter,
   deleteWorkUnit,
   getAreas,
+  getCountPoints,
   getDowntimeReasons,
   getEquipmentClasses,
   getEquipments,
+  getEquipmentsPage,
   getLevelConfigurations,
   getMe,
+  getProductAliases,
   getProductById,
   getProducts,
+  getProductSpecs,
   getRejectReworkReasons,
   getUoms,
+  getWorkCenterById,
   getWorkCenterClasses,
   getWorkCenters,
+  getWorkUnitById,
   getWorkUnitClasses,
   login,
   logout,
+  updateCountPoint,
   updateDowntimeReason,
   updateEquipment,
   updateProduct,
+  updateProductAlias,
+  updateProductSpec,
   updateRejectReworkReason,
   updateWorkCenter,
   updateWorkUnit,
 };
-export type { DowntimeReasonQuery, LevelConfigurationQuery, ProductQuery, RejectReworkReasonQuery };
+export type {
+  DowntimeReasonQuery,
+  EquipmentQuery,
+  LevelConfigurationQuery,
+  MachineChildQuery,
+  ProductQuery,
+  RejectReworkReasonQuery,
+};

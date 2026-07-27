@@ -72,6 +72,19 @@ class ProductReaderRepository implements ProductReader {
 
     if (filter.areaId !== undefined) baseConds.push(eq(productTable.areaId, filter.areaId));
 
+    if (filter.workCenterId !== undefined) {
+      // Products link to work centers through a junction table; scope via it.
+      baseConds.push(
+        inArray(
+          productTable.id,
+          this.db
+            .select({ id: productWorkCenterTable.productId })
+            .from(productWorkCenterTable)
+            .where(eq(productWorkCenterTable.workCenterId, filter.workCenterId)),
+        ),
+      );
+    }
+
     if (filter.q !== undefined) {
       const pattern = `%${filter.q}%`;
       const qOr = or(ilike(productTable.name, pattern), ilike(productTable.code, pattern));
@@ -84,6 +97,9 @@ class ProductReaderRepository implements ProductReader {
         where: {
           region: this.region,
           ...(filter.areaId !== undefined ? { areaId: filter.areaId } : {}),
+          ...(filter.workCenterId !== undefined
+            ? { workCenters: { workCenterId: filter.workCenterId } }
+            : {}),
           ...(filter.q !== undefined
             ? {
                 OR: [{ name: { ilike: `%${filter.q}%` } }, { code: { ilike: `%${filter.q}%` } }],

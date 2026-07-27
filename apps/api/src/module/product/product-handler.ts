@@ -19,10 +19,11 @@ function createProductHandler({ productService, authMw }: ProductHandlerDeps) {
   app.use("*", authMw);
 
   app.get("/", productValidator.paginate, async (c) => {
-    const { page, size, q, areaId } = c.req.valid("query");
+    const { page, size, q, areaId, workCenterId } = c.req.valid("query");
     const filter = {
       q,
       areaId,
+      workCenterId,
     };
     const { items, meta } = await productService.findAll(page, size, filter);
     return c.json(WebResponse.builder<ProductList[]>().data(items).meta(meta).build(), 200);

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Plus, Search } from "lucide-react";
 
 import { useAreas, useLevelConfigurations } from "@/lib/queries.js";
-import { pageWindow } from "@/lib/table.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.js";
+import { PAGE_SIZES, TablePagination } from "@/components/table/table-pagination.js";
 import { LevelTreeTable } from "@/components/level-configuration/level-tree-table.js";
 import { LineFormDialog } from "@/components/level-configuration/line-form-dialog.js";
 import { MachineFormDialog } from "@/components/level-configuration/machine-form-dialog.js";
@@ -25,11 +26,11 @@ import type { EquipmentTarget } from "@/components/level-configuration/equipment
 import type { DeleteNodeTarget } from "@/components/level-configuration/delete-node-dialog.js";
 import type { LevelConfigurationListItem } from "@/lib/types.js";
 
-const PAGE_SIZES = [10, 25, 50, 100] as const;
 const ALL_AREAS = "all";
 const EMPTY: LevelConfigurationListItem[] = [];
 
 function LevelConfiguration() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [size, setSize] = useState<number>(PAGE_SIZES[0]);
   const [searchInput, setSearchInput] = useState("");
@@ -67,9 +68,6 @@ function LevelConfiguration() {
 
   const items = data?.items ?? EMPTY;
   const meta = data?.meta;
-  const totalPages = meta?.totalPages ?? 0;
-  const isFirst = meta?.first ?? page <= 1;
-  const isLast = meta?.last ?? true;
 
   const openAddLine = useCallback(() => {
     setLineItem(null);
@@ -99,9 +97,15 @@ function LevelConfiguration() {
         setEquipmentTarget({ unit: { id: unit.id, name: unit.name }, item: equipment });
         setEquipmentOpen(true);
       },
+      onConfigureMachine: (unit) => {
+        void navigate({
+          to: "/level-configuration/machine/$id",
+          params: { id: String(unit.id) },
+        });
+      },
       onDelete: setDeleteTarget,
     }),
-    [],
+    [navigate],
   );
 
   function handleAreaChange(value: string) {
@@ -109,8 +113,8 @@ function LevelConfiguration() {
     setPage(1);
   }
 
-  function handleSizeChange(value: string) {
-    setSize(Number(value));
+  function handleSizeChange(value: number) {
+    setSize(value);
     setPage(1);
   }
 
@@ -163,64 +167,13 @@ function LevelConfiguration() {
 
       {/* Footer: page size + pagination. Only lines are paginated; work unit and
           equipment rows belong to whichever line is expanded. */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Select value={String(size)} onValueChange={handleSizeChange}>
-          <SelectTrigger size="sm" className="w-20">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {PAGE_SIZES.map((s) => (
-              <SelectItem key={s} value={String(s)}>
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-8"
-            aria-label="Previous page"
-            disabled={isFirst}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            <ChevronLeft />
-          </Button>
-          {pageWindow(page, totalPages).map((pageNumber, i) =>
-            pageNumber === 0 ? (
-              <span
-                key={`ellipsis-${i}`}
-                className="px-1 text-sm text-muted-foreground select-none"
-              >
-                …
-              </span>
-            ) : (
-              <Button
-                key={pageNumber}
-                variant={pageNumber === page ? "default" : "outline"}
-                size="icon"
-                className="size-8"
-                aria-current={pageNumber === page ? "page" : undefined}
-                onClick={() => setPage(pageNumber)}
-              >
-                {pageNumber}
-              </Button>
-            ),
-          )}
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-8"
-            aria-label="Next page"
-            disabled={isLast}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            <ChevronRight />
-          </Button>
-        </div>
-      </div>
+      <TablePagination
+        page={page}
+        size={size}
+        meta={meta}
+        onPageChange={setPage}
+        onSizeChange={handleSizeChange}
+      />
 
       <LineFormDialog open={lineOpen} onOpenChange={setLineOpen} item={lineItem} />
       <MachineFormDialog open={machineOpen} onOpenChange={setMachineOpen} target={machineTarget} />

@@ -6,7 +6,7 @@ import {
   getExpandedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil, Plus, Settings, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button.js";
 import { Skeleton } from "@/components/ui/skeleton.js";
@@ -54,6 +54,8 @@ type LevelTreeActions = {
   onEditMachine: (line: LevelConfigurationListItem, unit: LevelWorkUnitItem) => void;
   onAddEquipment: (unit: LevelWorkUnitItem) => void;
   onEditEquipment: (unit: LevelWorkUnitItem, equipment: LevelEquipmentItem) => void;
+  // Opens the machine's own configuration page.
+  onConfigureMachine: (unit: LevelWorkUnitItem) => void;
   // `childCount` drives the "delete the children first" guard in the dialog.
   onDelete: (target: { kind: LevelRowKind; id: number; name: string; childCount: number }) => void;
 };
@@ -140,6 +142,17 @@ function RowActions({ row, actions }: RowActionsProps) {
           <Plus />
         </Button>
       )}
+      {item.kind === "unit" && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          aria-label={`Configure ${item.name}`}
+          onClick={() => actions.onConfigureMachine(item.unit)}
+        >
+          <Settings />
+        </Button>
+      )}
       <Button
         variant="ghost"
         size="icon"
@@ -220,7 +233,7 @@ function useColumns(page: number, size: number, actions: LevelTreeActions) {
       columnHelper.display({
         id: "actions",
         header: "Action",
-        meta: { headerClassName: "w-32 text-right", cellClassName: "text-right" },
+        meta: { headerClassName: "w-40 text-right", cellClassName: "text-right" },
         cell: ({ row }) => <RowActions row={row} actions={actions} />,
       }),
     ],

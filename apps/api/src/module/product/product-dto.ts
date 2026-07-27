@@ -11,6 +11,10 @@ const listProductInputSchema = paginationSchema.extend({
     z.optional(z.coerce.number()),
     z.transform((v) => (v === 0 ? undefined : v)),
   ),
+  workCenterId: z.pipe(
+    z.optional(z.coerce.number()),
+    z.transform((v) => (v === 0 ? undefined : v)),
+  ),
 });
 
 const productPackageSchema = z.object({

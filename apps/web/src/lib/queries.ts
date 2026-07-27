@@ -8,34 +8,49 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  createCountPoint,
   createDowntimeReason,
   createEquipment,
   createProduct,
+  createProductAlias,
+  createProductSpec,
   createRejectReworkReason,
   createWorkCenter,
   createWorkUnit,
+  deleteCountPoint,
   deleteDowntimeReason,
   deleteEquipment,
   deleteProduct,
+  deleteProductAlias,
+  deleteProductSpec,
   deleteRejectReworkReason,
   deleteWorkCenter,
   deleteWorkUnit,
   getAreas,
+  getCountPoints,
   getDowntimeReasons,
   getEquipmentClasses,
   getEquipments,
+  getEquipmentsPage,
   getLevelConfigurations,
   getMe,
+  getProductAliases,
   getProductById,
   getProducts,
+  getProductSpecs,
   getRejectReworkReasons,
   getUoms,
+  getWorkCenterById,
   getWorkCenterClasses,
   getWorkCenters,
+  getWorkUnitById,
   getWorkUnitClasses,
+  updateCountPoint,
   updateDowntimeReason,
   updateEquipment,
   updateProduct,
+  updateProductAlias,
+  updateProductSpec,
   updateRejectReworkReason,
   updateWorkCenter,
   updateWorkUnit,
@@ -43,7 +58,9 @@ import {
 
 import type {
   DowntimeReasonQuery,
+  EquipmentQuery,
   LevelConfigurationQuery,
+  MachineChildQuery,
   ProductQuery,
   RejectReworkReasonQuery,
 } from "./api.js";
@@ -199,7 +216,8 @@ function useEquipmentClasses() {
 
 // Every level configuration write invalidates the tree so the affected branch
 // reappears with its new contents. Lines also feed the downtime/reject filters,
-// so those caches are dropped alongside.
+// so those caches are dropped alongside. Deleting equipment cascades to its
+// count points and code aliases, hence those two as well.
 function useLevelConfigurationMutation<TVars, TData>(mutationFn: (vars: TVars) => Promise<TData>) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -207,7 +225,10 @@ function useLevelConfigurationMutation<TVars, TData>(mutationFn: (vars: TVars) =
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["level-configurations"] });
       void queryClient.invalidateQueries({ queryKey: ["work-centers"] });
+      void queryClient.invalidateQueries({ queryKey: ["work-unit"] });
       void queryClient.invalidateQueries({ queryKey: ["equipments"] });
+      void queryClient.invalidateQueries({ queryKey: ["product-aliases"] });
+      void queryClient.invalidateQueries({ queryKey: ["count-points"] });
     },
   });
 }
@@ -221,6 +242,113 @@ const useUpdateEquipment = () => useLevelConfigurationMutation(updateEquipment);
 const useDeleteWorkCenter = () => useLevelConfigurationMutation(deleteWorkCenter);
 const useDeleteWorkUnit = () => useLevelConfigurationMutation(deleteWorkUnit);
 const useDeleteEquipment = () => useLevelConfigurationMutation(deleteEquipment);
+
+// --- machine detail ---------------------------------------------------------
+
+const workUnitKey = (id: number) => ["work-unit", id] as const;
+
+// The machine behind the detail page. Its `workCenter` is the only pointer to
+// the parent line, so the line query below waits on this one.
+function useWorkUnit(id: number) {
+  return useQuery({
+    queryKey: workUnitKey(id),
+    queryFn: () => getWorkUnitById(id),
+    enabled: Number.isFinite(id),
+  });
+}
+
+const workCenterKey = (id: number | undefined) => ["work-centers", "detail", id ?? null] as const;
+
+// Supplies the area and category of the machine's line; skipped until the work
+// unit has resolved.
+function useWorkCenter(id: number | undefined) {
+  return useQuery({
+    queryKey: workCenterKey(id),
+    queryFn: () => getWorkCenterById(id as number),
+    enabled: id !== undefined,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+// Shares the "equipments" key prefix with the select feed above so a single
+// invalidation refreshes both.
+const equipmentsPageKey = (params: EquipmentQuery) => ["equipments", "page", params] as const;
+
+function useEquipmentsPage(params: EquipmentQuery) {
+  return useQuery({
+    queryKey: equipmentsPageKey(params),
+    queryFn: () => getEquipmentsPage(params),
+    enabled: Number.isFinite(params.workUnitId),
+    placeholderData: keepPreviousData,
+  });
+}
+
+// Equipment for the machine's own selects, keyed off the work unit rather than
+// the line.
+const equipmentsByUnitKey = (workUnitId: number) => ["equipments", "unit", workUnitId] as const;
+
+function useEquipmentsByWorkUnit(workUnitId: number) {
+  return useQuery({
+    queryKey: equipmentsByUnitKey(workUnitId),
+    queryFn: () => getEquipmentsPage({ workUnitId, page: 1, size: 100 }).then((r) => r.items),
+    enabled: Number.isFinite(workUnitId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+const productSpecsKey = (params: MachineChildQuery) => ["product-specs", params] as const;
+const productAliasesKey = (params: MachineChildQuery) => ["product-aliases", params] as const;
+const countPointsKey = (params: MachineChildQuery) => ["count-points", params] as const;
+
+function useProductSpecs(params: MachineChildQuery) {
+  return useQuery({
+    queryKey: productSpecsKey(params),
+    queryFn: () => getProductSpecs(params),
+    enabled: Number.isFinite(params.workUnitId),
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useProductAliases(params: MachineChildQuery) {
+  return useQuery({
+    queryKey: productAliasesKey(params),
+    queryFn: () => getProductAliases(params),
+    enabled: Number.isFinite(params.workUnitId),
+    placeholderData: keepPreviousData,
+  });
+}
+
+function useCountPoints(params: MachineChildQuery) {
+  return useQuery({
+    queryKey: countPointsKey(params),
+    queryFn: () => getCountPoints(params),
+    enabled: Number.isFinite(params.workUnitId),
+    placeholderData: keepPreviousData,
+  });
+}
+
+// Each machine child write only touches its own list, so the scope prefix is
+// all that has to be dropped.
+function useMachineChildMutation<TVars, TData>(
+  scope: string,
+  mutationFn: (vars: TVars) => Promise<TData>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [scope] }),
+  });
+}
+
+const useCreateProductSpec = () => useMachineChildMutation("product-specs", createProductSpec);
+const useUpdateProductSpec = () => useMachineChildMutation("product-specs", updateProductSpec);
+const useDeleteProductSpec = () => useMachineChildMutation("product-specs", deleteProductSpec);
+const useCreateProductAlias = () => useMachineChildMutation("product-aliases", createProductAlias);
+const useUpdateProductAlias = () => useMachineChildMutation("product-aliases", updateProductAlias);
+const useDeleteProductAlias = () => useMachineChildMutation("product-aliases", deleteProductAlias);
+const useCreateCountPoint = () => useMachineChildMutation("count-points", createCountPoint);
+const useUpdateCountPoint = () => useMachineChildMutation("count-points", updateCountPoint);
+const useDeleteCountPoint = () => useMachineChildMutation("count-points", deleteCountPoint);
 
 const areasKey = ["areas"] as const;
 
@@ -321,28 +449,44 @@ function useDeleteProduct() {
 
 export {
   useAreas,
+  useCountPoints,
+  useCreateCountPoint,
   useCreateDowntimeReason,
   useCreateEquipment,
   useCreateProduct,
+  useCreateProductAlias,
+  useCreateProductSpec,
   useCreateRejectReworkReason,
   useCreateWorkCenter,
   useCreateWorkUnit,
+  useDeleteCountPoint,
   useDeleteDowntimeReason,
   useDeleteEquipment,
   useDeleteProduct,
+  useDeleteProductAlias,
+  useDeleteProductSpec,
   useDeleteRejectReworkReason,
   useDeleteWorkCenter,
   useDeleteWorkUnit,
   useDowntimeReasons,
   useEquipmentClasses,
   useEquipmentsByWorkCenters,
+  useEquipmentsByWorkUnit,
+  useEquipmentsPage,
   useLevelConfigurations,
   useMe,
+  useProductAliases,
+  useProductSpecs,
+  useUpdateCountPoint,
   useUpdateDowntimeReason,
   useUpdateEquipment,
+  useUpdateProductAlias,
+  useUpdateProductSpec,
   useUpdateWorkCenter,
   useUpdateWorkUnit,
+  useWorkCenter,
   useWorkCenterClasses,
+  useWorkUnit,
   useWorkUnitClasses,
   useProduct,
   useProducts,
