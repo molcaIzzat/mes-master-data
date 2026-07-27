@@ -20,10 +20,7 @@ import { createContainer } from "../container/container.js";
 import { createHealthHandler } from "../../module/health/health-handler.js";
 import { mapDomainError } from "../../module/error-mapper/error-mapper.js";
 import { createAreaHandler } from "../../module/area/area-handler.js";
-import { createLineHandler } from "../../module/line/line-handler.js";
-import { createMachineHandler } from "../../module/machine/machine-handler.js";
 import { loadConfig } from "../../shared/config/config.js";
-import { createHierarcyHandler } from "../../module/hierarcy/hierarcy-handler.js";
 import { createProductHandler } from "../../module/product/product-handler.js";
 import { createProductPackageHandler } from "../../module/product-package/product-package-handler.js";
 import { createProductConvertionHandler } from "../../module/product-convertion/product-convertion-handler.js";
@@ -201,45 +198,6 @@ api.route(
   createRejectReasonHandler({
     authMw: container.resolve("authMw"),
     rejectReasonService: container.resolve("rejectReasonService"),
-  }),
-);
-
-/**
- * @deprecated
- * This API Resource is no longger use
- *
- **/
-api.route(
-  "/lines",
-  createLineHandler({
-    authMw: container.resolve("authMw"),
-    lineService: container.resolve("lineService"),
-  }),
-);
-
-/**
- * @deprecated
- * This API Resource is no longger use
- *
- **/
-api.route(
-  "/machines",
-  createMachineHandler({
-    authMw: container.resolve("authMw"),
-    machineService: container.resolve("machineService"),
-  }),
-);
-
-/**
- * @deprecated
- * This API Resource is no longger use
- *
- **/
-api.route(
-  "/hierarcies",
-  createHierarcyHandler({
-    authMw: container.resolve("authMw"),
-    hierarcyService: container.resolve("hierarcyService"),
   }),
 );
 

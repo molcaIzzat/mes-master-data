@@ -2,13 +2,6 @@ import { DrizzleQueryError } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 import { DuplicateAreaError, InvalidAreaSiteIdReferenceError } from "../area/area-errors.js";
-import { DuplicateLineError, InvalidLineAreaIdReferenceError } from "../line/line-errors.js";
-import {
-  DuplicateMachineError,
-  DuplicateSubMachineError,
-  InvalidMachineLineIdReferenceError,
-  InvalidSubMachineMachineIdReferenceError,
-} from "../machine/machine-errors.js";
 import {
   DuplicateProductError,
   InvalidProductAreaIdReferenceError,
@@ -17,14 +10,6 @@ import {
 import { DuplicateDowntimeReasonError } from "../downtime-reason/downtime-reason-errors.js";
 import { DuplicateRejectReasonError } from "../reject-reason/reject-reason-errors.js";
 import { DuplicateDowntimeActionError } from "../downtime-action/downtime-action-errors.js";
-import {
-  DuplicateHierarcyLineError,
-  InvalidHierarcyLineAreaIdReferenceError,
-  DuplicateHierarcyMachineError,
-  InvalidHierarcyMachineLineIdReferenceError,
-  DuplicateHierarcySubMachineError,
-  InvalidHierarcySubMachineMachineIdReferenceError,
-} from "../hierarcy/hierarcy-errors.js";
 import { DuplicateWorkCenterClassError } from "../work-center-class/work-center-class-errors.js";
 import { DuplicateEquipmentClassError } from "../equipment-class/equipment-class-errors.js";
 import {
@@ -93,30 +78,6 @@ function mapDomainError(err: unknown): HTTPException | null {
     return new HTTPException(409, { message: err.message });
   }
 
-  if (err instanceof InvalidHierarcySubMachineMachineIdReferenceError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof DuplicateHierarcySubMachineError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof InvalidHierarcyMachineLineIdReferenceError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof DuplicateHierarcyMachineError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof InvalidHierarcyLineAreaIdReferenceError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof DuplicateHierarcyLineError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
   if (err instanceof DuplicateDowntimeReasonError) {
     return new HTTPException(409, { message: err.message });
   }
@@ -142,30 +103,6 @@ function mapDomainError(err: unknown): HTTPException | null {
   }
 
   if (err instanceof DuplicateAreaError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof DuplicateLineError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof InvalidLineAreaIdReferenceError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof DuplicateMachineError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof InvalidMachineLineIdReferenceError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof DuplicateSubMachineError) {
-    return new HTTPException(409, { message: err.message });
-  }
-
-  if (err instanceof InvalidSubMachineMachineIdReferenceError) {
     return new HTTPException(409, { message: err.message });
   }
 
