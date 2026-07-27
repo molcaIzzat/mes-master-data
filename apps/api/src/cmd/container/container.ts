@@ -123,6 +123,9 @@ import { registerProductAlias } from "../../module/product-alias/product-alias-m
 import type { UomReader, UomWriter } from "../../module/uom/uom-repository.js";
 import type { TUomService } from "../../module/uom/uom-service.js";
 import { registerUom } from "../../module/uom/uom-module.js";
+import type { LevelConfigurationReader } from "../../module/level-configuration/level-configuration-repository.js";
+import type { TLevelConfigurationService } from "../../module/level-configuration/level-configuration-service.js";
+import { registerLevelConfiguration } from "../../module/level-configuration/level-configuration-module.js";
 
 type Cradle = {
   db: PostgresDB;
@@ -194,6 +197,8 @@ type Cradle = {
   uomReaderRepository: UomReader;
   uomWriterRepository: UomWriter;
   uomService: TUomService;
+  levelConfigurationReaderRepository: LevelConfigurationReader;
+  levelConfigurationService: TLevelConfigurationService;
 };
 
 function createContainer(config: AppConfig): AwilixContainer<Cradle> {
@@ -228,6 +233,7 @@ function createContainer(config: AppConfig): AwilixContainer<Cradle> {
   registerDowntimeReason(container);
   registerRejectReason(container);
   registerDowntimeAction(container);
+  registerLevelConfiguration(container);
 
   return container;
 }

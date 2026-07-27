@@ -9,26 +9,44 @@ import {
 
 import {
   createDowntimeReason,
+  createEquipment,
   createProduct,
   createRejectReworkReason,
+  createWorkCenter,
+  createWorkUnit,
   deleteDowntimeReason,
+  deleteEquipment,
   deleteProduct,
   deleteRejectReworkReason,
+  deleteWorkCenter,
+  deleteWorkUnit,
   getAreas,
   getDowntimeReasons,
+  getEquipmentClasses,
   getEquipments,
+  getLevelConfigurations,
   getMe,
   getProductById,
   getProducts,
   getRejectReworkReasons,
   getUoms,
+  getWorkCenterClasses,
   getWorkCenters,
+  getWorkUnitClasses,
   updateDowntimeReason,
+  updateEquipment,
   updateProduct,
   updateRejectReworkReason,
+  updateWorkCenter,
+  updateWorkUnit,
 } from "./api.js";
 
-import type { DowntimeReasonQuery, ProductQuery, RejectReworkReasonQuery } from "./api.js";
+import type {
+  DowntimeReasonQuery,
+  LevelConfigurationQuery,
+  ProductQuery,
+  RejectReworkReasonQuery,
+} from "./api.js";
 import type { EquipmentListItem } from "./types.js";
 
 const meKey = ["me"] as const;
@@ -137,6 +155,73 @@ function useDeleteRejectReworkReason() {
   });
 }
 
+const levelConfigurationsKey = (params: LevelConfigurationQuery) =>
+  ["level-configurations", params] as const;
+
+// One page of lines with their subtree already embedded; keepPreviousData holds
+// the current rows while the next page/search loads.
+function useLevelConfigurations(params: LevelConfigurationQuery) {
+  return useQuery({
+    queryKey: levelConfigurationsKey(params),
+    queryFn: () => getLevelConfigurations(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+// Reference data for the level configuration selects; rarely changes.
+const workCenterClassesKey = ["work-center-classes"] as const;
+const workUnitClassesKey = ["work-unit-classes"] as const;
+const equipmentClassesKey = ["equipment-classes"] as const;
+
+function useWorkCenterClasses() {
+  return useQuery({
+    queryKey: workCenterClassesKey,
+    queryFn: getWorkCenterClasses,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+function useWorkUnitClasses() {
+  return useQuery({
+    queryKey: workUnitClassesKey,
+    queryFn: getWorkUnitClasses,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+function useEquipmentClasses() {
+  return useQuery({
+    queryKey: equipmentClassesKey,
+    queryFn: getEquipmentClasses,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+// Every level configuration write invalidates the tree so the affected branch
+// reappears with its new contents. Lines also feed the downtime/reject filters,
+// so those caches are dropped alongside.
+function useLevelConfigurationMutation<TVars, TData>(mutationFn: (vars: TVars) => Promise<TData>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["level-configurations"] });
+      void queryClient.invalidateQueries({ queryKey: ["work-centers"] });
+      void queryClient.invalidateQueries({ queryKey: ["equipments"] });
+    },
+  });
+}
+
+const useCreateWorkCenter = () => useLevelConfigurationMutation(createWorkCenter);
+const useUpdateWorkCenter = () => useLevelConfigurationMutation(updateWorkCenter);
+const useCreateWorkUnit = () => useLevelConfigurationMutation(createWorkUnit);
+const useUpdateWorkUnit = () => useLevelConfigurationMutation(updateWorkUnit);
+const useCreateEquipment = () => useLevelConfigurationMutation(createEquipment);
+const useUpdateEquipment = () => useLevelConfigurationMutation(updateEquipment);
+const useDeleteWorkCenter = () => useLevelConfigurationMutation(deleteWorkCenter);
+const useDeleteWorkUnit = () => useLevelConfigurationMutation(deleteWorkUnit);
+const useDeleteEquipment = () => useLevelConfigurationMutation(deleteEquipment);
+
 const areasKey = ["areas"] as const;
 
 function useAreas() {
@@ -237,15 +322,28 @@ function useDeleteProduct() {
 export {
   useAreas,
   useCreateDowntimeReason,
+  useCreateEquipment,
   useCreateProduct,
   useCreateRejectReworkReason,
+  useCreateWorkCenter,
+  useCreateWorkUnit,
   useDeleteDowntimeReason,
+  useDeleteEquipment,
   useDeleteProduct,
   useDeleteRejectReworkReason,
+  useDeleteWorkCenter,
+  useDeleteWorkUnit,
   useDowntimeReasons,
+  useEquipmentClasses,
   useEquipmentsByWorkCenters,
+  useLevelConfigurations,
   useMe,
   useUpdateDowntimeReason,
+  useUpdateEquipment,
+  useUpdateWorkCenter,
+  useUpdateWorkUnit,
+  useWorkCenterClasses,
+  useWorkUnitClasses,
   useProduct,
   useProducts,
   useRejectReworkReasons,

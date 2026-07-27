@@ -37,6 +37,7 @@ import { createWorkUnitHandler } from "../../module/work-unit/work-unit-handler.
 import { createEquipmentHandler } from "../../module/equipment/equipment-handler.js";
 import { createEdgeHandler } from "../../module/edge/edge-handler.js";
 import { createUomHandler } from "../../module/uom/uom-handler.js";
+import { createLevelConfigurationHandler } from "../../module/level-configuration/level-configuration-handler.js";
 
 const config = loadConfig();
 const container = createContainer(config);
@@ -150,6 +151,16 @@ api.route(
   createEquipmentHandler({
     authMw: container.resolve("authMw"),
     equipmentService: container.resolve("equipmentService"),
+  }),
+);
+
+// Read-only tree view over work centers -> work units -> equipments, backing
+// the Level Configuration page.
+api.route(
+  "/level-configurations",
+  createLevelConfigurationHandler({
+    authMw: container.resolve("authMw"),
+    levelConfigurationService: container.resolve("levelConfigurationService"),
   }),
 );
 

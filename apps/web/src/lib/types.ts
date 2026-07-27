@@ -142,6 +142,49 @@ type UomListItem = {
   name: string;
 };
 
+// Shared shape of the three class/category reference lists:
+// GET /v1/work-center-classes, /v1/work-unit-classes, /v1/equipment-classes.
+type ClassListItem = {
+  id: number;
+  code: string;
+  name: string;
+};
+
+// POST /v1/work-centers body. `type`, `oeeMode` and `idealRatePerHour` are not
+// exposed in the form -- see LINE_DEFAULTS in level-configuration-schema.
+type CreateWorkCenterInput = {
+  code: string;
+  name: string;
+  areaId: number;
+  type: string;
+  oeeMode: string;
+  workCenterClassId: number | null;
+  idealRatePerHour: number | null;
+};
+
+// POST /v1/work-units body. Everything the form does not ask for comes from
+// MACHINE_DEFAULTS.
+type CreateWorkUnitInput = {
+  code: string;
+  name: string;
+  workCenterId: number;
+  workUnitClassId: number | null;
+  isOeeRelevant: boolean;
+  isAcquirable: boolean;
+  telemetryTags: Record<string, string> | null;
+  type: string;
+  position: { x: number; y: number };
+};
+
+// POST /v1/equipments body -- every field is surfaced in the form.
+type CreateEquipmentInput = {
+  code: string;
+  name: string;
+  workUnitId: number;
+  equipmentClassId: number | null;
+  productSignalTag: string;
+};
+
 // Mirrors the core-api WorkCenterList shape returned by GET /v1/work-centers.
 type WorkCenterListItem = {
   id: number;
@@ -212,16 +255,52 @@ type ProductDetail = {
   packages: ProductPackageDetail[];
 };
 
+// Mirrors the core-api LevelNode shape: every node in the level-configuration
+// tree is rendered from just id/code/name.
+type LevelNodeRef = {
+  id: number;
+  code: string;
+  name: string;
+};
+
+// `class` / `productSignalTag` are not shown in the table; they ride along so the
+// edit dialogs can prefill straight from the row.
+type LevelEquipmentItem = LevelNodeRef & {
+  class: LevelNodeRef | null;
+  productSignalTag: string;
+};
+
+type LevelWorkUnitItem = LevelNodeRef & {
+  class: LevelNodeRef | null;
+  equipments: LevelEquipmentItem[];
+};
+
+// Mirrors the core-api LevelLine shape returned by GET /v1/level-configurations.
+// `class` is what the table shows in the Category column.
+type LevelConfigurationListItem = LevelNodeRef & {
+  area: LevelNodeRef | null;
+  class: LevelNodeRef | null;
+  workUnits: LevelWorkUnitItem[];
+};
+
 export type {
   AreaListItem,
+  ClassListItem,
   CreateDowntimeReasonInput,
+  CreateEquipmentInput,
   CreateProductInput,
   CreateProductPackage,
   CreateRejectReworkReasonInput,
+  CreateWorkCenterInput,
+  CreateWorkUnitInput,
   DowntimeReasonCategory,
   DowntimeReasonListItem,
   DowntimeReasonRef,
   EquipmentListItem,
+  LevelConfigurationListItem,
+  LevelEquipmentItem,
+  LevelNodeRef,
+  LevelWorkUnitItem,
   Me,
   PageMeta,
   ProductArea,

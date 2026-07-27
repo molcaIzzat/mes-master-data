@@ -4,12 +4,17 @@ import { http } from "./http.js";
 
 import type {
   AreaListItem,
+  ClassListItem,
   CreateDowntimeReasonInput,
+  CreateEquipmentInput,
   CreateProductInput,
   CreateRejectReworkReasonInput,
+  CreateWorkCenterInput,
+  CreateWorkUnitInput,
   DowntimeReasonCategory,
   DowntimeReasonListItem,
   EquipmentListItem,
+  LevelConfigurationListItem,
   Me,
   PageMeta,
   ProductDetail,
@@ -167,6 +172,125 @@ async function getDowntimeReasons({
   return { items: data.data ?? [], meta: data.meta };
 }
 
+type LevelConfigurationQuery = {
+  page: number;
+  size: number;
+  q?: string;
+  areaId?: number;
+};
+
+type LevelConfigurationPage = {
+  items: LevelConfigurationListItem[];
+  meta: PageMeta | undefined;
+};
+
+// Returns a page of lines (work centers), each with its work units and their
+// equipments already nested, so the tree table needs a single request. `q`
+// matches any of the three levels; both params are omitted when unset.
+async function getLevelConfigurations({
+  page,
+  size,
+  q,
+  areaId,
+}: LevelConfigurationQuery): Promise<LevelConfigurationPage> {
+  const params: Record<string, number | string> = { page, size };
+  if (q) params.q = q;
+  if (areaId) params.areaId = areaId;
+
+  const { data } = await http.get<WebResponse<LevelConfigurationListItem[]>>(
+    "/api/proxy/v1/level-configurations",
+    { params },
+  );
+  return { items: data.data ?? [], meta: data.meta };
+}
+
+// The three class/category reference lists behind the level configuration
+// selects. Each is a single page capped at the API maximum.
+async function getClasses(resource: string): Promise<ClassListItem[]> {
+  const { data } = await http.get<WebResponse<ClassListItem[]>>(`/api/proxy/v1/${resource}`, {
+    params: { page: 1, size: 100 },
+  });
+  return data.data ?? [];
+}
+
+const getWorkCenterClasses = () => getClasses("work-center-classes");
+const getWorkUnitClasses = () => getClasses("work-unit-classes");
+const getEquipmentClasses = () => getClasses("equipment-classes");
+
+// Level configuration writes reuse the per-level CRUD resources; the tree
+// endpoint is read-only. Updates send a partial body, so any field the form
+// does not manage keeps its current value.
+async function createWorkCenter(body: CreateWorkCenterInput): Promise<{ id: number }> {
+  const { data } = await http.post<WebResponse<{ id: number }>>("/api/proxy/v1/work-centers", body);
+  return data.data ?? { id: 0 };
+}
+
+async function updateWorkCenter({
+  id,
+  body,
+}: {
+  id: number;
+  body: CreateWorkCenterInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    `/api/proxy/v1/work-centers/${id}`,
+    body,
+  );
+  return data.data ?? { id };
+}
+
+async function createWorkUnit(body: CreateWorkUnitInput): Promise<{ id: number }> {
+  const { data } = await http.post<WebResponse<{ id: number }>>("/api/proxy/v1/work-units", body);
+  return data.data ?? { id: 0 };
+}
+
+async function updateWorkUnit({
+  id,
+  body,
+}: {
+  id: number;
+  body: CreateWorkUnitInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    `/api/proxy/v1/work-units/${id}`,
+    body,
+  );
+  return data.data ?? { id };
+}
+
+async function createEquipment(body: CreateEquipmentInput): Promise<{ id: number }> {
+  const { data } = await http.post<WebResponse<{ id: number }>>("/api/proxy/v1/equipments", body);
+  return data.data ?? { id: 0 };
+}
+
+async function updateEquipment({
+  id,
+  body,
+}: {
+  id: number;
+  body: CreateEquipmentInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    `/api/proxy/v1/equipments/${id}`,
+    body,
+  );
+  return data.data ?? { id };
+}
+
+// All three levels use ON DELETE RESTRICT, so these fail with 409 while the row
+// still has children or is referenced elsewhere.
+async function deleteWorkCenter(id: number): Promise<void> {
+  await http.delete<WebResponse<string>>(`/api/proxy/v1/work-centers/${id}`);
+}
+
+async function deleteWorkUnit(id: number): Promise<void> {
+  await http.delete<WebResponse<string>>(`/api/proxy/v1/work-units/${id}`);
+}
+
+async function deleteEquipment(id: number): Promise<void> {
+  await http.delete<WebResponse<string>>(`/api/proxy/v1/equipments/${id}`);
+}
+
 // Returns equipments for the "Equipment" multi-select, scoped to a work center
 // (line) when `workCenterId` is provided.
 async function getEquipments(workCenterId?: number): Promise<EquipmentListItem[]> {
@@ -272,24 +396,37 @@ async function deleteRejectReworkReason(id: number): Promise<void> {
 
 export {
   createDowntimeReason,
+  createEquipment,
   createProduct,
   createRejectReworkReason,
+  createWorkCenter,
+  createWorkUnit,
   deleteDowntimeReason,
+  deleteEquipment,
   deleteProduct,
   deleteRejectReworkReason,
+  deleteWorkCenter,
+  deleteWorkUnit,
   getAreas,
   getDowntimeReasons,
+  getEquipmentClasses,
   getEquipments,
+  getLevelConfigurations,
   getMe,
   getProductById,
   getProducts,
   getRejectReworkReasons,
   getUoms,
+  getWorkCenterClasses,
   getWorkCenters,
+  getWorkUnitClasses,
   login,
   logout,
   updateDowntimeReason,
+  updateEquipment,
   updateProduct,
   updateRejectReworkReason,
+  updateWorkCenter,
+  updateWorkUnit,
 };
-export type { DowntimeReasonQuery, ProductQuery, RejectReworkReasonQuery };
+export type { DowntimeReasonQuery, LevelConfigurationQuery, ProductQuery, RejectReworkReasonQuery };
