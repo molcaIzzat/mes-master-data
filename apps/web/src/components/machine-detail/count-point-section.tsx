@@ -1,10 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
+import { Upload } from "lucide-react";
 
 import { useCountPoints } from "@/lib/queries.js";
 import { COUNT_ROLE_LABELS, COUNT_SOURCE_LABELS } from "@/lib/machine-detail-schema.js";
 import { PAGE_SIZES } from "@/components/table/table-pagination.js";
+import { Button } from "@/components/ui/button.js";
 import { CountPointFormDialog } from "@/components/machine-detail/count-point-form-dialog.js";
+import { CountPointImportDialog } from "@/components/machine-detail/count-point-import-dialog.js";
 import { RowActions } from "@/components/table/row-actions.js";
 import { SectionTable } from "@/components/table/section-table.js";
 
@@ -27,6 +30,7 @@ function CountPointSection({ workUnitId, onDelete }: CountPointSectionProps) {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState<number>(PAGE_SIZES[0]);
   const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [target, setTarget] = useState<CountPointTarget | null>(null);
 
   const { data, isPending, isError } = useCountPoints({ workUnitId, page, size });
@@ -116,6 +120,12 @@ function CountPointSection({ workUnitId, onDelete }: CountPointSectionProps) {
         isError={isError}
         errorMessage="Failed to load count points. Please try again."
         emptyMessage="No count points yet."
+        headerActions={
+          <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload />
+            Import
+          </Button>
+        }
         pagination={{
           page,
           size,
@@ -128,6 +138,11 @@ function CountPointSection({ workUnitId, onDelete }: CountPointSectionProps) {
         }}
       />
       <CountPointFormDialog open={open} onOpenChange={setOpen} target={target} />
+      <CountPointImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        workUnitId={workUnitId}
+      />
     </>
   );
 }

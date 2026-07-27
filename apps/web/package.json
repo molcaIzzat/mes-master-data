@@ -26,6 +26,7 @@
     "radix-ui": "catalog:",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "read-excel-file": "catalog:",
     "tailwind-merge": "catalog:",
     "zod": "catalog:"
   },

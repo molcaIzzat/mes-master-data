@@ -13,6 +13,8 @@ import type {
   CreateProductAliasInput,
   CreateProductInput,
   CreateProductSpecInput,
+  ImportCountPointResult,
+  ImportCountPointRow,
   CreateRejectReworkReasonInput,
   CreateWorkCenterInput,
   CreateWorkUnitInput,
@@ -499,6 +501,22 @@ const updateCountPoint = (vars: MachineChildUpdate<CreateCountPointInput>) =>
   updateMachineChild("count-points", vars);
 const deleteCountPoint = (vars: MachineChildRef) => deleteMachineChild("count-points", vars);
 
+// Bulk create from a spreadsheet. The whole file is one transaction: either
+// every row lands or none does, and rows already on the machine are skipped.
+async function importCountPoints({
+  workUnitId,
+  rows,
+}: {
+  workUnitId: number;
+  rows: ImportCountPointRow[];
+}): Promise<ImportCountPointResult> {
+  const { data } = await http.post<WebResponse<ImportCountPointResult>>(
+    `${childUrl("count-points", workUnitId)}/import`,
+    { rows },
+  );
+  return data.data ?? { total: rows.length, created: 0, skipped: 0 };
+}
+
 // Creates a downtime reason. Returns the new id.
 async function createDowntimeReason(body: CreateDowntimeReasonInput): Promise<{ id: number }> {
   const { data } = await http.post<WebResponse<{ id: number }>>(
@@ -632,6 +650,7 @@ export {
   getWorkUnitById,
   getWorkUnitClasses,
   getWorkUnits,
+  importCountPoints,
   login,
   logout,
   updateCountPoint,

@@ -8,12 +8,26 @@ import { workUnitValidator } from "./work-unit-dto.js";
 import type { TWorkUnitService } from "./work-unit-service.js";
 import type { WorkUnit, WorkUnitList } from "./work-unit.js";
 
+import { CountPointImportError } from "../count-point/count-point-errors.js";
+
 import type { TCountPointService } from "../count-point/count-point-service.js";
-import type { CountPoint, CountPointList } from "../count-point/count-point.js";
+import type {
+  CountPoint,
+  CountPointList,
+  ImportCountPointIssue,
+  ImportCountPointResult,
+} from "../count-point/count-point.js";
 import type { TProductSpecService } from "../product-work-unit-spec/spec-service.js";
 import type { ProductSpec, ProductSpecList } from "../product-work-unit-spec/spec.js";
 import type { TProductAliasService } from "../product-alias/product-alias-service.js";
 import type { ProductAlias, ProductAliasList } from "../product-alias/product-alias.js";
+
+// Mirrors the BadRequestPayload shape the shared validator already returns, so
+// the client reads every failure the same way.
+type ImportCountPointFailure = {
+  message: string;
+  issues: ImportCountPointIssue[];
+};
 
 type WorkUnitHandlerDeps = {
   workUnitService: TWorkUnitService;
@@ -89,6 +103,30 @@ function createWorkUnitHandler({
     const body = c.req.valid("json");
     const response = await countPointService.create({ ...body, workUnitId: parseInt(workUnitId) });
     return c.json(WebResponse.builder<{ id: number }>().data(response).build(), 201);
+  });
+
+  // The only handler that catches: the whole point of an import is telling the
+  // user which rows failed and why, and the shared error path can only carry a
+  // single string. Everything other than a rejected file still falls through to
+  // app.onError.
+  app.post("/:id/count-points/import", workUnitValidator.importCP, async (c) => {
+    const workUnitId = c.req.param("id");
+    const { rows } = c.req.valid("json");
+    try {
+      const response = await countPointService.importMany(parseInt(workUnitId), rows);
+      return c.json(WebResponse.builder<ImportCountPointResult>().data(response).build(), 200);
+    } catch (err) {
+      if (err instanceof CountPointImportError) {
+        return c.json(
+          WebResponse.builder<ImportCountPointFailure>()
+            .error(err.message)
+            .data({ message: err.message, issues: err.issues })
+            .build(),
+          422,
+        );
+      }
+      throw err;
+    }
   });
 
   app.post("/:id/product-specs", workUnitValidator.createProductSpec, async (c) => {
@@ -188,4 +226,4 @@ function createWorkUnitHandler({
 }
 
 export { createWorkUnitHandler };
-export type { WorkUnitHandlerDeps };
+export type { WorkUnitHandlerDeps, ImportCountPointFailure };

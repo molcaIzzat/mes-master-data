@@ -1,5 +1,7 @@
 import { isAxiosError } from "axios";
 
+import type { ImportCountPointIssue } from "./types.js";
+
 // Standard Schema (zod) surfaces errors as issue objects; pull the first message.
 function firstError(errors: unknown[]): string | undefined {
   const e = errors[0];
@@ -19,4 +21,14 @@ function extractError(err: unknown, fallback: string): string {
   return apiError ?? fallback;
 }
 
-export { firstError, extractError };
+// A rejected import answers with the same envelope, except `data` carries a
+// reason per offending cell. Undefined for every other failure, so the caller
+// falls back to the plain message.
+function extractIssues(err: unknown): ImportCountPointIssue[] | undefined {
+  if (!isAxiosError(err)) return undefined;
+  const payload = err.response?.data as { data?: { issues?: ImportCountPointIssue[] } } | undefined;
+  const issues = payload?.data?.issues;
+  return issues && issues.length > 0 ? issues : undefined;
+}
+
+export { firstError, extractError, extractIssues };

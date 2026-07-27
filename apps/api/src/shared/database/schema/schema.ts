@@ -238,13 +238,9 @@ export const countPointTable = msCore.table(
     p.unique("cp_wu_role_source_tag_key").on(t.workUnitId, t.role, t.sourceTag),
     p.index("cp_region_updated_idx").on(t.region, t.updatedAt),
     p.index("cp_wu_id_idx").on(t.workUnitId),
-    p.check(
-      "cp_source_tag_cx",
-      sql`
-    (source = 'plc'    AND source_tag IS NOT NULL) OR
-    (source = 'manual' AND source_tag IS NULL)
-  `,
-    ),
+    // A plc point is worthless without the tag it reads; a manual point may
+    // still carry one for bookkeeping.
+    p.check("cp_source_tag_cx", sql`source <> 'plc' OR source_tag IS NOT NULL`),
   ],
 );
 

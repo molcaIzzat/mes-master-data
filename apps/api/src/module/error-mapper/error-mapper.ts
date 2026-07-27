@@ -25,6 +25,7 @@ import {
   InvalidEquipmentReferenceError,
 } from "../equipment/equipment-errors.js";
 import { DuplicateSiteError } from "../site/site-errors.js";
+import { InvalidCountPointferenceError } from "../count-point/count-point-errors.js";
 import {
   DuplicateEdgeError,
   InvalidEdgeReferenceError,
@@ -51,6 +52,10 @@ function mapDomainError(err: unknown): HTTPException | null {
   }
 
   if (err instanceof DuplicateSiteError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidCountPointferenceError) {
     return new HTTPException(409, { message: err.message });
   }
 

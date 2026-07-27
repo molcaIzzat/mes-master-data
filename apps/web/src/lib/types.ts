@@ -389,6 +389,37 @@ type CreateCountPointInput = {
   sourceTag: string;
 };
 
+// Bodies and payloads for POST /v1/work-units/:id/count-points/import. The file
+// speaks in codes and labels; the API resolves them and judges every cell.
+type ImportCountPointRow = {
+  equipmentCode: string;
+  unitCode: string;
+  role: string;
+  source: string;
+  sourceTag: string;
+};
+
+// Mirrors ImportCountPointIssue. `row` is 1-based over the data rows, so it is
+// the line the user sees in Excel once the header is discounted.
+type ImportCountPointIssue = {
+  row: number;
+  column: string;
+  value: string;
+  message: string;
+};
+
+type ImportCountPointResult = {
+  total: number;
+  created: number;
+  skipped: number;
+};
+
+// The 422 body when a file is rejected. Nothing was written when this comes back.
+type ImportCountPointFailure = {
+  message: string;
+  issues: ImportCountPointIssue[];
+};
+
 export { COUNT_ROLES, COUNT_SOURCES };
 export type {
   AreaListItem,
@@ -397,6 +428,10 @@ export type {
   CountRole,
   CountSource,
   CreateCountPointInput,
+  ImportCountPointFailure,
+  ImportCountPointIssue,
+  ImportCountPointResult,
+  ImportCountPointRow,
   CreateDowntimeReasonInput,
   CreateEdgeInput,
   CreateEquipmentInput,

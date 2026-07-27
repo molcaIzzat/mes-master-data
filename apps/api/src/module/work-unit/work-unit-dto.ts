@@ -42,6 +42,25 @@ const createCountPointSchema = z.object({
   sourceTag: z.string().check(z.minLength(3)),
 });
 
+// Cells stay plain strings on the way in. Roles, sources and the codes behind
+// equipment and unit are checked during the import itself, so a bad value comes
+// back pinned to the row it sits on instead of as one flat field error.
+const MAX_IMPORT_ROWS = 1000;
+
+const importCountPointSchema = z.object({
+  rows: z
+    .array(
+      z.object({
+        equipmentCode: z.string(),
+        unitCode: z.string(),
+        role: z.string(),
+        source: z.string(),
+        sourceTag: z.string(),
+      }),
+    )
+    .check(z.minLength(1), z.maxLength(MAX_IMPORT_ROWS)),
+});
+
 const createProductSpecSchema = z.object({
   productId: z.number().check(z.positive(), z.int()),
   uomId: z.number().check(z.positive(), z.int()),
@@ -69,6 +88,7 @@ const workUnitValidator = {
   paginateProductAlias: queryValidator(listProductAliasSchema),
   create: jsonValidator(createWorkUnitSchema),
   createCP: jsonValidator(createCountPointSchema),
+  importCP: jsonValidator(importCountPointSchema),
   createProductSpec: jsonValidator(createProductSpecSchema),
   createProductAlias: jsonValidator(createProductAliasSchema),
   update: jsonValidator(updateWorkUnitSchema),
@@ -77,4 +97,4 @@ const workUnitValidator = {
   updateProductAlias: jsonValidator(updateProductAliasSchema),
 };
 
-export { workUnitValidator };
+export { workUnitValidator, MAX_IMPORT_ROWS };

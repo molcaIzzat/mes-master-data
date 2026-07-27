@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table.js";
 import { TablePagination } from "@/components/table/table-pagination.js";
 
+import type { ReactNode } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PageMeta } from "@/lib/types.js";
 
@@ -38,6 +39,9 @@ type SectionTableProps<TData> = {
   isError: boolean;
   errorMessage: string;
   emptyMessage: string;
+  // Rendered to the left of the add button, for sections that offer more than
+  // one way in.
+  headerActions?: ReactNode;
   pagination?: SectionPagination;
 };
 
@@ -55,6 +59,7 @@ function SectionTable<TData>({
   isError,
   errorMessage,
   emptyMessage,
+  headerActions,
   pagination,
 }: SectionTableProps<TData>) {
   // Skeleton rows stand in for a page of data; unpaginated sections get a few.
@@ -71,10 +76,13 @@ function SectionTable<TData>({
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium">{title}</h2>
-        <Button size="sm" onClick={onAction}>
-          <Plus />
-          {actionLabel}
-        </Button>
+        <div className="flex items-center gap-2">
+          {headerActions}
+          <Button size="sm" onClick={onAction}>
+            <Plus />
+            {actionLabel}
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">

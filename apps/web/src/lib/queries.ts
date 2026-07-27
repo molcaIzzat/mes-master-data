@@ -49,6 +49,7 @@ import {
   getWorkUnitById,
   getWorkUnitClasses,
   getWorkUnits,
+  importCountPoints,
   updateCountPoint,
   updateDowntimeReason,
   updateEdge,
@@ -358,6 +359,9 @@ const useDeleteProductAlias = () => useMachineChildMutation("product-aliases", d
 const useCreateCountPoint = () => useMachineChildMutation("count-points", createCountPoint);
 const useUpdateCountPoint = () => useMachineChildMutation("count-points", updateCountPoint);
 const useDeleteCountPoint = () => useMachineChildMutation("count-points", deleteCountPoint);
+// A whole file at once, but it lands in the same list, so it invalidates the
+// same way a single create does.
+const useImportCountPoints = () => useMachineChildMutation("count-points", importCountPoints);
 
 // --- line detail -------------------------------------------------------------
 
@@ -522,6 +526,7 @@ export {
   useEquipmentsByWorkCenters,
   useEquipmentsByWorkUnit,
   useEquipmentsPage,
+  useImportCountPoints,
   useLevelConfigurations,
   useMe,
   useProductAliases,

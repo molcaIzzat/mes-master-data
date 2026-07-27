@@ -7,6 +7,8 @@ import type {
   CreateCountPoint,
   CountPoint,
   CountPointList,
+  ImportCountPointResult,
+  ImportCountPointRow,
   UpdateCountPoint,
 } from "./count-point.js";
 import type { CountPointReader, CountPointWriter } from "./count-point-repository.js";
@@ -29,6 +31,7 @@ type TCountPointService = {
   create: (input: CreateCountPoint) => Promise<{ id: number }>;
   update: (id: number, input: UpdateCountPoint) => Promise<{ id: number }>;
   delete: (id: number) => Promise<string>;
+  importMany: (workUnitId: number, rows: ImportCountPointRow[]) => Promise<ImportCountPointResult>;
 };
 
 class CountPointService implements TCountPointService {
@@ -117,6 +120,25 @@ class CountPointService implements TCountPointService {
     );
 
     return "ok";
+  }
+
+  // Validation and the write share one transaction inside the repository, so a
+  // bad reference anywhere in the file leaves the machine untouched.
+  async importMany(
+    workUnitId: number,
+    rows: ImportCountPointRow[],
+  ): Promise<ImportCountPointResult> {
+    const result = await withLog(
+      this.logger,
+      "count_point_import",
+      {
+        workUnitId,
+        total: rows.length,
+      },
+      () => this.countPointWriterRepository.importMany(workUnitId, rows),
+    );
+
+    return result;
   }
 }
 
