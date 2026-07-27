@@ -4,8 +4,8 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { useEquipmentsPage } from "@/lib/queries.js";
 import { PAGE_SIZES } from "@/components/table/table-pagination.js";
 import { EquipmentFormDialog } from "@/components/level-configuration/equipment-form-dialog.js";
-import { RowActions } from "@/components/machine-detail/row-actions.js";
-import { SectionTable } from "@/components/machine-detail/section-table.js";
+import { RowActions } from "@/components/table/row-actions.js";
+import { SectionTable } from "@/components/table/section-table.js";
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { EquipmentTarget } from "@/components/level-configuration/equipment-form-dialog.js";
@@ -105,13 +105,15 @@ function EquipmentSection({ workUnitId, workUnitName, onDelete }: EquipmentSecti
         isError={isError}
         errorMessage="Failed to load equipment. Please try again."
         emptyMessage="No equipment yet."
-        page={page}
-        size={size}
-        meta={data?.meta}
-        onPageChange={setPage}
-        onSizeChange={(value) => {
-          setSize(value);
-          setPage(1);
+        pagination={{
+          page,
+          size,
+          meta: data?.meta,
+          onPageChange: setPage,
+          onSizeChange: (value) => {
+            setSize(value);
+            setPage(1);
+          },
         }}
       />
       <EquipmentFormDialog open={open} onOpenChange={setOpen} target={target} />

@@ -8,6 +8,7 @@ import type {
   CountPointListItem,
   CreateCountPointInput,
   CreateDowntimeReasonInput,
+  CreateEdgeInput,
   CreateEquipmentInput,
   CreateProductAliasInput,
   CreateProductInput,
@@ -17,6 +18,7 @@ import type {
   CreateWorkUnitInput,
   DowntimeReasonCategory,
   DowntimeReasonListItem,
+  EdgeListItem,
   EquipmentListItem,
   LevelConfigurationListItem,
   Me,
@@ -34,6 +36,7 @@ import type {
   WorkCenterDetail,
   WorkCenterListItem,
   WorkUnitDetail,
+  WorkUnitListItem,
 } from "./types.js";
 
 // Returns the current user, or null when not authenticated.
@@ -335,6 +338,61 @@ async function getWorkCenterById(id: number): Promise<WorkCenterDetail | null> {
   return data.data;
 }
 
+// Returns the machines on one line for the flow selects (single page, capped at
+// the API max), mirroring `getEquipments`.
+async function getWorkUnits(workCenterId: number): Promise<WorkUnitListItem[]> {
+  const { data } = await http.get<WebResponse<WorkUnitListItem[]>>("/api/proxy/v1/work-units", {
+    params: { page: 1, size: 100, workCenterId },
+  });
+  return data.data ?? [];
+}
+
+// Machine flows hang off the line. Unlike the machine's children these come
+// back all at once -- the endpoint takes no page params and returns no meta.
+function edgeUrl(workCenterId: number, id?: number): string {
+  const base = `/api/proxy/v1/work-centers/${workCenterId}/edges`;
+  return id === undefined ? base : `${base}/${id}`;
+}
+
+async function getEdges(workCenterId: number): Promise<EdgeListItem[]> {
+  const { data } = await http.get<WebResponse<EdgeListItem[]>>(edgeUrl(workCenterId));
+  return data.data ?? [];
+}
+
+async function createEdge({
+  workCenterId,
+  body,
+}: {
+  workCenterId: number;
+  body: CreateEdgeInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.post<WebResponse<{ id: number }>>(edgeUrl(workCenterId), body);
+  return data.data ?? { id: 0 };
+}
+
+async function updateEdge({
+  workCenterId,
+  id,
+  body,
+}: {
+  workCenterId: number;
+  id: number;
+  body: CreateEdgeInput;
+}): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(edgeUrl(workCenterId, id), body);
+  return data.data ?? { id };
+}
+
+async function deleteEdge({
+  workCenterId,
+  id,
+}: {
+  workCenterId: number;
+  id: number;
+}): Promise<void> {
+  await http.delete<WebResponse<string>>(edgeUrl(workCenterId, id));
+}
+
 type EquipmentQuery = {
   workUnitId: number;
   page: number;
@@ -535,6 +593,7 @@ async function deleteRejectReworkReason(id: number): Promise<void> {
 export {
   createCountPoint,
   createDowntimeReason,
+  createEdge,
   createEquipment,
   createProduct,
   createProductAlias,
@@ -544,6 +603,7 @@ export {
   createWorkUnit,
   deleteCountPoint,
   deleteDowntimeReason,
+  deleteEdge,
   deleteEquipment,
   deleteProduct,
   deleteProductAlias,
@@ -554,6 +614,7 @@ export {
   getAreas,
   getCountPoints,
   getDowntimeReasons,
+  getEdges,
   getEquipmentClasses,
   getEquipments,
   getEquipmentsPage,
@@ -570,10 +631,12 @@ export {
   getWorkCenters,
   getWorkUnitById,
   getWorkUnitClasses,
+  getWorkUnits,
   login,
   logout,
   updateCountPoint,
   updateDowntimeReason,
+  updateEdge,
   updateEquipment,
   updateProduct,
   updateProductAlias,

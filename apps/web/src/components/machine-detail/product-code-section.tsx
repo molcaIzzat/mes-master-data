@@ -4,8 +4,8 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { useProductAliases } from "@/lib/queries.js";
 import { PAGE_SIZES } from "@/components/table/table-pagination.js";
 import { ProductCodeFormDialog } from "@/components/machine-detail/product-code-form-dialog.js";
-import { RowActions } from "@/components/machine-detail/row-actions.js";
-import { SectionTable } from "@/components/machine-detail/section-table.js";
+import { RowActions } from "@/components/table/row-actions.js";
+import { SectionTable } from "@/components/table/section-table.js";
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { DeleteMachineChildTarget } from "@/components/machine-detail/delete-machine-child-dialog.js";
@@ -110,13 +110,15 @@ function ProductCodeSection({ workUnitId, workCenterId, onDelete }: ProductCodeS
         isError={isError}
         errorMessage="Failed to load product codes. Please try again."
         emptyMessage="No product codes yet."
-        page={page}
-        size={size}
-        meta={data?.meta}
-        onPageChange={setPage}
-        onSizeChange={(value) => {
-          setSize(value);
-          setPage(1);
+        pagination={{
+          page,
+          size,
+          meta: data?.meta,
+          onPageChange: setPage,
+          onSizeChange: (value) => {
+            setSize(value);
+            setPage(1);
+          },
         }}
       />
       <ProductCodeFormDialog open={open} onOpenChange={setOpen} target={target} />

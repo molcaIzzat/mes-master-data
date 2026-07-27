@@ -3,8 +3,8 @@ import { createColumnHelper } from "@tanstack/react-table";
 
 import { useProductSpecs } from "@/lib/queries.js";
 import { PAGE_SIZES } from "@/components/table/table-pagination.js";
-import { RowActions } from "@/components/machine-detail/row-actions.js";
-import { SectionTable } from "@/components/machine-detail/section-table.js";
+import { RowActions } from "@/components/table/row-actions.js";
+import { SectionTable } from "@/components/table/section-table.js";
 import { SpecificationFormDialog } from "@/components/machine-detail/specification-form-dialog.js";
 
 import type { ColumnDef } from "@tanstack/react-table";
@@ -104,13 +104,15 @@ function SpecificationSection({ workUnitId, workCenterId, onDelete }: Specificat
         isError={isError}
         errorMessage="Failed to load product specifications. Please try again."
         emptyMessage="No product specifications yet."
-        page={page}
-        size={size}
-        meta={data?.meta}
-        onPageChange={setPage}
-        onSizeChange={(value) => {
-          setSize(value);
-          setPage(1);
+        pagination={{
+          page,
+          size,
+          meta: data?.meta,
+          onPageChange: setPage,
+          onSizeChange: (value) => {
+            setSize(value);
+            setPage(1);
+          },
         }}
       />
       <SpecificationFormDialog open={open} onOpenChange={setOpen} target={target} />

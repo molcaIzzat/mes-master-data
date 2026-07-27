@@ -1,11 +1,15 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { workUnitFlowTable } from "../../shared/database/schema/schema.js";
 
-import type { CreateEdge, EdgeList } from "./edge.js";
+import type { CreateEdge, EdgeList, UpdateEdge } from "./edge.js";
 import type { PostgresDB } from "../../shared/database/postgres.js";
-import { FkViolationError, toPgConstraintError } from "../../shared/database/helper/catcher.js";
-import { InvalidEdgeReferenceError } from "./edge-errors.js";
+import {
+  FkViolationError,
+  toPgConstraintError,
+  UniqueViolationError,
+} from "../../shared/database/helper/catcher.js";
+import { DuplicateEdgeError, InvalidEdgeReferenceError } from "./edge-errors.js";
 
 type EdgeReaderDeps = {
   db: PostgresDB;
@@ -24,6 +28,7 @@ type EdgeReader = {
 
 type EdgeWriter = {
   create: (edge: CreateEdge) => Promise<{ id: number }>;
+  update: (workCenterId: number, id: number, patch: UpdateEdge) => Promise<{ id: number }>;
   delete: (workCenterId: number, id: number) => Promise<void>;
 };
 
@@ -36,25 +41,28 @@ class EdgeReaderRepository implements EdgeReader {
     this.region = region;
   }
 
+  // Both endpoints come back nested: the relations define `from` and `to` as
+  // aliased one-relations, so the two joins onto work_units are implicit.
   async findAll(workCenterId: number): Promise<EdgeList[]> {
-    const baseConds = [
-      eq(workUnitFlowTable.region, this.region),
-      eq(workUnitFlowTable.workCenterId, workCenterId),
-    ];
-
-    const where = and(...baseConds);
-    const rows = await this.db
-      .select({
-        id: workUnitFlowTable.id,
-        workCenterId: workUnitFlowTable.workCenterId,
-        fromWorkUnitId: workUnitFlowTable.fromWorkUnitId,
-        toWorkUnitId: workUnitFlowTable.toWorkUnitId,
-      })
-      .from(workUnitFlowTable)
-      .where(where)
-      .orderBy(desc(workUnitFlowTable.createdAt), asc(workUnitFlowTable.id));
-
-    return rows;
+    return await this.db.query.workUnitFlowTable.findMany({
+      where: {
+        region: this.region,
+        workCenterId,
+      },
+      orderBy: (f, { desc, asc }) => [desc(f.createdAt), asc(f.id)],
+      columns: {
+        id: true,
+        workCenterId: true,
+      },
+      with: {
+        from: {
+          columns: { id: true, code: true, name: true },
+        },
+        to: {
+          columns: { id: true, code: true, name: true },
+        },
+      },
+    });
   }
 
   async existById(workCenterId: number, id: number): Promise<boolean> {
@@ -91,13 +99,47 @@ class EdgeWriterRepository implements EdgeWriter {
 
       return row;
     } catch (err) {
-      const constraintError = toPgConstraintError(err);
-      if (constraintError instanceof FkViolationError) {
-        throw new InvalidEdgeReferenceError(constraintError.column, constraintError.value);
-      } else {
-        throw err;
-      }
+      throw this.toDomainError(err);
     }
+  }
+
+  async update(workCenterId: number, id: number, patch: UpdateEdge): Promise<{ id: number }> {
+    try {
+      const [row] = await this.db
+        .update(workUnitFlowTable)
+        .set({
+          fromWorkUnitId: patch.fromWorkUnitId,
+          toWorkUnitId: patch.toWorkUnitId,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(workUnitFlowTable.id, id),
+            eq(workUnitFlowTable.workCenterId, workCenterId),
+            eq(workUnitFlowTable.region, this.region),
+          ),
+        )
+        .returning({
+          id: workUnitFlowTable.id,
+        });
+
+      return row;
+    } catch (err) {
+      throw this.toDomainError(err);
+    }
+  }
+
+  // The (from, to) pair is unique and both sides are foreign keys, so a write
+  // fails in exactly two interesting ways.
+  private toDomainError(err: unknown): unknown {
+    const constraintError = toPgConstraintError(err);
+    if (constraintError instanceof UniqueViolationError) {
+      return new DuplicateEdgeError();
+    }
+    if (constraintError instanceof FkViolationError) {
+      return new InvalidEdgeReferenceError(constraintError.column, constraintError.value);
+    }
+    return err;
   }
 
   async delete(workCenterId: number, id: number): Promise<void> {

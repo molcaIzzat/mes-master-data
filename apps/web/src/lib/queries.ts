@@ -10,6 +10,7 @@ import {
 import {
   createCountPoint,
   createDowntimeReason,
+  createEdge,
   createEquipment,
   createProduct,
   createProductAlias,
@@ -19,6 +20,7 @@ import {
   createWorkUnit,
   deleteCountPoint,
   deleteDowntimeReason,
+  deleteEdge,
   deleteEquipment,
   deleteProduct,
   deleteProductAlias,
@@ -29,6 +31,7 @@ import {
   getAreas,
   getCountPoints,
   getDowntimeReasons,
+  getEdges,
   getEquipmentClasses,
   getEquipments,
   getEquipmentsPage,
@@ -45,8 +48,10 @@ import {
   getWorkCenters,
   getWorkUnitById,
   getWorkUnitClasses,
+  getWorkUnits,
   updateCountPoint,
   updateDowntimeReason,
+  updateEdge,
   updateEquipment,
   updateProduct,
   updateProductAlias,
@@ -229,6 +234,10 @@ function useLevelConfigurationMutation<TVars, TData>(mutationFn: (vars: TVars) =
       void queryClient.invalidateQueries({ queryKey: ["equipments"] });
       void queryClient.invalidateQueries({ queryKey: ["product-aliases"] });
       void queryClient.invalidateQueries({ queryKey: ["count-points"] });
+      // Deleting a machine takes its flows with it, and renaming one changes
+      // how the flow table reads.
+      void queryClient.invalidateQueries({ queryKey: ["edges"] });
+      void queryClient.invalidateQueries({ queryKey: ["work-units"] });
     },
   });
 }
@@ -350,6 +359,43 @@ const useCreateCountPoint = () => useMachineChildMutation("count-points", create
 const useUpdateCountPoint = () => useMachineChildMutation("count-points", updateCountPoint);
 const useDeleteCountPoint = () => useMachineChildMutation("count-points", deleteCountPoint);
 
+// --- line detail -------------------------------------------------------------
+
+const workUnitsKey = (workCenterId: number) => ["work-units", workCenterId] as const;
+
+// The machines on one line, behind the From/To selects of the flow dialog.
+function useWorkUnitsByWorkCenter(workCenterId: number) {
+  return useQuery({
+    queryKey: workUnitsKey(workCenterId),
+    queryFn: () => getWorkUnits(workCenterId),
+    enabled: Number.isFinite(workCenterId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+const edgesKey = (workCenterId: number) => ["edges", workCenterId] as const;
+
+// Every flow on the line in one response -- this endpoint is not paginated.
+function useEdges(workCenterId: number) {
+  return useQuery({
+    queryKey: edgesKey(workCenterId),
+    queryFn: () => getEdges(workCenterId),
+    enabled: Number.isFinite(workCenterId),
+  });
+}
+
+function useEdgeMutation<TVars, TData>(mutationFn: (vars: TVars) => Promise<TData>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["edges"] }),
+  });
+}
+
+const useCreateEdge = () => useEdgeMutation(createEdge);
+const useUpdateEdge = () => useEdgeMutation(updateEdge);
+const useDeleteEdge = () => useEdgeMutation(deleteEdge);
+
 const areasKey = ["areas"] as const;
 
 function useAreas() {
@@ -452,6 +498,7 @@ export {
   useCountPoints,
   useCreateCountPoint,
   useCreateDowntimeReason,
+  useCreateEdge,
   useCreateEquipment,
   useCreateProduct,
   useCreateProductAlias,
@@ -461,6 +508,7 @@ export {
   useCreateWorkUnit,
   useDeleteCountPoint,
   useDeleteDowntimeReason,
+  useDeleteEdge,
   useDeleteEquipment,
   useDeleteProduct,
   useDeleteProductAlias,
@@ -469,6 +517,7 @@ export {
   useDeleteWorkCenter,
   useDeleteWorkUnit,
   useDowntimeReasons,
+  useEdges,
   useEquipmentClasses,
   useEquipmentsByWorkCenters,
   useEquipmentsByWorkUnit,
@@ -479,6 +528,7 @@ export {
   useProductSpecs,
   useUpdateCountPoint,
   useUpdateDowntimeReason,
+  useUpdateEdge,
   useUpdateEquipment,
   useUpdateProductAlias,
   useUpdateProductSpec,
@@ -488,6 +538,7 @@ export {
   useWorkCenterClasses,
   useWorkUnit,
   useWorkUnitClasses,
+  useWorkUnitsByWorkCenter,
   useProduct,
   useProducts,
   useRejectReworkReasons,

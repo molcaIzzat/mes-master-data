@@ -293,6 +293,28 @@ type WorkUnitDetail = LevelNodeRef & {
   class: LevelNodeRef | null;
 };
 
+// Mirrors the core-api WorkUnitList shape returned by GET /v1/work-units
+// (only the fields the machine selects need).
+type WorkUnitListItem = LevelNodeRef & {
+  class: LevelNodeRef | null;
+};
+
+// Mirrors the core-api EdgeList shape returned by
+// GET /v1/work-centers/:id/edges: one machine-to-machine flow on a line, with
+// both endpoints resolved.
+type EdgeListItem = {
+  id: number;
+  workCenterId: number;
+  from: LevelNodeRef | null;
+  to: LevelNodeRef | null;
+};
+
+// POST/PUT body for a flow. The line comes from the path.
+type CreateEdgeInput = {
+  fromWorkUnitId: number;
+  toWorkUnitId: number;
+};
+
 // Mirrors the core-api WorkCenter shape returned by GET /v1/work-centers/:id.
 // Supplies the Area Name and Line Category of the machine's line, neither of
 // which the work unit itself carries.
@@ -376,6 +398,7 @@ export type {
   CountSource,
   CreateCountPointInput,
   CreateDowntimeReasonInput,
+  CreateEdgeInput,
   CreateEquipmentInput,
   CreateProductAliasInput,
   CreateProductInput,
@@ -387,6 +410,7 @@ export type {
   DowntimeReasonCategory,
   DowntimeReasonListItem,
   DowntimeReasonRef,
+  EdgeListItem,
   EquipmentListItem,
   LevelConfigurationListItem,
   LevelEquipmentItem,
@@ -411,4 +435,5 @@ export type {
   WorkCenterDetail,
   WorkCenterListItem,
   WorkUnitDetail,
+  WorkUnitListItem,
 };

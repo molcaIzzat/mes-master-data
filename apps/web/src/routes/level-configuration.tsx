@@ -97,6 +97,12 @@ function LevelConfiguration() {
         setEquipmentTarget({ unit: { id: unit.id, name: unit.name }, item: equipment });
         setEquipmentOpen(true);
       },
+      onConfigureLine: (line) => {
+        void navigate({
+          to: "/level-configuration/line/$id",
+          params: { id: String(line.id) },
+        });
+      },
       onConfigureMachine: (unit) => {
         void navigate({
           to: "/level-configuration/machine/$id",

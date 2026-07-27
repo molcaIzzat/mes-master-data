@@ -27,4 +27,13 @@ class InvalidEdgeReferenceError extends Error {
   }
 }
 
-export { InvalidEdgeReferenceError, InvalidTopology };
+class DuplicateEdgeError extends Error {
+  constructor() {
+    super("these two machines are already connected in this direction");
+    this.name = "DuplicateEdgeError";
+    if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);
+    Object.setPrototypeOf(this, DuplicateEdgeError.prototype);
+  }
+}
+
+export { DuplicateEdgeError, InvalidEdgeReferenceError, InvalidTopology };

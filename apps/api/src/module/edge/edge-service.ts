@@ -1,6 +1,6 @@
 import { withLog, type Logger } from "@molca/utils";
 
-import type { EdgeList, CreateEdge } from "./edge.js";
+import type { EdgeList, CreateEdge, UpdateEdge } from "./edge.js";
 import type { EdgeReader, EdgeWriter } from "./edge-repository.js";
 import { baseLogger, getRequestContext } from "@molca/observability";
 import { HTTPException } from "hono/http-exception";
@@ -17,6 +17,7 @@ type EdgeServiceDeps = {
 type TEdgeService = {
   findAll: (workCenterId: number) => Promise<EdgeList[]>;
   create: (input: CreateEdge) => Promise<{ id: number }>;
+  update: (workCenterId: number, id: number, input: UpdateEdge) => Promise<{ id: number }>;
   delete: (workCenterId: number, id: number) => Promise<string>;
 };
 
@@ -76,6 +77,45 @@ class EdgeService implements TEdgeService {
     return await this.edgeReaderRepository.findAll(workCenterId);
   }
 
+  // Checks the graph the line would have once `edge` is applied. `replacingId`
+  // is the edge being edited, which drops out of the existing set so it is not
+  // weighed against its own replacement.
+  private async assertTopology(
+    workCenterId: number,
+    edge: GraphEdge,
+    replacingId?: number,
+  ): Promise<void> {
+    const [workUnits, existingEdges] = await Promise.all([
+      this.workUnitService.findSummariesByWorkCenterId(workCenterId),
+      this.edgeReaderRepository.findAll(workCenterId),
+    ]);
+
+    const nodes = workUnits.map((wu) => ({ id: wu.id, code: wu.code }));
+    const proposed = [
+      ...existingEdges
+        .filter((e) => e.id !== replacingId)
+        .flatMap((e) =>
+          e.from && e.to ? [{ fromWorkUnitId: e.from.id, toWorkUnitId: e.to.id }] : [],
+        ),
+      edge,
+    ];
+
+    const result = this.validateGraph(nodes, proposed);
+    if (result.ok) return;
+
+    const endpointCodes = new Set(
+      nodes
+        .filter((n) => n.id === edge.fromWorkUnitId || n.id === edge.toWorkUnitId)
+        .map((n) => n.code),
+    );
+    const relevant = result.errors.filter(
+      (e) => e.code === "CYCLE" || e.workUnitCodes.some((code) => endpointCodes.has(code)),
+    );
+    if (relevant.length > 0) {
+      throw new InvalidTopology({ errors: relevant });
+    }
+  }
+
   async create(input: CreateEdge): Promise<{ id: number }> {
     const save = await withLog(
       this.logger,
@@ -84,40 +124,33 @@ class EdgeService implements TEdgeService {
         input,
       },
       async () => {
-        const workCenterId = input.workCenterId;
-        const [workUnits, existingEdges] = await Promise.all([
-          this.workUnitService.findSummariesByWorkCenterId(workCenterId),
-          this.edgeReaderRepository.findAll(workCenterId),
-        ]);
-
-        const nodes = workUnits.map((wu) => ({ id: wu.id, code: wu.code }));
-        const proposed = [
-          ...existingEdges.map((e) => ({
-            fromWorkUnitId: e.fromWorkUnitId,
-            toWorkUnitId: e.toWorkUnitId,
-          })),
-          {
-            fromWorkUnitId: input.fromWorkUnitId,
-            toWorkUnitId: input.toWorkUnitId,
-          },
-        ];
-
-        const result = this.validateGraph(nodes, proposed);
-        if (!result.ok) {
-          const endpointCodes = new Set(
-            nodes
-              .filter((n) => n.id === input.fromWorkUnitId || n.id === input.toWorkUnitId)
-              .map((n) => n.code),
-          );
-          const relevant = result.errors.filter(
-            (e) => e.code === "CYCLE" || e.workUnitCodes.some((code) => endpointCodes.has(code)),
-          );
-          if (relevant.length > 0) {
-            throw new InvalidTopology({ errors: relevant });
-          }
-        }
+        await this.assertTopology(input.workCenterId, {
+          fromWorkUnitId: input.fromWorkUnitId,
+          toWorkUnitId: input.toWorkUnitId,
+        });
 
         return await this.edgeWriterRepository.create(input);
+      },
+    );
+
+    return save;
+  }
+
+  async update(workCenterId: number, id: number, input: UpdateEdge): Promise<{ id: number }> {
+    const exist = await this.edgeReaderRepository.existById(workCenterId, id);
+    if (!exist) throw new HTTPException(404, { message: "edge not found" });
+
+    const save = await withLog(
+      this.logger,
+      "edge_update",
+      {
+        edgeId: id,
+        input,
+      },
+      async () => {
+        await this.assertTopology(workCenterId, input, id);
+
+        return await this.edgeWriterRepository.update(workCenterId, id, input);
       },
     );
 

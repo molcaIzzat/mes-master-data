@@ -5,8 +5,8 @@ import { useCountPoints } from "@/lib/queries.js";
 import { COUNT_ROLE_LABELS, COUNT_SOURCE_LABELS } from "@/lib/machine-detail-schema.js";
 import { PAGE_SIZES } from "@/components/table/table-pagination.js";
 import { CountPointFormDialog } from "@/components/machine-detail/count-point-form-dialog.js";
-import { RowActions } from "@/components/machine-detail/row-actions.js";
-import { SectionTable } from "@/components/machine-detail/section-table.js";
+import { RowActions } from "@/components/table/row-actions.js";
+import { SectionTable } from "@/components/table/section-table.js";
 
 import type { ColumnDef } from "@tanstack/react-table";
 import type { CountPointTarget } from "@/components/machine-detail/count-point-form-dialog.js";
@@ -116,13 +116,15 @@ function CountPointSection({ workUnitId, onDelete }: CountPointSectionProps) {
         isError={isError}
         errorMessage="Failed to load count points. Please try again."
         emptyMessage="No count points yet."
-        page={page}
-        size={size}
-        meta={data?.meta}
-        onPageChange={setPage}
-        onSizeChange={(value) => {
-          setSize(value);
-          setPage(1);
+        pagination={{
+          page,
+          size,
+          meta: data?.meta,
+          onPageChange: setPage,
+          onSizeChange: (value) => {
+            setSize(value);
+            setPage(1);
+          },
         }}
       />
       <CountPointFormDialog open={open} onOpenChange={setOpen} target={target} />

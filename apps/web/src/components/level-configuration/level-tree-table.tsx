@@ -54,7 +54,8 @@ type LevelTreeActions = {
   onEditMachine: (line: LevelConfigurationListItem, unit: LevelWorkUnitItem) => void;
   onAddEquipment: (unit: LevelWorkUnitItem) => void;
   onEditEquipment: (unit: LevelWorkUnitItem, equipment: LevelEquipmentItem) => void;
-  // Opens the machine's own configuration page.
+  // Open the line's / machine's own configuration page.
+  onConfigureLine: (line: LevelConfigurationListItem) => void;
   onConfigureMachine: (unit: LevelWorkUnitItem) => void;
   // `childCount` drives the "delete the children first" guard in the dialog.
   onDelete: (target: { kind: LevelRowKind; id: number; name: string; childCount: number }) => void;
@@ -142,13 +143,17 @@ function RowActions({ row, actions }: RowActionsProps) {
           <Plus />
         </Button>
       )}
-      {item.kind === "unit" && (
+      {item.kind === "equipment" ? null : (
         <Button
           variant="ghost"
           size="icon"
           className="size-8"
           aria-label={`Configure ${item.name}`}
-          onClick={() => actions.onConfigureMachine(item.unit)}
+          onClick={() =>
+            item.kind === "line"
+              ? actions.onConfigureLine(item.line)
+              : actions.onConfigureMachine(item.unit)
+          }
         >
           <Settings />
         </Button>

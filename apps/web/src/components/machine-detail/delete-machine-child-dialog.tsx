@@ -7,18 +7,7 @@ import {
   useDeleteProductAlias,
   useDeleteProductSpec,
 } from "@/lib/queries.js";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog.js";
-import { buttonVariants } from "@/components/ui/button.js";
-import { cn } from "@/lib/utils.js";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog.js";
 
 // The four things a machine owns, all deleted the same way.
 type MachineChildKind = "equipment" | "specification" | "product code" | "count point";
@@ -93,31 +82,20 @@ function DeleteMachineChildDialog({ target, onOpenChange }: DeleteMachineChildDi
   }
 
   return (
-    <AlertDialog open={target != null} onOpenChange={handleOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete {kind}?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This permanently deletes &ldquo;{target?.name}&rdquo;
-            {CASCADE[kind] ? <> along with {CASCADE[kind]}</> : null}. This action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className={cn(buttonVariants({ variant: "destructive" }))}
-            disabled={isPending}
-            onClick={(e) => {
-              e.preventDefault(); // keep the dialog open until the request resolves
-              handleConfirm();
-            }}
-          >
-            {isPending ? "Deleting..." : "Delete"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDeleteDialog
+      open={target != null}
+      onOpenChange={handleOpenChange}
+      title={`Delete ${kind}?`}
+      description={
+        <>
+          This permanently deletes &ldquo;{target?.name}&rdquo;
+          {CASCADE[kind] ? <> along with {CASCADE[kind]}</> : null}. This action cannot be undone.
+        </>
+      }
+      isPending={isPending}
+      errorMessage={errorMessage}
+      onConfirm={handleConfirm}
+    />
   );
 }
 

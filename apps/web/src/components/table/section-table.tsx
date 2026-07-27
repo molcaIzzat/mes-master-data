@@ -16,6 +16,16 @@ import { TablePagination } from "@/components/table/table-pagination.js";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PageMeta } from "@/lib/types.js";
 
+// Server-side paging state. Omitted by sections whose endpoint returns
+// everything at once, which then render no pager.
+type SectionPagination = {
+  page: number;
+  size: number;
+  meta: PageMeta | undefined;
+  onPageChange: (page: number) => void;
+  onSizeChange: (size: number) => void;
+};
+
 type SectionTableProps<TData> = {
   title: string;
   actionLabel: string;
@@ -28,16 +38,12 @@ type SectionTableProps<TData> = {
   isError: boolean;
   errorMessage: string;
   emptyMessage: string;
-  page: number;
-  size: number;
-  meta: PageMeta | undefined;
-  onPageChange: (page: number) => void;
-  onSizeChange: (size: number) => void;
+  pagination?: SectionPagination;
 };
 
-// One titled, independently paginated section of the machine detail page:
-// heading with its add button, the table with its loading/error/empty states,
-// and the pager underneath.
+// One titled section of a detail page: heading with its add button, the table
+// with its loading/error/empty states, and the pager underneath when the
+// section is paginated.
 function SectionTable<TData>({
   title,
   actionLabel,
@@ -49,12 +55,10 @@ function SectionTable<TData>({
   isError,
   errorMessage,
   emptyMessage,
-  page,
-  size,
-  meta,
-  onPageChange,
-  onSizeChange,
+  pagination,
 }: SectionTableProps<TData>) {
+  // Skeleton rows stand in for a page of data; unpaginated sections get a few.
+  const skeletonRows = Math.min(pagination?.size ?? 3, 10);
   const table = useReactTable({
     data: rows,
     columns,
@@ -91,7 +95,7 @@ function SectionTable<TData>({
           </TableHeader>
           <TableBody>
             {isPending ? (
-              Array.from({ length: size > 10 ? 10 : size }).map((_, i) => (
+              Array.from({ length: skeletonRows }).map((_, i) => (
                 <TableRow key={i}>
                   {columns.map((_col, j) => (
                     <TableCell key={j}>
@@ -130,15 +134,18 @@ function SectionTable<TData>({
         </Table>
       </div>
 
-      <TablePagination
-        page={page}
-        size={size}
-        meta={meta}
-        onPageChange={onPageChange}
-        onSizeChange={onSizeChange}
-      />
+      {pagination && (
+        <TablePagination
+          page={pagination.page}
+          size={pagination.size}
+          meta={pagination.meta}
+          onPageChange={pagination.onPageChange}
+          onSizeChange={pagination.onSizeChange}
+        />
+      )}
     </section>
   );
 }
 
 export { SectionTable };
+export type { SectionPagination };

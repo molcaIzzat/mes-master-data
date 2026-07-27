@@ -28,6 +28,13 @@ function createEdgeHandler({ edgeService, authMw }: EdgeHandlerDeps) {
     return c.json(WebResponse.builder<{ id: number }>().data(response).build(), 201);
   });
 
+  app.put("/:workCenterId/edges/:edgeId", edgeValidator.update, async (c) => {
+    const { workCenterId, edgeId } = c.req.param();
+    const body = c.req.valid("json");
+    const response = await edgeService.update(parseInt(workCenterId), parseInt(edgeId), body);
+    return c.json(WebResponse.builder<{ id: number }>().data(response).build(), 200);
+  });
+
   app.delete("/:workCenterId/edges/:edgeId", async (c) => {
     const { workCenterId, edgeId } = c.req.param();
     const deleted = await edgeService.delete(parseInt(workCenterId), parseInt(edgeId));

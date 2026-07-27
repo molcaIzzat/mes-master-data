@@ -14,8 +14,11 @@ const createEdgeSchema = z
     }),
   );
 
+// An edit moves the endpoints, so it takes the same body -- including the
+// no-self-loop refinement -- as a create.
 const edgeValidator = {
   create: jsonValidator(createEdgeSchema),
+  update: jsonValidator(createEdgeSchema),
 };
 
 export { edgeValidator };
