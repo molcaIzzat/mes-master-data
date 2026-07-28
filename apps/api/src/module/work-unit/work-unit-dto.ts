@@ -22,24 +22,38 @@ const listCountPointSchema = paginationSchema;
 const listProductSpecSchema = paginationSchema;
 const listProductAliasSchema = paginationSchema;
 
-const createWorkUnitSchema = z.object({
+// Kept apart from the create schemas below so the update schemas can be built
+// without their defaults -- see `updateWorkUnitSchema`.
+const workUnitFields = {
   code: z.string().check(z.minLength(5)),
   name: z.string().check(z.minLength(5)),
   workCenterId: z.number().check(z.positive(), z.int()),
-  workUnitClassId: z._default(z.nullable(z.number().check(z.positive(), z.int())), null),
+  workUnitClassId: z.nullable(z.number().check(z.positive(), z.int())),
   isOeeRelevant: z.boolean(),
   isAcquirable: z.boolean(),
-  telemetryTags: z._default(z.nullable(z.record(z.string(), z.string())), null),
+  telemetryTags: z.nullable(z.record(z.string(), z.string())),
   type: z.enum(WORK_UNIT_TYPE),
   position: positionSchema,
+};
+
+const createWorkUnitSchema = z.object({
+  ...workUnitFields,
+  // On create, leaving these out means "none".
+  workUnitClassId: z._default(workUnitFields.workUnitClassId, null),
+  telemetryTags: z._default(workUnitFields.telemetryTags, null),
 });
 
-const createCountPointSchema = z.object({
+const countPointFields = {
   equipmentId: z.nullable(z.int().check(z.positive())),
   uomId: z.int().check(z.positive()),
   role: z.enum(COUNT_ROLE),
-  source: z._default(z.enum(COUNT_SOURCE), "plc"),
+  source: z.enum(COUNT_SOURCE),
   sourceTag: z.string().check(z.minLength(3)),
+};
+
+const createCountPointSchema = z.object({
+  ...countPointFields,
+  source: z._default(countPointFields.source, "plc"),
 });
 
 // Cells stay plain strings on the way in. Roles, sources and the codes behind
@@ -76,8 +90,15 @@ const createProductAliasSchema = z.object({
   externalCode: z.string().check(z.minLength(1)),
 });
 
-const updateWorkUnitSchema = createWorkUnitSchema.partial();
-const updateCountPointSchema = createCountPointSchema.partial();
+// Deliberately NOT `createWorkUnitSchema.partial()`: `.partial()` leaves the
+// `_default` wrappers in place and zod still fills them in for a key the body
+// never sent, so a PUT carrying only `position` -- which is exactly what a drag
+// in the DAG editor sends -- silently blanked the machine's class and telemetry
+// tags. Building the update schema off the plain fields keeps a partial body
+// partial. The repository writes whatever survives parsing, so anything that
+// leaks in here is a column overwritten with a default.
+const updateWorkUnitSchema = z.object(workUnitFields).partial();
+const updateCountPointSchema = z.object(countPointFields).partial();
 const updateProductSpecSchema = createProductSpecSchema.partial();
 const updateProductAliasSchema = createProductAliasSchema.partial();
 
@@ -97,4 +118,4 @@ const workUnitValidator = {
   updateProductAlias: jsonValidator(updateProductAliasSchema),
 };
 
-export { workUnitValidator, MAX_IMPORT_ROWS };
+export { workUnitValidator, MAX_IMPORT_ROWS, updateCountPointSchema, updateWorkUnitSchema };
