@@ -1,22 +1,9 @@
 import { Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button.js";
+import { SummaryField } from "@/components/summary-field.js";
 
 import type { WorkCenterDetail, WorkUnitDetail } from "@/lib/types.js";
-
-type SummaryFieldProps = {
-  label: string;
-  value: string;
-};
-
-function SummaryField({ label, value }: SummaryFieldProps) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{value}</span>
-    </div>
-  );
-}
 
 type MachineSummaryProps = {
   workUnit: WorkUnitDetail;

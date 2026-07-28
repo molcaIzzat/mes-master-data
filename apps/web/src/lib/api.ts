@@ -24,6 +24,7 @@ import type {
   EquipmentListItem,
   LevelConfigurationListItem,
   Me,
+  NodeLayout,
   PageMeta,
   ProductAliasListItem,
   ProductDetail,
@@ -34,6 +35,7 @@ import type {
   UpdateDowntimeReasonInput,
   UpdateProductInput,
   UpdateRejectReworkReasonInput,
+  UpdateWorkUnitLayoutInput,
   WebResponse,
   WorkCenterDetail,
   WorkCenterListItem,
@@ -273,6 +275,24 @@ async function updateWorkUnit({
   id: number;
   body: CreateWorkUnitInput;
 }): Promise<{ id: number }> {
+  const { data } = await http.put<WebResponse<{ id: number }>>(
+    `/api/proxy/v1/work-units/${id}`,
+    body,
+  );
+  return data.data ?? { id };
+}
+
+// Geometry-only sibling of `updateWorkUnit`, called once per drop or resize in
+// the DAG editor. Kept separate so a canvas gesture never sends -- and so never
+// risks overwriting -- the machine's own fields.
+async function updateWorkUnitLayout({
+  id,
+  position,
+}: {
+  id: number;
+  position: NodeLayout;
+}): Promise<{ id: number }> {
+  const body: UpdateWorkUnitLayoutInput = { position };
   const { data } = await http.put<WebResponse<{ id: number }>>(
     `/api/proxy/v1/work-units/${id}`,
     body,
@@ -663,6 +683,7 @@ export {
   updateRejectReworkReason,
   updateWorkCenter,
   updateWorkUnit,
+  updateWorkUnitLayout,
 };
 export type {
   DowntimeReasonQuery,

@@ -60,6 +60,7 @@ import {
   updateRejectReworkReason,
   updateWorkCenter,
   updateWorkUnit,
+  updateWorkUnitLayout,
 } from "./api.js";
 
 import type {
@@ -70,7 +71,7 @@ import type {
   ProductQuery,
   RejectReworkReasonQuery,
 } from "./api.js";
-import type { EquipmentListItem } from "./types.js";
+import type { EquipmentListItem, WorkUnitListItem } from "./types.js";
 
 const meKey = ["me"] as const;
 
@@ -444,6 +445,68 @@ function useEquipmentsByWorkCenters(workCenterIds: number[]) {
   });
 }
 
+// --- dag editor --------------------------------------------------------------
+
+// Every piece of equipment on the line in one request. Each item carries its
+// `unit`, so the canvas groups equipment per machine node without a query per
+// node. Shares its key with `useEquipmentsByWorkCenters`.
+function useEquipmentsByLine(workCenterId: number) {
+  return useQuery({
+    queryKey: equipmentsKey(workCenterId),
+    queryFn: () => getEquipments(workCenterId),
+    enabled: Number.isFinite(workCenterId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+// How many count points each machine holds, for the chip at the foot of a node.
+// There is no line-wide count-point endpoint, so this asks each machine for one
+// row and reads the total off the page meta.
+function useCountPointTotals(workUnitIds: number[]) {
+  return useQueries({
+    queries: workUnitIds.map((workUnitId) => {
+      const params = { workUnitId, page: 1, size: 1 };
+      return {
+        queryKey: countPointsKey(params),
+        queryFn: () => getCountPoints(params),
+      };
+    }),
+    combine: (results) => {
+      const totals = new Map<number, number>();
+      results.forEach((result, index) => {
+        const workUnitId = workUnitIds[index];
+        if (workUnitId === undefined) return;
+        totals.set(workUnitId, result.data?.meta?.totalElements ?? 0);
+      });
+      return {
+        data: totals,
+        isPending: results.some((r) => r.isPending),
+      };
+    },
+  });
+}
+
+// Persists a drag or a resize. Deliberately not a level-configuration mutation:
+// that invalidates eight keys, and a refetch mid-gesture makes nodes jump. The
+// cached machine list is patched in place instead, and only re-read if the write
+// failed.
+function useUpdateWorkUnitLayout(workCenterId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateWorkUnitLayout,
+    onSuccess: (_result, variables) => {
+      queryClient.setQueryData<WorkUnitListItem[]>(workUnitsKey(workCenterId), (current) =>
+        current?.map((unit) =>
+          unit.id === variables.id ? { ...unit, position: variables.position } : unit,
+        ),
+      );
+    },
+    onError: () => {
+      void queryClient.invalidateQueries({ queryKey: workUnitsKey(workCenterId) });
+    },
+  });
+}
+
 const workCentersKey = (areaId?: number) => ["work-centers", areaId ?? null] as const;
 
 // Lines are scoped to the selected area; without one, no lines are fetched.
@@ -500,6 +563,7 @@ function useDeleteProduct() {
 export {
   useAreas,
   useCountPoints,
+  useCountPointTotals,
   useCreateCountPoint,
   useCreateDowntimeReason,
   useCreateEdge,
@@ -523,6 +587,7 @@ export {
   useDowntimeReasons,
   useEdges,
   useEquipmentClasses,
+  useEquipmentsByLine,
   useEquipmentsByWorkCenters,
   useEquipmentsByWorkUnit,
   useEquipmentsPage,
@@ -539,6 +604,7 @@ export {
   useUpdateProductSpec,
   useUpdateWorkCenter,
   useUpdateWorkUnit,
+  useUpdateWorkUnitLayout,
   useWorkCenter,
   useWorkCenterClasses,
   useWorkUnit,

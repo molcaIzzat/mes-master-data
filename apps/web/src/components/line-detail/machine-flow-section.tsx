@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 
 import { useEdges } from "@/lib/queries.js";
+import { flowLabel } from "@/lib/dag-editor.js";
 import { RowActions } from "@/components/table/row-actions.js";
 import { SectionTable } from "@/components/table/section-table.js";
 import { FlowFormDialog } from "@/components/line-detail/flow-form-dialog.js";
@@ -13,11 +14,6 @@ import type { EdgeListItem } from "@/lib/types.js";
 
 const columnHelper = createColumnHelper<EdgeListItem>();
 const EMPTY: EdgeListItem[] = [];
-
-// Names the flow in confirmations and screen-reader labels.
-function flowLabel(edge: EdgeListItem): string {
-  return `${edge.from?.name ?? "?"} → ${edge.to?.name ?? "?"}`;
-}
 
 type MachineFlowSectionProps = {
   workCenterId: number;

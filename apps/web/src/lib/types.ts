@@ -164,6 +164,15 @@ type CreateWorkCenterInput = {
   idealRatePerHour: number | null;
 };
 
+// Mirrors the core-api Position: where a machine sits on the DAG editor canvas
+// and how big it was left. Size is absent until the node has been resized once.
+type NodeLayout = {
+  x: number;
+  y: number;
+  width?: number;
+  height?: number;
+};
+
 // POST /v1/work-units body. Everything the form does not ask for comes from
 // MACHINE_DEFAULTS.
 type CreateWorkUnitInput = {
@@ -175,7 +184,14 @@ type CreateWorkUnitInput = {
   isAcquirable: boolean;
   telemetryTags: Record<string, string> | null;
   type: string;
-  position: { x: number; y: number };
+  position: NodeLayout;
+};
+
+// PUT /v1/work-units/:id body sent by a drag or a resize. The update schema is a
+// partial, so nothing but the geometry travels -- a drag can never overwrite the
+// machine's code, name or class.
+type UpdateWorkUnitLayoutInput = {
+  position: NodeLayout;
 };
 
 // POST /v1/equipments body -- every field is surfaced in the form.
@@ -294,9 +310,10 @@ type WorkUnitDetail = LevelNodeRef & {
 };
 
 // Mirrors the core-api WorkUnitList shape returned by GET /v1/work-units
-// (only the fields the machine selects need).
+// (only the fields the machine selects and the DAG editor canvas need).
 type WorkUnitListItem = LevelNodeRef & {
   class: LevelNodeRef | null;
+  position: NodeLayout;
 };
 
 // Mirrors the core-api EdgeList shape returned by
@@ -452,6 +469,7 @@ export type {
   LevelNodeRef,
   LevelWorkUnitItem,
   Me,
+  NodeLayout,
   PageMeta,
   ProductAliasListItem,
   ProductArea,
@@ -466,6 +484,7 @@ export type {
   UpdateDowntimeReasonInput,
   UpdateProductInput,
   UpdateRejectReworkReasonInput,
+  UpdateWorkUnitLayoutInput,
   WebResponse,
   WorkCenterDetail,
   WorkCenterListItem,

@@ -11,6 +11,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.js";
 import { RootRedirect } from "@/routes/root-redirect.js";
 import { LevelConfiguration } from "@/routes/level-configuration.js";
 import { LineDetail } from "@/routes/line-detail.js";
+import { DagEditor } from "@/routes/dag-editor.js";
 import { MachineDetail } from "@/routes/machine-detail.js";
 import { Sku } from "@/routes/sku.js";
 import { SkuAdd } from "@/routes/sku-add.js";
@@ -60,6 +61,18 @@ function AppLayout() {
   );
 }
 
+// The DAG editor brings its own top bar and needs the whole viewport for its
+// canvas, so it is gated the same way but skips the sidebar/header chrome.
+function EditorLayout() {
+  return (
+    <RequireAuth>
+      <div className="flex h-svh flex-col overflow-hidden">
+        <Outlet />
+      </div>
+    </RequireAuth>
+  );
+}
+
 const rootRoute = createRootRoute({ component: RootLayout });
 
 const indexRoute = createRoute({
@@ -87,6 +100,23 @@ const lineDetailRoute = createRoute({
   path: "/level-configuration/line/$id",
   component: LineDetail,
   staticData: { title: "Detail Line", description: "Level Configuration > Detail Line" },
+});
+
+// Pathless layout route for the full-bleed editor, beside the app shell.
+const editorLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: "editor",
+  component: EditorLayout,
+});
+
+const dagEditorRoute = createRoute({
+  getParentRoute: () => editorLayoutRoute,
+  path: "/level-configuration/line/$id/dag-editor",
+  component: DagEditor,
+  staticData: {
+    title: "DAG Editor",
+    description: "Level Configuration > Detail Line > DAG Editor",
+  },
 });
 
 const machineDetailRoute = createRoute({
@@ -151,6 +181,7 @@ const routeTree = rootRoute.addChildren([
     rejectReworkReasonRoute,
     analyticsRoute,
   ]),
+  editorLayoutRoute.addChildren([dagEditorRoute]),
 ]);
 
 const router = createRouter({ routeTree });

@@ -16,20 +16,23 @@ import { Input } from "@/components/ui/input.js";
 import { FieldShell } from "@/components/form/field-shell.js";
 import { ClassSelect } from "@/components/level-configuration/class-select.js";
 
-import type { LevelWorkUnitItem } from "@/lib/types.js";
+import type { LevelWorkUnitItem, NodeLayout } from "@/lib/types.js";
 
 // The parent line is fixed by the row the action was triggered from, so it is
 // shown read-only rather than as a picker.
 type MachineTarget = {
   line: { id: number; name: string };
   item: LevelWorkUnitItem | null;
+  // Only set by the DAG editor, so a new machine appears where the user is
+  // looking instead of at the canvas origin. Ignored on edit.
+  position?: NodeLayout;
 };
 
 type MachineFormProps = MachineTarget & {
   onClose: () => void;
 };
 
-function MachineForm({ line, item, onClose }: MachineFormProps) {
+function MachineForm({ line, item, position, onClose }: MachineFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const createMachine = useCreateWorkUnit();
   const updateMachine = useUpdateWorkUnit();
@@ -41,7 +44,7 @@ function MachineForm({ line, item, onClose }: MachineFormProps) {
     validators: { onChange: machineSchema, onSubmit: machineSchema },
     onSubmit: async ({ value }) => {
       setErrorMessage(null);
-      const body = toMachineRequestBody(value, line.id);
+      const body = toMachineRequestBody(value, line.id, position);
       try {
         if (item) {
           await updateMachine.mutateAsync({ id: item.id, body });
@@ -156,6 +159,7 @@ function MachineFormDialog({ open, onOpenChange, target }: MachineFormDialogProp
             key={target.item?.id ?? `add-${target.line.id}`}
             line={target.line}
             item={target.item}
+            position={target.position}
             onClose={() => onOpenChange(false)}
           />
         )}

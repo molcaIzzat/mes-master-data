@@ -1,22 +1,10 @@
-import { Pencil } from "lucide-react";
+import { Pencil, Workflow } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button.js";
+import { SummaryField } from "@/components/summary-field.js";
 
 import type { WorkCenterDetail } from "@/lib/types.js";
-
-type SummaryFieldProps = {
-  label: string;
-  value: string;
-};
-
-function SummaryField({ label, value }: SummaryFieldProps) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{value}</span>
-    </div>
-  );
-}
 
 type LineSummaryProps = {
   workCenter: WorkCenterDetail;
@@ -35,10 +23,23 @@ function LineSummary({ workCenter, onEdit }: LineSummaryProps) {
           <SummaryField label="Line Category" value={workCenter.class?.name ?? "—"} />
         </div>
 
-        <Button variant="outline" size="sm" onClick={onEdit}>
-          <Pencil />
-          Edit Line
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          {/* The same flows the table below lists, on a canvas. */}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to="/level-configuration/line/$id/dag-editor"
+              params={{ id: String(workCenter.id) }}
+            >
+              <Workflow />
+              DAG Editor
+            </Link>
+          </Button>
+
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            <Pencil />
+            Edit Line
+          </Button>
+        </div>
       </div>
     </div>
   );

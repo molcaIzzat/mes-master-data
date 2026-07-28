@@ -1,7 +1,24 @@
+// The error mapper hands `message` straight to the response envelope, so it has
+// to read as a sentence: it is what the DAG editor shows when a connection is
+// refused. The dumped `obj` stays on the error for the logs.
+function topologyMessage(obj?: Record<string, unknown>): string {
+  if (!obj) return "invalid topology";
+
+  const errors = obj.errors;
+  if (Array.isArray(errors)) {
+    const first = errors[0];
+    if (first && typeof first === "object" && "message" in first) {
+      return String((first as { message: unknown }).message);
+    }
+  }
+
+  return `invalid topology ${JSON.stringify(obj)}`;
+}
+
 class InvalidTopology extends Error {
   public readonly obj?: Record<string, unknown>;
   constructor(obj?: Record<string, unknown>) {
-    super(obj ? `Invalid topology ${JSON.stringify(obj)}` : "Invlid topology");
+    super(topologyMessage(obj));
     this.name = "InvalidTopology";
     this.obj = obj;
     if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);

@@ -45,6 +45,107 @@ type GraphValidationResult = {
   errors: GraphError[];
 };
 
+// Kahn's algorithm: strip machines that have no upstream left, over and over. A
+// DAG always has such a machine, so whatever survives sits on a cycle. The
+// survivors are then walked forward to recover one concrete loop to name.
+function findCycle(nodes: GraphNode[], edges: GraphEdge[]): number[] | null {
+  const outgoing = new Map<number, number[]>();
+  const inDegree = new Map<number, number>();
+  for (const node of nodes) {
+    outgoing.set(node.id, []);
+    inDegree.set(node.id, 0);
+  }
+  for (const edge of edges) {
+    outgoing.get(edge.fromWorkUnitId)?.push(edge.toWorkUnitId);
+    inDegree.set(edge.toWorkUnitId, (inDegree.get(edge.toWorkUnitId) ?? 0) + 1);
+  }
+
+  const queue = nodes.filter((node) => inDegree.get(node.id) === 0).map((node) => node.id);
+  const settled = new Set<number>();
+  while (queue.length > 0) {
+    const id = queue.shift();
+    if (id === undefined) break;
+    settled.add(id);
+    for (const next of outgoing.get(id) ?? []) {
+      const remaining = (inDegree.get(next) ?? 0) - 1;
+      inDegree.set(next, remaining);
+      if (remaining === 0) queue.push(next);
+    }
+  }
+
+  const residual = nodes.map((node) => node.id).filter((id) => !settled.has(id));
+  if (residual.length === 0) return null;
+
+  // Machines merely downstream of a loop also survive, so every survivor is
+  // tried as a starting point until the loop itself is entered.
+  const survivors = new Set(residual);
+  for (const start of residual) {
+    const path: number[] = [];
+    const onPath = new Set<number>();
+
+    const walk = (id: number): number[] | null => {
+      path.push(id);
+      onPath.add(id);
+      for (const next of outgoing.get(id) ?? []) {
+        if (!survivors.has(next)) continue;
+        if (onPath.has(next)) return path.slice(path.indexOf(next));
+        const found = walk(next);
+        if (found) return found;
+      }
+      path.pop();
+      onPath.delete(id);
+      return null;
+    };
+
+    const found = walk(start);
+    if (found) return found;
+  }
+
+  return residual;
+}
+
+// Judges the whole proposed graph of a line. Exported for its own tests; the
+// service reaches it through `assertTopology`.
+function validateGraph(nodes: GraphNode[], edges: GraphEdge[]): GraphValidationResult {
+  const codeById = new Map(nodes.map((node) => [node.id, node.code]));
+  const errors: GraphError[] = [];
+
+  // An endpoint that is not a machine of this line cannot be walked, so those
+  // edges are reported and then left out of the cycle search.
+  const walkable: GraphEdge[] = [];
+  for (const edge of edges) {
+    const endpoints = [edge.fromWorkUnitId, edge.toWorkUnitId];
+    if (endpoints.every((id) => codeById.has(id))) {
+      walkable.push(edge);
+      continue;
+    }
+
+    errors.push({
+      code: "DANGLING_EDGE",
+      message: "this connection points at a machine that does not belong to this line",
+      workUnitCodes: endpoints.flatMap((id) => {
+        const code = codeById.get(id);
+        return code === undefined ? [] : [code];
+      }),
+    });
+  }
+
+  const cycle = findCycle(nodes, walkable);
+  if (cycle) {
+    const codes = cycle.map((id) => codeById.get(id) ?? String(id));
+    errors.push({
+      code: "CYCLE",
+      message: `this connection would create a loop: ${[...codes, codes[0]].join(" -> ")}`,
+      workUnitCodes: codes,
+    });
+  }
+
+  // WEIGHTER_NO_UPSTREAM stays unimplemented on purpose: it needs a notion of
+  // "weigher" machines that the master data does not carry yet.
+
+  return { ok: errors.length === 0, errors };
+}
+
 class EdgeService implements TEdgeService {
   private edgeReaderRepository: EdgeReader;
   private edgeWriterRepository: EdgeWriter;
@@ -65,12 +166,6 @@ class EdgeService implements TEdgeService {
 
   private get logger(): Logger {
     return getRequestContext()?.logger ?? this.fallbackLogger;
-  }
-
-  private validateGraph(nodes: GraphNode[], edges: GraphEdge[]): GraphValidationResult {
-    //TODO: Implement function
-    console.log({ nodes, edges });
-    return { ok: true, errors: [] };
   }
 
   async findAll(workCenterId: number): Promise<EdgeList[]> {
@@ -100,7 +195,7 @@ class EdgeService implements TEdgeService {
       edge,
     ];
 
-    const result = this.validateGraph(nodes, proposed);
+    const result = validateGraph(nodes, proposed);
     if (result.ok) return;
 
     const endpointCodes = new Set(
@@ -108,8 +203,14 @@ class EdgeService implements TEdgeService {
         .filter((n) => n.id === edge.fromWorkUnitId || n.id === edge.toWorkUnitId)
         .map((n) => n.code),
     );
+    // Both endpoints off the line leaves nothing to match on by code, so that
+    // case is recognised up front rather than slipping through the filter.
+    const proposedIsDangling = endpointCodes.size < 2;
     const relevant = result.errors.filter(
-      (e) => e.code === "CYCLE" || e.workUnitCodes.some((code) => endpointCodes.has(code)),
+      (e) =>
+        e.code === "CYCLE" ||
+        (e.code === "DANGLING_EDGE" && proposedIsDangling) ||
+        e.workUnitCodes.some((code) => endpointCodes.has(code)),
     );
     if (relevant.length > 0) {
       throw new InvalidTopology({ errors: relevant });
@@ -173,5 +274,5 @@ class EdgeService implements TEdgeService {
   }
 }
 
-export { EdgeService };
-export type { TEdgeService };
+export { EdgeService, validateGraph };
+export type { TEdgeService, GraphEdge, GraphError, GraphNode, GraphValidationResult };

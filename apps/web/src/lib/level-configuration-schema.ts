@@ -7,6 +7,7 @@ import type {
   LevelConfigurationListItem,
   LevelEquipmentItem,
   LevelWorkUnitItem,
+  NodeLayout,
 } from "./types.js";
 
 // Fields the API requires but the level configuration UI deliberately does not
@@ -115,9 +116,13 @@ function toLineRequestBody(values: LineFormValues): CreateWorkCenterInput {
   };
 }
 
+// `position` is only passed by the DAG editor, which drops a new machine where
+// the user is looking. Everywhere else the default origin stands, and an edit
+// leaves the stored position alone because the API takes a partial body.
 function toMachineRequestBody(
   values: MachineFormValues,
   workCenterId: number,
+  position?: NodeLayout,
 ): CreateWorkUnitInput {
   return {
     code: values.code,
@@ -125,6 +130,7 @@ function toMachineRequestBody(
     workCenterId,
     workUnitClassId: values.workUnitClassId,
     ...MACHINE_DEFAULTS,
+    position: position ?? MACHINE_DEFAULTS.position,
   };
 }
 
