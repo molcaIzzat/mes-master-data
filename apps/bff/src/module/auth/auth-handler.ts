@@ -26,9 +26,12 @@ const TEMP_COOKIE_MAX_AGE = 600; // 10 minutes for PKCE flow
 function cookieOptions(config: AppConfig, maxAge?: number) {
   return {
     httpOnly: true,
-    secure: new URL(config.clientBaseRedirectUri).protocol === "https:",
+    secure: config.cookie.secure,
     path: "/",
-    sameSite: "lax" as const,
+    sameSite: config.cookie.sameSite,
+    // Set when the SPA and the BFF are served from different hosts, so the
+    // session cookie is scoped to the shared domain instead of the BFF's host.
+    ...(config.cookie.domain !== undefined && { domain: config.cookie.domain }),
     ...(maxAge !== undefined && { maxAge }),
   };
 }
@@ -36,6 +39,10 @@ function cookieOptions(config: AppConfig, maxAge?: number) {
 function createAuthHandler({ authService, config, authMw }: AuthHandlerDeps) {
   const app = new Hono<AuthEnv>();
   const cookieName = config.cookie.name;
+  // A cookie is only overwritten (and so only cleared) by a Set-Cookie whose
+  // name, path and domain all match the original, so deletions reuse the same
+  // options the cookie was written with.
+  const clearOpts = cookieOptions(config);
 
   app.get("/api/login", async (c) => {
     try {
@@ -101,10 +108,10 @@ function createAuthHandler({ authService, config, authMw }: AuthHandlerDeps) {
         getCookie(c, `${cookieName}_return_to`) ?? "/",
       );
 
-      deleteCookie(c, `${cookieName}_code_verifier`, { path: "/" });
-      deleteCookie(c, `${cookieName}_state`, { path: "/" });
-      deleteCookie(c, `${cookieName}_nonce`, { path: "/" });
-      deleteCookie(c, `${cookieName}_return_to`, { path: "/" });
+      deleteCookie(c, `${cookieName}_code_verifier`, clearOpts);
+      deleteCookie(c, `${cookieName}_state`, clearOpts);
+      deleteCookie(c, `${cookieName}_nonce`, clearOpts);
+      deleteCookie(c, `${cookieName}_return_to`, clearOpts);
 
       return c.redirect(authService.buildClientRedirectUri(config.clientBaseRedirectUri, returnTo));
     } catch (err) {
@@ -169,9 +176,9 @@ function createAuthHandler({ authService, config, authMw }: AuthHandlerDeps) {
       );
     } catch (err) {
       log().withError(err).error("token_refresh_failed");
-      deleteCookie(c, `${cookieName}_access_token`, { path: "/" });
-      deleteCookie(c, `${cookieName}_refresh_token`, { path: "/" });
-      deleteCookie(c, `${cookieName}_id_token`, { path: "/" });
+      deleteCookie(c, `${cookieName}_access_token`, clearOpts);
+      deleteCookie(c, `${cookieName}_refresh_token`, clearOpts);
+      deleteCookie(c, `${cookieName}_id_token`, clearOpts);
       return c.json(WebResponse.builder<string>().error("session expired").build(), 401);
     }
   });
@@ -179,9 +186,9 @@ function createAuthHandler({ authService, config, authMw }: AuthHandlerDeps) {
   const handleLogout = async (c: Context<AuthEnv>) => {
     const idToken = getCookie(c, `${cookieName}_id_token`);
 
-    deleteCookie(c, `${cookieName}_access_token`, { path: "/" });
-    deleteCookie(c, `${cookieName}_refresh_token`, { path: "/" });
-    deleteCookie(c, `${cookieName}_id_token`, { path: "/" });
+    deleteCookie(c, `${cookieName}_access_token`, clearOpts);
+    deleteCookie(c, `${cookieName}_refresh_token`, clearOpts);
+    deleteCookie(c, `${cookieName}_id_token`, clearOpts);
 
     try {
       const logoutUrl = await authService.buildLogoutUrl(idToken);

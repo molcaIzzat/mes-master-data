@@ -27,6 +27,8 @@ const TEST_CONFIG: AppConfig = {
   cookie: {
     name: "test_sess",
     secret: "supersecretvalue1234567890abcdef",
+    sameSite: "lax",
+    secure: false,
   },
   clientBaseRedirectUri: "http://localhost:3003",
   cors: {

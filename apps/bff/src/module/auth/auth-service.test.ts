@@ -12,6 +12,8 @@ const TEST_CONFIG: AppConfig = {
   cookie: {
     name: "portal_session",
     secret: "supersecretvalue1234567890abcdef",
+    sameSite: "lax",
+    secure: false,
   },
   clientBaseRedirectUri: "http://localhost:3003",
   cors: {

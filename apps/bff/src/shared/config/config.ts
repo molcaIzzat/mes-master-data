@@ -9,6 +9,9 @@ type AppConfig = {
   cookie: {
     name: string;
     secret: string;
+    domain?: string;
+    sameSite: CookieSameSite;
+    secure: boolean;
   };
   clientBaseRedirectUri: string;
   cors: {
@@ -39,6 +42,60 @@ const REQUIRED_VARS = [
 ] as const;
 
 const DEFAULT_PROXY_UPSTREAM_TIMEOUT_MS = 30_000;
+
+const COOKIE_SAME_SITE_VALUES = ["lax", "strict", "none"] as const;
+type CookieSameSite = (typeof COOKIE_SAME_SITE_VALUES)[number];
+
+function isCookieSameSite(value: string): value is CookieSameSite {
+  return (COOKIE_SAME_SITE_VALUES as readonly string[]).includes(value);
+}
+
+function parseCookieSameSite(raw: string | undefined): CookieSameSite {
+  if (raw === undefined || raw === "") return "lax";
+  const value = raw.trim().toLowerCase();
+  if (!isCookieSameSite(value)) {
+    throw new Error(
+      `COOKIE_SAMESITE must be one of ${COOKIE_SAME_SITE_VALUES.join(", ")}: got "${raw}"`,
+    );
+  }
+  return value;
+}
+
+function parseBoolean(name: string, raw: string | undefined, fallback: boolean): boolean {
+  if (raw === undefined || raw === "") return fallback;
+  const value = raw.trim().toLowerCase();
+  if (value === "true" || value === "1") return true;
+  if (value === "false" || value === "0") return false;
+  throw new Error(`${name} must be true or false: got "${raw}"`);
+}
+
+// A cookie Domain widens the cookie from host-only to the domain and all of its
+// subdomains — that is what lets the SPA's origin and the BFF's origin share one
+// session. It must be a bare host that contains a dot: the browser rejects a
+// Domain of "localhost" or a bare IP, and it must cover the BFF's own host.
+function parseCookieDomain(raw: string | undefined): string | undefined {
+  if (raw === undefined || raw === "") return undefined;
+  const value = raw.trim();
+  if (/[:/\\\s]/.test(value)) {
+    throw new Error(
+      `COOKIE_DOMAIN must be a bare host without scheme, port or path: got "${value}"`,
+    );
+  }
+  if (!value.replace(/^\./, "").includes(".")) {
+    throw new Error(
+      `COOKIE_DOMAIN must be a dotted domain the browser will accept: got "${value}"`,
+    );
+  }
+  return value;
+}
+
+function parseHttpsUrl(name: string, raw: string): URL {
+  try {
+    return new URL(raw);
+  } catch {
+    throw new Error(`${name} must be an absolute URL: got "${raw}"`);
+  }
+}
 
 function parseListUrl(raw: string): string[] {
   if (!raw) return [];
@@ -82,6 +139,25 @@ function loadConfig(): AppConfig {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
 
+  const clientBaseRedirect = parseHttpsUrl(
+    "CLIENT_BASE_REDIRECT_URI",
+    process.env.CLIENT_BASE_REDIRECT_URI!,
+  );
+  const sameSite = parseCookieSameSite(process.env.COOKIE_SAMESITE);
+  const secure = parseBoolean(
+    "COOKIE_SECURE",
+    process.env.COOKIE_SECURE,
+    clientBaseRedirect.protocol === "https:",
+  );
+
+  // Browsers silently drop SameSite=None without Secure, which would log every
+  // user out with no error anywhere. Fail at boot instead.
+  if (sameSite === "none" && !secure) {
+    throw new Error(
+      "COOKIE_SAMESITE=none requires secure cookies: serve CLIENT_BASE_REDIRECT_URI over https or set COOKIE_SECURE=true",
+    );
+  }
+
   return {
     oidc: {
       clientId: process.env.OIDC_CLIENT_ID!,
@@ -93,6 +169,9 @@ function loadConfig(): AppConfig {
     cookie: {
       name: process.env.COOKIE_NAME!,
       secret: process.env.COOKIE_SECRET!,
+      domain: parseCookieDomain(process.env.COOKIE_DOMAIN),
+      sameSite,
+      secure,
     },
     clientBaseRedirectUri: process.env.CLIENT_BASE_REDIRECT_URI!,
     cors: {

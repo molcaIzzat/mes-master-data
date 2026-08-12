@@ -24,6 +24,9 @@ describe("loadConfig", () => {
       process.env[key] = value;
     }
     delete process.env.PROXY_UPSTREAM_TIMEOUT_MS;
+    delete process.env.COOKIE_DOMAIN;
+    delete process.env.COOKIE_SAMESITE;
+    delete process.env.COOKIE_SECURE;
   });
 
   afterEach(() => {
@@ -45,6 +48,65 @@ describe("loadConfig", () => {
     expect(config.proxy.allowedPrefixes).toEqual(["/v1/", "/resources/"]);
     expect(config.proxy.upstreamTimeoutMs).toBe(30_000);
     expect(config.region).toBe("AP3");
+  });
+
+  it("should default the cookie to host-only, lax, and insecure over http", () => {
+    const config = loadConfig();
+
+    expect(config.cookie.domain).toBeUndefined();
+    expect(config.cookie.sameSite).toBe("lax");
+    expect(config.cookie.secure).toBe(false);
+  });
+
+  it("should mark the cookie secure when CLIENT_BASE_REDIRECT_URI is https", () => {
+    process.env.CLIENT_BASE_REDIRECT_URI = "https://md.mes.molca.id";
+    const config = loadConfig();
+    expect(config.cookie.secure).toBe(true);
+  });
+
+  it("should let COOKIE_SECURE override the scheme-derived default", () => {
+    process.env.CLIENT_BASE_REDIRECT_URI = "https://md.mes.molca.id";
+    process.env.COOKIE_SECURE = "false";
+    expect(loadConfig().cookie.secure).toBe(false);
+  });
+
+  it("should reject a non-boolean COOKIE_SECURE", () => {
+    process.env.COOKIE_SECURE = "yes";
+    expect(() => loadConfig()).toThrow(/COOKIE_SECURE must be true or false/);
+  });
+
+  it("should share the cookie across subdomains via COOKIE_DOMAIN", () => {
+    process.env.COOKIE_DOMAIN = ".mes.molca.id";
+    const config = loadConfig();
+    expect(config.cookie.domain).toBe(".mes.molca.id");
+  });
+
+  it("should reject a COOKIE_DOMAIN carrying a scheme, port or path", () => {
+    process.env.COOKIE_DOMAIN = "https://mes.molca.id";
+    expect(() => loadConfig()).toThrow(/without scheme, port or path/);
+
+    process.env.COOKIE_DOMAIN = "mes.molca.id:3001";
+    expect(() => loadConfig()).toThrow(/without scheme, port or path/);
+  });
+
+  it("should reject a COOKIE_DOMAIN the browser would discard", () => {
+    process.env.COOKIE_DOMAIN = "localhost";
+    expect(() => loadConfig()).toThrow(/dotted domain/);
+  });
+
+  it("should parse COOKIE_SAMESITE case-insensitively", () => {
+    process.env.COOKIE_SAMESITE = "Strict";
+    expect(loadConfig().cookie.sameSite).toBe("strict");
+  });
+
+  it("should reject an unknown COOKIE_SAMESITE", () => {
+    process.env.COOKIE_SAMESITE = "sometimes";
+    expect(() => loadConfig()).toThrow(/COOKIE_SAMESITE must be one of/);
+  });
+
+  it("should reject COOKIE_SAMESITE=none without secure cookies", () => {
+    process.env.COOKIE_SAMESITE = "none";
+    expect(() => loadConfig()).toThrow(/requires secure cookies/);
   });
 
   it("should throw if REGION_CODE is missing", () => {
