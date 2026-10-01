@@ -1,0 +1,148 @@
+import { DrizzleQueryError } from "drizzle-orm";
+import { HTTPException } from "hono/http-exception";
+
+import { DuplicateAreaError, InvalidAreaSiteIdReferenceError } from "../area/area-errors.js";
+import {
+  DuplicateProductError,
+  InvalidProductAreaIdReferenceError,
+  InvalidProductLineIdReferenceError,
+} from "../product/product-errors.js";
+import { DuplicateDowntimeReasonError } from "../downtime-reason/downtime-reason-errors.js";
+import { DuplicateRejectReasonError } from "../reject-reason/reject-reason-errors.js";
+import { DuplicateDowntimeActionError } from "../downtime-action/downtime-action-errors.js";
+import { DuplicateWorkCenterClassError } from "../work-center-class/work-center-class-errors.js";
+import { DuplicateEquipmentClassError } from "../equipment-class/equipment-class-errors.js";
+import {
+  InvalidWorkCenterReferenceError,
+  DuplicateWorkCenterError,
+} from "../work-center/work-center-errors.js";
+import {
+  InvalidWorkUnitReferenceError,
+  DuplicateWorkUnitError,
+} from "../work-unit/work-unit-errors.js";
+import {
+  DuplicateEquipmentError,
+  InvalidEquipmentReferenceError,
+} from "../equipment/equipment-errors.js";
+import { DuplicateSiteError } from "../site/site-errors.js";
+import { InvalidCountPointferenceError } from "../count-point/count-point-errors.js";
+import { InvalidOtherPointReferenceError } from "../other-point/other-point-errors.js";
+import {
+  DuplicateEdgeError,
+  InvalidEdgeReferenceError,
+  InvalidTopology,
+} from "../edge/edge-errors.js";
+import { OrphanedHierarchyError } from "../timezone/timezone-errors.js";
+
+function mapDomainError(err: unknown): HTTPException | null {
+  if (err instanceof HTTPException) return err;
+
+  if (err instanceof OrphanedHierarchyError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidEdgeReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateEdgeError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidTopology) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidAreaSiteIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateSiteError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidCountPointferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidOtherPointReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidEquipmentReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateEquipmentError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidWorkUnitReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateWorkUnitError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidWorkCenterReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateWorkCenterError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateEquipmentClassError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateWorkCenterClassError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateDowntimeReasonError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateRejectReasonError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateDowntimeActionError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateProductError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidProductAreaIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof InvalidProductLineIdReferenceError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DuplicateAreaError) {
+    return new HTTPException(409, { message: err.message });
+  }
+
+  if (err instanceof DrizzleQueryError) {
+    const errCode = (err.cause as Error & { code?: string }).code;
+
+    switch (errCode) {
+      case "23505":
+        return new HTTPException(409, { message: `[${errCode}] ${err.message}` });
+      case "23503":
+        return new HTTPException(409, { message: `[${errCode}] ${err.message}` });
+      default:
+        return new HTTPException(409, { message: `[UNKNOWN_CODE] ${err.message}` });
+    }
+  }
+
+  return null;
+}
+
+export { mapDomainError };

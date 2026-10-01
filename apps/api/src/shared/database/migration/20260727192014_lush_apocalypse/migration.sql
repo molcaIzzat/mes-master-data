@@ -1,0 +1,1 @@
+ALTER TABLE "ms_core"."count_points" DROP CONSTRAINT "cp_source_tag_cx", ADD CONSTRAINT "cp_source_tag_cx" CHECK (source <> 'plc' OR source_tag IS NOT NULL);

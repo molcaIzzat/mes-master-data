@@ -1,0 +1,224 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  /* Brand accent: blue (Tailwind blue-600, ~#155dfc). Its foreground is
+     blue-50 rather than pure white, which is what shadcn's blue theme
+     ships; measured 4.82:1 on the fill, so a button label clears AA. */
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.955 0.018 262.881);
+  --accent-foreground: oklch(0.546 0.245 262.881);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.546 0.245 262.881);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.546 0.245 262.881);
+  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+  --sidebar-accent: oklch(0.955 0.018 262.881);
+  --sidebar-accent-foreground: oklch(0.546 0.245 262.881);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.546 0.245 262.881);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.623 0.214 259.815);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.372 0.096 262.881);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.623 0.214 259.815);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.623 0.214 259.815);
+  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+  --sidebar-accent: oklch(0.372 0.096 262.881);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.623 0.214 259.815);
+}
+
+/* INTER, SELF-HOSTED. Two @font-face rules, one variable file each.
+
+   VENDORED INTO public/fonts/ RATHER THAN INSTALLED, and that is the decision
+   worth recording. `@fontsource-variable/inter` is the idiomatic route and was
+   taken first, across all three of the sibling repos that share this theme. In
+   one of them the catalog pins its toolchain to `latest`, so adding any
+   dependency re-resolves it and moved ~100 packages in the lockfile — a
+   toolchain bump riding along inside a type change. A font is two static
+   files, and one mechanism in three repos is worth more here than the tidier
+   half of a split. They are copied from that package (SIL Open Font License,
+   see fonts/LICENSE).
+
+   SERVED FROM THIS APP'S OWN ORIGIN, never Google Fonts: the plant network
+   these SPAs run on need not have a route to the public internet, and a webfont
+   that fails to load falls back to whatever Tailwind's preflight names that
+   week — which is the drift the theme below exists to pin down.
+
+   `font-weight: 100 900` is one file covering the whole ramp: the UI uses
+   normal, medium and semibold, and a variable face serves all three without a
+   second request. LATIN and LATIN-EXT only — the package also ships Cyrillic,
+   Greek and Vietnamese, which no screen in this product renders. The
+   unicode-ranges are the package's own, so a character outside them falls to
+   the next family in --font-sans rather than rendering as a box. */
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/inter-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* TYPOGRAPHY — INTER, FOR BODY AND HEADINGS ALIKE, AND NAMED EXPLICITLY.
+   
+   It used to be named nowhere, so every app inherited Tailwind's preflight
+   fallback — and that stack is not a constant. Tailwind 4.3.1 resolves it to
+   `ui-sans-serif, system-ui, …` and 4.3.3 to `-apple-system, …, Roboto, …`, so
+   two of these repos rendered the sign-in card and the sidebar wordmark in
+   different faces at different apparent weights purely because their lockfiles
+   had drifted one patch apart. Naming the family here is what makes that
+   impossible to happen again.
+   
+   The family is served from this app's own origin — see the two @font-face
+   rules above, and the note there for why the files are vendored rather than
+   installed.
+   
+   `--font-heading` is a separate token that currently resolves to the same
+   family. It is not redundant: the guide states body and headings as two
+   choices that happen to agree today, and a token per choice is what lets one
+   of them move without the other. */
+@theme {
+  --font-sans:
+    "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-heading: var(--font-sans);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* App shell stays full-height. `#root` isn't a Tailwind concern so it stays raw
+     CSS, but it lives inside @layer base so a `min-h-*` utility can still win. */
+  html,
+  body,
+  #root {
+    min-height: 100svh;
+  }
+
+  /* Must be @apply inside @layer base, not a raw `body { background: … }` rule:
+     an unlayered declaration outranks every cascade layer, which would silently
+     kill the tokens above and with them dark mode.
+
+     The raw `font-family: system-ui, …` that used to sit below this block is
+     gone rather than updated. It was unlayered, so it beat every `font-*`
+     utility in the app, and it named a different stack from the two sibling
+     repos — which is how one module's sign-in card came to render in a
+     different face from the others'. The family is a THEME token now
+     (--font-sans above), so a utility can still override it. */
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Headings read --font-heading rather than inheriting from body, so the two
+     halves of the type guide stay independently settable. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+}
